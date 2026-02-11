@@ -2352,3 +2352,172 @@ func TestConvert_SourceDir_MultipleImages(t *testing.T) {
 		t.Errorf("Expected 2 file:// URLs, got %d in: %s", strings.Count(html, "file://"), html)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// TestConvert_FrontmatterStripped - YAML Frontmatter Removal
+// ---------------------------------------------------------------------------
+
+func TestConvert_FrontmatterStripped(t *testing.T) {
+	t.Parallel()
+
+	service, err := New()
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer service.Close()
+
+	markdown := `---
+title: Test Document
+author: John Doe
+date: 2024-01-15
+tags: [test, example]
+---
+
+# Introduction
+
+This document has YAML frontmatter that should not appear in the output.
+
+## Content
+
+The frontmatter above contains metadata.`
+
+	result, err := service.Convert(context.Background(), Input{
+		Markdown: markdown,
+		HTMLOnly: true, // Skip PDF for faster test
+	})
+	if err != nil {
+		t.Fatalf("Convert() error = %v", err)
+	}
+
+	html := string(result.HTML)
+
+	// Frontmatter metadata should NOT appear in HTML
+	if strings.Contains(html, "title: Test Document") {
+		t.Error("HTML should not contain frontmatter key 'title: Test Document'")
+	}
+	if strings.Contains(html, "author: John Doe") {
+		t.Error("HTML should not contain frontmatter key 'author: John Doe'")
+	}
+	if strings.Contains(html, "date: 2024-01-15") {
+		t.Error("HTML should not contain frontmatter key 'date: 2024-01-15'")
+	}
+	if strings.Contains(html, "tags: [test, example]") {
+		t.Error("HTML should not contain frontmatter key 'tags: [test, example]'")
+	}
+
+	// Frontmatter delimiters should NOT appear
+	if strings.Contains(html, "---") {
+		t.Error("HTML should not contain frontmatter delimiters '---'")
+	}
+
+	// Content should be present
+	if !strings.Contains(html, "<h1") {
+		t.Error("HTML should contain <h1> heading")
+	}
+	if !strings.Contains(html, "Introduction") {
+		t.Error("HTML should contain 'Introduction' heading text")
+	}
+	if !strings.Contains(html, "This document has YAML frontmatter") {
+		t.Error("HTML should contain paragraph content")
+	}
+	if !strings.Contains(html, "Content") {
+		t.Error("HTML should contain 'Content' heading text")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestConvert_MalformedFrontmatterPreserved - Malformed Frontmatter Safety
+// ---------------------------------------------------------------------------
+
+func TestConvert_MalformedFrontmatterPreserved(t *testing.T) {
+	t.Parallel()
+
+	service, err := New()
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer service.Close()
+
+	tests := []struct {
+		name     string
+		markdown string
+		wantText string // Text that SHOULD appear (malformed frontmatter preserved)
+	}{
+		{
+			name: "missing closing delimiter",
+			markdown: `---
+title: Test
+# Content`,
+			wantText: "title: Test",
+		},
+		{
+			name: "missing opening delimiter",
+			markdown: `title: Test
+---
+# Content`,
+			wantText: "title: Test",
+		},
+		{
+			name: "single delimiter only becomes horizontal rule",
+			markdown: `---
+# Content`,
+			wantText: "<hr", // Single --- becomes <hr /> (horizontal rule in markdown)
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := service.Convert(context.Background(), Input{
+				Markdown: tt.markdown,
+				HTMLOnly: true,
+			})
+			if err != nil {
+				t.Fatalf("Convert() error = %v", err)
+			}
+
+			html := string(result.HTML)
+
+			// Malformed frontmatter should appear in HTML (preserved as-is)
+			if !strings.Contains(html, tt.wantText) {
+				t.Errorf("HTML should contain malformed frontmatter text %q (preserved for safety)", tt.wantText)
+			}
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestConvert_FrontmatterWithCodeBlocks - Code Blocks Not Stripped
+// ---------------------------------------------------------------------------
+
+func TestConvert_FrontmatterWithCodeBlocks(t *testing.T) {
+	t.Parallel()
+
+	service, err := New()
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer service.Close()
+
+	markdown := "```yaml\n---\ntitle: Config\n---\n```\n\n# Content"
+
+	result, err := service.Convert(context.Background(), Input{
+		Markdown: markdown,
+		HTMLOnly: true,
+	})
+	if err != nil {
+		t.Fatalf("Convert() error = %v", err)
+	}
+
+	html := string(result.HTML)
+
+	// Code block content should be preserved (not stripped as frontmatter)
+	// Syntax highlighting wraps text in spans, so search for fragments
+	if !strings.Contains(html, "title") || !strings.Contains(html, "Config") {
+		t.Error("HTML should contain code block with 'title' and 'Config'")
+	}
+	if !strings.Contains(html, "<code") || !strings.Contains(html, "</code>") {
+		t.Error("HTML should contain code block tags")
+	}
+}
