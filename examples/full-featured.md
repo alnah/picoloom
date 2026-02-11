@@ -1,3 +1,14 @@
+---
+title: API Security Audit Report
+subtitle: Northwind Trading Platform Q4 2024
+author: Security Team
+date: 2024-12-15
+version: 1.0
+classification: CONFIDENTIAL
+tags: [security, audit, api, vulnerabilities]
+reviewer: Chief Security Officer
+---
+
 # API Security Audit Report
 
 ## Executive Summary

@@ -1,3 +1,10 @@
+---
+title: Project Status Report
+author: Engineering Team
+date: 2024-12-31
+tags: [status, quarterly, metrics]
+---
+
 # Project Status Report
 
 ## Executive Summary

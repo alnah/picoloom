@@ -106,6 +106,7 @@ Use `Input.HTMLOnly: true` to skip PDF generation and only produce HTML.
 - **Batch conversion** - Process directories with parallel workers
 - **Cover pages** - Title, subtitle, logo, author, organization, date, version
 - **Table of contents** - Auto-generated from headings with configurable depth
+- **Frontmatter stripping** - YAML frontmatter (`---` blocks) stripped before conversion
 - **Custom styling** - Embedded themes or your own CSS ([some limitations](#known-limitations))
 - **Page settings** - Size (letter, A4, legal), orientation, margins
 - **Signatures** - Name, title, email, photo, links
@@ -1018,7 +1019,6 @@ These are intentional to keep the tool simple:
 | LaTeX/MathJax | Adds complexity, requires external tools | Pre-render as PNG/SVG |
 | Wikilinks `[[...]]` | Not relevant for PDF output | Use `[text](url)` |
 | Admonitions `:::` | Not implemented | Use blockquotes |
-| YAML front-matter | Separates content from presentation | Use `-c config.yaml` |
 
 ### Chrome PDF Engine
 
