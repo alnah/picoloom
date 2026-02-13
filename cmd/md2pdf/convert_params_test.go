@@ -41,10 +41,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, true)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got != nil {
-			t.Error("expected nil when noSignature=true")
+			t.Errorf("buildSignatureData() = %v, want nil", got)
 		}
 	})
 
@@ -57,10 +57,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got != nil {
-			t.Error("expected nil when signature.enabled=false")
+			t.Errorf("buildSignatureData() = %v, want nil", got)
 		}
 	})
 
@@ -82,10 +82,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected SignatureData, got nil")
+			t.Fatalf("buildSignatureData() = nil, want SignatureData")
 		}
 		if got.Name != "John Doe" {
 			t.Errorf("Name = %q, want %q", got.Name, "John Doe")
@@ -97,7 +97,7 @@ func TestBuildSignatureData(t *testing.T) {
 			t.Errorf("Email = %q, want %q", got.Email, "john@example.com")
 		}
 		if len(got.Links) != 1 {
-			t.Fatalf("Links count = %d, want 1", len(got.Links))
+			t.Fatalf("buildSignatureData() len(Links) = %d, want 1", len(got.Links))
 		}
 		if got.Links[0].Label != "GitHub" {
 			t.Errorf("Links[0].Label = %q, want %q", got.Links[0].Label, "GitHub")
@@ -119,13 +119,13 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected SignatureData, got nil")
+			t.Fatalf("buildSignatureData() = nil, want SignatureData")
 		}
 		if got.ImagePath != "https://example.com/logo.png" {
-			t.Errorf("ImagePath = %q, want URL", got.ImagePath)
+			t.Errorf("ImagePath = %q, want %q", got.ImagePath, "https://example.com/logo.png")
 		}
 	})
 
@@ -135,7 +135,7 @@ func TestBuildSignatureData(t *testing.T) {
 		tempDir := t.TempDir()
 		imagePath := filepath.Join(tempDir, "logo.png")
 		if err := os.WriteFile(imagePath, []byte("fake png"), 0644); err != nil {
-			t.Fatalf("failed to create test image: %v", err)
+			t.Fatalf("WriteFile() unexpected error: %v", err)
 		}
 
 		cfg := &Config{
@@ -147,10 +147,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected SignatureData, got nil")
+			t.Fatalf("buildSignatureData() = nil, want SignatureData")
 		}
 		if got.ImagePath != imagePath {
 			t.Errorf("ImagePath = %q, want %q", got.ImagePath, imagePath)
@@ -166,10 +166,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected SignatureData, got nil")
+			t.Fatalf("buildSignatureData() = nil, want SignatureData")
 		}
 	})
 
@@ -187,10 +187,10 @@ func TestBuildSignatureData(t *testing.T) {
 		}
 		got, err := buildSignatureData(cfg, false)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildSignatureData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected SignatureData, got nil")
+			t.Fatalf("buildSignatureData() = nil, want SignatureData")
 		}
 		if got.Phone != "+1-555-123-4567" {
 			t.Errorf("Phone = %q, want %q", got.Phone, "+1-555-123-4567")
@@ -253,7 +253,7 @@ func TestBuildFooterData(t *testing.T) {
 		}}
 		got := buildFooterData(cfg, false)
 		if got != nil {
-			t.Error("expected nil when footer.enabled=false")
+			t.Errorf("buildFooterData() = %v, want nil", got)
 		}
 	})
 
@@ -274,13 +274,13 @@ func TestBuildFooterData(t *testing.T) {
 		}
 		got := buildFooterData(cfg, false)
 		if got == nil {
-			t.Fatal("expected FooterData, got nil")
+			t.Fatalf("buildFooterData() = nil, want FooterData")
 		}
 		if got.Position != "center" {
 			t.Errorf("Position = %q, want %q", got.Position, "center")
 		}
 		if !got.ShowPageNumber {
-			t.Error("ShowPageNumber = false, want true")
+			t.Errorf("ShowPageNumber = false, want true")
 		}
 		if got.Date != "2025-01-15" {
 			t.Errorf("Date = %q, want %q", got.Date, "2025-01-15")
@@ -302,14 +302,14 @@ func TestBuildFooterData(t *testing.T) {
 		}}
 		got := buildFooterData(cfg, false)
 		if got == nil {
-			t.Fatal("expected FooterData, got nil")
+			t.Fatalf("buildFooterData() = nil, want FooterData")
 		}
 		// All fields should be zero values
 		if got.Position != "" {
 			t.Errorf("Position = %q, want empty", got.Position)
 		}
 		if got.ShowPageNumber {
-			t.Error("ShowPageNumber = true, want false")
+			t.Errorf("ShowPageNumber = true, want false")
 		}
 		if got.Date != "" {
 			t.Errorf("Date = %q, want empty", got.Date)
@@ -333,7 +333,7 @@ func TestBuildFooterData(t *testing.T) {
 		}}
 		got := buildFooterData(cfg, true)
 		if got != nil {
-			t.Error("expected nil when noFooter=true, got FooterData")
+			t.Errorf("buildFooterData() = %v, want nil", got)
 		}
 	})
 
@@ -351,7 +351,7 @@ func TestBuildFooterData(t *testing.T) {
 		}
 		got := buildFooterData(cfg, false)
 		if got == nil {
-			t.Fatal("expected FooterData, got nil")
+			t.Fatalf("buildFooterData() = nil, want FooterData")
 		}
 		if got.DocumentID != "DOC-2024-001" {
 			t.Errorf("DocumentID = %q, want %q", got.DocumentID, "DOC-2024-001")
@@ -372,7 +372,7 @@ func TestBuildFooterData(t *testing.T) {
 		}
 		got := buildFooterData(cfg, false)
 		if got == nil {
-			t.Fatal("expected FooterData, got nil")
+			t.Fatalf("buildFooterData() = nil, want FooterData")
 		}
 		if got.DocumentID != "" {
 			t.Errorf("DocumentID = %q, want empty", got.DocumentID)
@@ -499,24 +499,24 @@ func TestBuildPageSettings(t *testing.T) {
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("buildPageSettings() error = nil, want error")
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("buildPageSettings() unexpected error: %v", err)
 			}
 
 			if tt.wantNil {
 				if got != nil {
-					t.Errorf("expected nil, got %+v", got)
+					t.Errorf("buildPageSettings() = %+v, want nil", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Fatal("expected PageSettings, got nil")
+				t.Fatalf("buildPageSettings() = nil, want PageSettings")
 			}
 			if got.Size != tt.wantSize {
 				t.Errorf("Size = %q, want %q", got.Size, tt.wantSize)
@@ -587,19 +587,19 @@ func TestValidateWorkers(t *testing.T) {
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("validateWorkers(%d) error = nil, want error", tt.n)
 				}
 				if !errors.Is(err, ErrInvalidWorkerCount) {
-					t.Errorf("error = %v, want ErrInvalidWorkerCount", err)
+					t.Errorf("validateWorkers(%d) error = %v, want ErrInvalidWorkerCount", tt.n, err)
 				}
 				if tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
-					t.Errorf("error message %q should contain %q", err.Error(), tt.errMsg)
+					t.Errorf("validateWorkers(%d) error message %q should contain %q", tt.n, err.Error(), tt.errMsg)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("validateWorkers(%d) unexpected error: %v", tt.n, err)
 			}
 		})
 	}
@@ -790,27 +790,27 @@ func TestBuildWatermarkData(t *testing.T) {
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("buildWatermarkData() error = nil, want error")
 				}
 				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
-					t.Errorf("error %q should contain %q", err.Error(), tt.errContains)
+					t.Errorf("buildWatermarkData() error %q should contain %q", err.Error(), tt.errContains)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("buildWatermarkData() unexpected error: %v", err)
 			}
 
 			if tt.wantNil {
 				if got != nil {
-					t.Errorf("expected nil, got %+v", got)
+					t.Errorf("buildWatermarkData() = %+v, want nil", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Fatal("expected Watermark, got nil")
+				t.Fatalf("buildWatermarkData() = nil, want Watermark")
 			}
 			if got.Text != tt.wantText {
 				t.Errorf("Text = %q, want %q", got.Text, tt.wantText)
@@ -997,7 +997,7 @@ func TestBuildCoverData(t *testing.T) {
 	tempDir := t.TempDir()
 	existingLogo := filepath.Join(tempDir, "logo.png")
 	if err := os.WriteFile(existingLogo, []byte("fake png"), 0644); err != nil {
-		t.Fatalf("failed to create test logo: %v", err)
+		t.Fatalf("WriteFile() unexpected error: %v", err)
 	}
 
 	t.Run("cover disabled in config returns nil", func(t *testing.T) {
@@ -1006,10 +1006,10 @@ func TestBuildCoverData(t *testing.T) {
 		cfg := &Config{Cover: CoverConfig{Enabled: false}}
 		got, err := buildCoverData(cfg, "# Markdown", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got != nil {
-			t.Error("expected nil when cover.enabled=false")
+			t.Errorf("buildCoverData() = %v, want nil", got)
 		}
 	})
 
@@ -1022,10 +1022,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "# Markdown H1", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Title != "Config Title" {
 			t.Errorf("Title = %q, want %q", got.Title, "Config Title")
@@ -1038,10 +1038,10 @@ func TestBuildCoverData(t *testing.T) {
 		cfg := &Config{Cover: CoverConfig{Enabled: true}}
 		got, err := buildCoverData(cfg, "# My Document Title\n\nContent here", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Title != "My Document Title" {
 			t.Errorf("Title = %q, want %q", got.Title, "My Document Title")
@@ -1054,10 +1054,10 @@ func TestBuildCoverData(t *testing.T) {
 		cfg := &Config{Cover: CoverConfig{Enabled: true}}
 		got, err := buildCoverData(cfg, "No headings here, just content.", "my-document.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Title != "my-document" {
 			t.Errorf("Title = %q, want %q", got.Title, "my-document")
@@ -1073,10 +1073,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Subtitle != "A Comprehensive Guide" {
 			t.Errorf("Subtitle = %q, want %q", got.Subtitle, "A Comprehensive Guide")
@@ -1092,10 +1092,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Logo != existingLogo {
 			t.Errorf("Logo = %q, want %q", got.Logo, existingLogo)
@@ -1111,13 +1111,13 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Logo != "https://example.com/logo.png" {
-			t.Errorf("Logo = %q, want URL", got.Logo)
+			t.Errorf("Logo = %q, want %q", got.Logo, "https://example.com/logo.png")
 		}
 	})
 
@@ -1131,10 +1131,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Author != "John Doe" {
 			t.Errorf("Author = %q, want %q", got.Author, "John Doe")
@@ -1151,10 +1151,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.AuthorTitle != "Senior Developer" {
 			t.Errorf("AuthorTitle = %q, want %q", got.AuthorTitle, "Senior Developer")
@@ -1171,10 +1171,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Organization != "Acme Corp" {
 			t.Errorf("Organization = %q, want %q", got.Organization, "Acme Corp")
@@ -1190,10 +1190,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Date != "2025-01-15" {
 			t.Errorf("Date = %q, want %q", got.Date, "2025-01-15")
@@ -1209,10 +1209,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Version != "v2.0.0" {
 			t.Errorf("Version = %q, want %q", got.Version, "v2.0.0")
@@ -1241,10 +1241,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Title != "Doc Title" {
 			t.Errorf("Title = %q, want %q", got.Title, "Doc Title")
@@ -1281,10 +1281,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Subtitle != "" {
 			t.Errorf("Subtitle = %q, want empty", got.Subtitle)
@@ -1322,10 +1322,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.ClientName != "Acme Corporation" {
 			t.Errorf("ClientName = %q, want %q", got.ClientName, "Acme Corporation")
@@ -1362,10 +1362,10 @@ func TestBuildCoverData(t *testing.T) {
 		}
 		got, err := buildCoverData(cfg, "", "doc.md")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("buildCoverData() unexpected error: %v", err)
 		}
 		if got == nil {
-			t.Fatal("expected Cover, got nil")
+			t.Fatalf("buildCoverData() = nil, want Cover")
 		}
 		if got.Department != "" {
 			t.Errorf("Department = %q, want empty when ShowDepartment=false", got.Department)
@@ -1487,26 +1487,26 @@ func TestBuildTOCData(t *testing.T) {
 
 			if tt.wantErr != "" {
 				if err == nil {
-					t.Fatalf("expected error containing %q, got nil", tt.wantErr)
+					t.Fatalf("buildTOCData() error = nil, want error containing %q", tt.wantErr)
 				}
 				if !strings.Contains(err.Error(), tt.wantErr) {
-					t.Errorf("error = %q, want containing %q", err.Error(), tt.wantErr)
+					t.Errorf("buildTOCData() error = %q, want containing %q", err.Error(), tt.wantErr)
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("buildTOCData() unexpected error: %v", err)
 			}
 
 			if tt.wantNil {
 				if got != nil {
-					t.Errorf("expected nil, got %+v", got)
+					t.Errorf("buildTOCData() = %+v, want nil", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Fatal("expected TOC, got nil")
+				t.Fatalf("buildTOCData() = nil, want TOC")
 			}
 			if got.Title != tt.wantTitle {
 				t.Errorf("Title = %q, want %q", got.Title, tt.wantTitle)
@@ -1756,13 +1756,13 @@ func TestBuildPageBreaksData(t *testing.T) {
 
 			if tt.wantNil {
 				if got != nil {
-					t.Errorf("expected nil, got %+v", got)
+					t.Errorf("buildPageBreaksData() = %+v, want nil", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Fatal("expected PageBreaks, got nil")
+				t.Fatalf("buildPageBreaksData() = nil, want PageBreaks")
 			}
 			if got.BeforeH1 != tt.wantBeforeH1 {
 				t.Errorf("BeforeH1 = %v, want %v", got.BeforeH1, tt.wantBeforeH1)

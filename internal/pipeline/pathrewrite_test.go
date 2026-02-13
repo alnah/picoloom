@@ -151,18 +151,18 @@ func TestRewriteRelativePaths(t *testing.T) {
 
 			got, err := RewriteRelativePaths(tt.html, tt.sourceDir)
 			if err != nil {
-				t.Fatalf("RewriteRelativePaths() error = %v", err)
+				t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", tt.html, tt.sourceDir, err)
 			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(got, want) {
-					t.Errorf("RewriteRelativePaths() = %q, want to contain %q", got, want)
+					t.Errorf("RewriteRelativePaths(%q, %q) = %q, want to contain %q", tt.html, tt.sourceDir, got, want)
 				}
 			}
 
 			for _, exclude := range tt.wantExcludes {
 				if strings.Contains(got, exclude) {
-					t.Errorf("RewriteRelativePaths() = %q, should not contain %q", got, exclude)
+					t.Errorf("RewriteRelativePaths(%q, %q) = %q, should not contain %q", tt.html, tt.sourceDir, got, exclude)
 				}
 			}
 		})
@@ -214,11 +214,11 @@ func TestRewriteRelativePaths_PathTraversal(t *testing.T) {
 
 			got, err := RewriteRelativePaths(tt.html, sourceDir)
 			if err != nil {
-				t.Fatalf("RewriteRelativePaths() error = %v", err)
+				t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", tt.html, sourceDir, err)
 			}
 
 			if !strings.Contains(got, tt.wantContains) {
-				t.Errorf("RewriteRelativePaths() = %q, want to contain %q", got, tt.wantContains)
+				t.Errorf("RewriteRelativePaths(%q, %q) = %q, want to contain %q", tt.html, sourceDir, got, tt.wantContains)
 			}
 		})
 	}
@@ -244,18 +244,18 @@ func TestRewriteRelativePaths_FullDocument(t *testing.T) {
 
 	got, err := RewriteRelativePaths(html, sourceDir)
 	if err != nil {
-		t.Fatalf("RewriteRelativePaths() error = %v", err)
+		t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", html, sourceDir, err)
 	}
 
 	// Should preserve document structure (html.Render may lowercase DOCTYPE)
 	if !strings.Contains(strings.ToLower(got), "doctype") {
-		t.Error("Full document should preserve DOCTYPE")
+		t.Errorf("RewriteRelativePaths(%q, %q) should preserve DOCTYPE in output", html, sourceDir)
 	}
 	if !strings.Contains(got, "<html") {
-		t.Error("Full document should preserve <html>")
+		t.Errorf("RewriteRelativePaths(%q, %q) should preserve <html> in output", html, sourceDir)
 	}
 	if !strings.Contains(got, `src="file://`) {
-		t.Error("Image path should be rewritten")
+		t.Errorf("RewriteRelativePaths(%q, %q) should rewrite image path to file:// URL", html, sourceDir)
 	}
 }
 
@@ -272,14 +272,14 @@ func TestRewriteRelativePaths_FullDocumentWithHtmlTag(t *testing.T) {
 
 	got, err := RewriteRelativePaths(html, sourceDir)
 	if err != nil {
-		t.Fatalf("RewriteRelativePaths() error = %v", err)
+		t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", html, sourceDir, err)
 	}
 
 	if !strings.Contains(got, "<html") {
-		t.Error("Document starting with <html> should preserve structure")
+		t.Errorf("RewriteRelativePaths(%q, %q) should preserve <html> structure", html, sourceDir)
 	}
 	if !strings.Contains(got, `src="file://`) {
-		t.Error("Image path should be rewritten")
+		t.Errorf("RewriteRelativePaths(%q, %q) should rewrite image path to file:// URL", html, sourceDir)
 	}
 }
 
@@ -295,22 +295,22 @@ func TestRewriteRelativePaths_Fragment(t *testing.T) {
 
 	got, err := RewriteRelativePaths(html, sourceDir)
 	if err != nil {
-		t.Fatalf("RewriteRelativePaths() error = %v", err)
+		t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", html, sourceDir, err)
 	}
 
 	// Fragment should NOT be wrapped in <html><body>
 	if strings.Contains(got, "<html>") {
-		t.Error("Fragment should not be wrapped in <html>")
+		t.Errorf("RewriteRelativePaths(%q, %q) should not wrap fragment in <html>", html, sourceDir)
 	}
 
 	// Original structure preserved
 	if !strings.Contains(got, "<p>Hello</p>") {
-		t.Error("Fragment should preserve content")
+		t.Errorf("RewriteRelativePaths(%q, %q) should preserve fragment content", html, sourceDir)
 	}
 
 	// Image rewritten
 	if !strings.Contains(got, `src="file://`) {
-		t.Error("Image path should be rewritten")
+		t.Errorf("RewriteRelativePaths(%q, %q) should rewrite image path to file:// URL", html, sourceDir)
 	}
 }
 
@@ -330,14 +330,14 @@ func TestRewriteRelativePaths_PreservesAttributes(t *testing.T) {
 
 	got, err := RewriteRelativePaths(html, sourceDir)
 	if err != nil {
-		t.Fatalf("RewriteRelativePaths() error = %v", err)
+		t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", html, sourceDir, err)
 	}
 
 	// All attributes should be preserved
 	checks := []string{`alt="Logo"`, `class="logo"`, `width="100"`, `src="file://`}
 	for _, check := range checks {
 		if !strings.Contains(got, check) {
-			t.Errorf("Should contain %q, got %q", check, got)
+			t.Errorf("RewriteRelativePaths(%q, %q) = %q, want to contain %q", html, sourceDir, got, check)
 		}
 	}
 }
@@ -377,11 +377,11 @@ func TestRewriteRelativePaths_URLEncoding(t *testing.T) {
 
 			got, err := RewriteRelativePaths(tt.html, sourceDir)
 			if err != nil {
-				t.Fatalf("RewriteRelativePaths() error = %v", err)
+				t.Fatalf("RewriteRelativePaths(%q, %q) unexpected error: %v", tt.html, sourceDir, err)
 			}
 
 			if !strings.Contains(got, tt.wantContains) {
-				t.Errorf("RewriteRelativePaths() = %q, want to contain %q", got, tt.wantContains)
+				t.Errorf("RewriteRelativePaths(%q, %q) = %q, want to contain %q", tt.html, sourceDir, got, tt.wantContains)
 			}
 		})
 	}

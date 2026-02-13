@@ -119,10 +119,10 @@ func assertValidPDFFile(t *testing.T, path string) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_SingleFile - Single file conversion
+// TestRunConvert_SingleFile - Single file conversion
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_SingleFile(t *testing.T) {
+func TestRunConvert_SingleFile(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -134,17 +134,17 @@ func TestBatchConversion_SingleFile(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", inputPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	assertValidPDFFile(t, expectedOutput)
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_SingleFileWithOutputFile - Custom output filename
+// TestRunConvert_SingleFileWithOutputFile - Custom output filename
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_SingleFileWithOutputFile(t *testing.T) {
+func TestRunConvert_SingleFileWithOutputFile(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -156,17 +156,17 @@ func TestBatchConversion_SingleFileWithOutputFile(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", "-o", outputPath, inputPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	assertValidPDFFile(t, outputPath)
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_SingleFileWithOutputDir - Custom output directory
+// TestRunConvert_SingleFileWithOutputDir - Custom output directory
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_SingleFileWithOutputDir(t *testing.T) {
+func TestRunConvert_SingleFileWithOutputDir(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -179,17 +179,17 @@ func TestBatchConversion_SingleFileWithOutputDir(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", "-o", outputDir, inputPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	assertValidPDFFile(t, expectedOutput)
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_Directory - Directory recursive conversion
+// TestRunConvert_Directory - Directory recursive conversion
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_Directory(t *testing.T) {
+func TestRunConvert_Directory(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -201,7 +201,7 @@ func TestBatchConversion_Directory(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", tempDir})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDFs created next to sources (ignoring .txt)
@@ -216,10 +216,10 @@ func TestBatchConversion_Directory(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_DirectoryMirror - Output directory structure mirroring
+// TestRunConvert_DirectoryMirror - Output directory structure mirroring
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_DirectoryMirror(t *testing.T) {
+func TestRunConvert_DirectoryMirror(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -233,7 +233,7 @@ func TestBatchConversion_DirectoryMirror(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", "-o", outputDir, inputDir})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify mirrored structure
@@ -248,10 +248,10 @@ func TestBatchConversion_DirectoryMirror(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_MixedSuccessFailure - Partial failure handling
+// TestRunConvert_MixedSuccessFailure - Partial failure handling
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_MixedSuccessFailure(t *testing.T) {
+func TestRunConvert_MixedSuccessFailure(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -264,7 +264,7 @@ func TestBatchConversion_MixedSuccessFailure(t *testing.T) {
 
 	// Should return error indicating 1 failure
 	if err == nil {
-		t.Fatal("expected error for partial failure")
+		t.Fatal("runIntegration() error = nil, want error")
 	}
 
 	// Good file should still be converted
@@ -274,15 +274,15 @@ func TestBatchConversion_MixedSuccessFailure(t *testing.T) {
 	// Bad file should not have PDF (empty markdown causes error)
 	badPDF := filepath.Join(tempDir, "bad.pdf")
 	if _, statErr := os.Stat(badPDF); !os.IsNotExist(statErr) {
-		t.Error("bad.pdf should not exist for empty markdown")
+		t.Errorf("bad.pdf should not exist for empty markdown")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_EmptyDirectory - No markdown files in directory
+// TestRunConvert_EmptyDirectory - No markdown files in directory
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_EmptyDirectory(t *testing.T) {
+func TestRunConvert_EmptyDirectory(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -294,15 +294,15 @@ func TestBatchConversion_EmptyDirectory(t *testing.T) {
 
 	// Should return error for no markdown files
 	if err == nil {
-		t.Fatal("expected error for empty directory")
+		t.Fatal("runIntegration() error = nil, want error")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_ConfigDefaultDir - Config input.defaultDir fallback
+// TestRunConvert_ConfigDefaultDir - Config input.defaultDir fallback
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_ConfigDefaultDir(t *testing.T) {
+func TestRunConvert_ConfigDefaultDir(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -321,7 +321,7 @@ func TestBatchConversion_ConfigDefaultDir(t *testing.T) {
 	// Run without specifying input, using config
 	err := runIntegration([]string{"md2pdf", "--config", configPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDF was created
@@ -330,10 +330,10 @@ func TestBatchConversion_ConfigDefaultDir(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_CSSPassedToConverter - Custom CSS styling
+// TestRunConvert_CSSPassedToConverter - Custom CSS styling
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_CSSPassedToConverter(t *testing.T) {
+func TestRunConvert_CSSPassedToConverter(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -347,7 +347,7 @@ func TestBatchConversion_CSSPassedToConverter(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", "--style", cssPath, inputPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDF was created (CSS is applied internally, we just verify output exists)
@@ -355,25 +355,25 @@ func TestBatchConversion_CSSPassedToConverter(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_NoInput - No input path error
+// TestRunConvert_NoInput - No input path error
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_NoInput(t *testing.T) {
+func TestRunConvert_NoInput(t *testing.T) {
 	t.Parallel()
 
 	err := runIntegration([]string{"md2pdf"})
 
 	// Should return ErrNoInput
 	if !errors.Is(err, ErrNoInput) {
-		t.Errorf("expected ErrNoInput, got %v", err)
+		t.Errorf("runIntegration() = %v, want ErrNoInput", err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_ConcurrentExecution - Parallel file conversion
+// TestRunConvert_ConcurrentExecution - Parallel file conversion
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_ConcurrentExecution(t *testing.T) {
+func TestRunConvert_ConcurrentExecution(t *testing.T) {
 	t.Parallel()
 
 	// Create many files to test concurrent processing
@@ -385,7 +385,7 @@ func TestBatchConversion_ConcurrentExecution(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", tempDir})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// All PDFs should exist and be valid
@@ -396,10 +396,10 @@ func TestBatchConversion_ConcurrentExecution(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_PageBreaksFlags - Page break CLI flags
+// TestRunConvert_PageBreaksFlags - Page break CLI flags
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_PageBreaksFlags(t *testing.T) {
+func TestRunConvert_PageBreaksFlags(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -418,7 +418,7 @@ func TestBatchConversion_PageBreaksFlags(t *testing.T) {
 		inputPath,
 	})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDF was created (page breaks are applied internally)
@@ -426,10 +426,10 @@ func TestBatchConversion_PageBreaksFlags(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_NoPageBreaksFlag - Disable page breaks via flag
+// TestRunConvert_NoPageBreaksFlag - Disable page breaks via flag
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_NoPageBreaksFlag(t *testing.T) {
+func TestRunConvert_NoPageBreaksFlag(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -458,7 +458,7 @@ func TestBatchConversion_NoPageBreaksFlag(t *testing.T) {
 		inputPath,
 	})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDF was created
@@ -466,10 +466,10 @@ func TestBatchConversion_NoPageBreaksFlag(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestBatchConversion_PageBreaksFromConfig - Page breaks from config file
+// TestRunConvert_PageBreaksFromConfig - Page breaks from config file
 // ---------------------------------------------------------------------------
 
-func TestBatchConversion_PageBreaksFromConfig(t *testing.T) {
+func TestRunConvert_PageBreaksFromConfig(t *testing.T) {
 	t.Parallel()
 
 	tempDir := setupTestDir(t, map[string]string{
@@ -495,7 +495,7 @@ func TestBatchConversion_PageBreaksFromConfig(t *testing.T) {
 
 	err := runIntegration([]string{"md2pdf", "--config", configPath, inputPath})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("runIntegration() unexpected error: %v", err)
 	}
 
 	// Verify PDF was created (config settings are applied internally)
@@ -537,7 +537,7 @@ signature:
 
 		err := runIntegration([]string{"md2pdf", "--config", configPath, inputPath})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with cover and signature (internal behavior)
@@ -619,14 +619,14 @@ footer:
 
 		err := runIntegration([]string{"md2pdf", "--config", configPath, inputPath})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with document info in cover and footer
 		assertValidPDFFile(t, expectedOutput)
 	})
 
-	t.Run("CLI document flags override config in cover and footer", func(t *testing.T) {
+	t.Run("CLI flags override config in cover and footer", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -658,7 +658,7 @@ footer:
 			inputPath,
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created (CLI flags override internal behavior)
@@ -673,7 +673,7 @@ footer:
 func TestIntegration_NewCLIFlags(t *testing.T) {
 	t.Parallel()
 
-	t.Run("watermark shorthand flags work", func(t *testing.T) {
+	t.Run("watermark shorthand flags", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -692,14 +692,14 @@ func TestIntegration_NewCLIFlags(t *testing.T) {
 			inputPath,
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with watermark
 		assertValidPDFFile(t, expectedOutput)
 	})
 
-	t.Run("footer flags work", func(t *testing.T) {
+	t.Run("footer flags", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -717,14 +717,14 @@ func TestIntegration_NewCLIFlags(t *testing.T) {
 			inputPath,
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with footer
 		assertValidPDFFile(t, expectedOutput)
 	})
 
-	t.Run("toc flags work", func(t *testing.T) {
+	t.Run("toc flags", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -751,14 +751,14 @@ func TestIntegration_NewCLIFlags(t *testing.T) {
 			inputPath,
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with TOC
 		assertValidPDFFile(t, expectedOutput)
 	})
 
-	t.Run("toc-min-depth flag works", func(t *testing.T) {
+	t.Run("toc-min-depth flag", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -785,14 +785,14 @@ func TestIntegration_NewCLIFlags(t *testing.T) {
 			inputPath,
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("runIntegration() unexpected error: %v", err)
 		}
 
 		// Verify PDF was created with TOC (H1 skipped, H2-H3 included)
 		assertValidPDFFile(t, expectedOutput)
 	})
 
-	t.Run("toc-min-depth validation error", func(t *testing.T) {
+	t.Run("error case: toc-min-depth greater than max-depth", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := setupTestDir(t, map[string]string{
@@ -820,7 +820,7 @@ func TestIntegration_NewCLIFlags(t *testing.T) {
 			inputPath,
 		})
 		if err == nil {
-			t.Fatal("expected error when minDepth > maxDepth, got nil")
+			t.Fatal("runIntegration() error = nil, want error")
 		}
 	})
 }

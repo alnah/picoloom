@@ -25,31 +25,31 @@ func TestDefaultEnv(t *testing.T) {
 
 	env := DefaultEnv()
 
-	t.Run("Now returns real time", func(t *testing.T) {
+	t.Run("returns real time from Now", func(t *testing.T) {
 		before := time.Now()
 		got := env.Now()
 		after := time.Now()
 
 		if got.Before(before) || got.After(after) {
-			t.Errorf("Now() = %v, should be between %v and %v", got, before, after)
+			t.Errorf("Now() = %v, want time between %v and %v", got, before, after)
 		}
 	})
 
-	t.Run("Stdout is os.Stdout", func(t *testing.T) {
+	t.Run("returns os.Stdout for Stdout", func(t *testing.T) {
 		if env.Stdout != os.Stdout {
-			t.Error("Stdout should be os.Stdout")
+			t.Errorf("Stdout = %v, want os.Stdout", env.Stdout)
 		}
 	})
 
-	t.Run("Stderr is os.Stderr", func(t *testing.T) {
+	t.Run("returns os.Stderr for Stderr", func(t *testing.T) {
 		if env.Stderr != os.Stderr {
-			t.Error("Stderr should be os.Stderr")
+			t.Errorf("Stderr = %v, want os.Stderr", env.Stderr)
 		}
 	})
 
-	t.Run("AssetLoader is not nil", func(t *testing.T) {
+	t.Run("returns non-nil AssetLoader", func(t *testing.T) {
 		if env.AssetLoader == nil {
-			t.Error("AssetLoader should not be nil")
+			t.Errorf("AssetLoader = nil, want non-nil")
 		}
 	})
 }
@@ -63,7 +63,7 @@ func TestEnvironmentInjection(t *testing.T) {
 
 	loader, _ := md2pdf.NewAssetLoader("")
 
-	t.Run("mock time is used", func(t *testing.T) {
+	t.Run("uses mock time function", func(t *testing.T) {
 		t.Parallel()
 
 		fixedTime := time.Date(2025, 6, 15, 12, 0, 0, 0, time.UTC)
@@ -80,7 +80,7 @@ func TestEnvironmentInjection(t *testing.T) {
 		}
 	})
 
-	t.Run("mock stdout captures output", func(t *testing.T) {
+	t.Run("captures output in mock stdout", func(t *testing.T) {
 		t.Parallel()
 
 		var stdout bytes.Buffer
@@ -94,12 +94,14 @@ func TestEnvironmentInjection(t *testing.T) {
 		// Simulate writing to stdout
 		env.Stdout.Write([]byte("test output"))
 
-		if stdout.String() != "test output" {
-			t.Errorf("stdout = %q, want %q", stdout.String(), "test output")
+		got := stdout.String()
+		want := "test output"
+		if got != want {
+			t.Errorf("stdout = %q, want %q", got, want)
 		}
 	})
 
-	t.Run("mock stderr captures errors", func(t *testing.T) {
+	t.Run("captures errors in mock stderr", func(t *testing.T) {
 		t.Parallel()
 
 		var stderr bytes.Buffer
@@ -113,8 +115,10 @@ func TestEnvironmentInjection(t *testing.T) {
 		// Simulate writing to stderr
 		env.Stderr.Write([]byte("error output"))
 
-		if stderr.String() != "error output" {
-			t.Errorf("stderr = %q, want %q", stderr.String(), "error output")
+		got := stderr.String()
+		want := "error output"
+		if got != want {
+			t.Errorf("stderr = %q, want %q", got, want)
 		}
 	})
 }

@@ -55,7 +55,7 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 
 	ctx := context.Background()
 
-	t.Run("valid HTML produces PDF", func(t *testing.T) {
+	t.Run("happy path: valid HTML", func(t *testing.T) {
 		t.Parallel()
 		html := `<!DOCTYPE html>
 <html>
@@ -66,13 +66,13 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 		converter := newRodConverter(defaultTimeout)
 		data, err := converter.ToPDF(ctx, html, nil)
 		if err != nil {
-			t.Fatalf("ToPDF() error = %v", err)
+			t.Fatalf("ToPDF() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data)
 	})
 
-	t.Run("HTML with CSS produces PDF", func(t *testing.T) {
+	t.Run("with CSS injection", func(t *testing.T) {
 		t.Parallel()
 
 		// CSS is now injected before calling ToPDF
@@ -88,13 +88,13 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 		converter := newRodConverter(defaultTimeout)
 		data, err := converter.ToPDF(ctx, htmlWithCSS, nil)
 		if err != nil {
-			t.Fatalf("ToPDF() error = %v", err)
+			t.Fatalf("ToPDF() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data)
 	})
 
-	t.Run("HTML with footer produces PDF", func(t *testing.T) {
+	t.Run("with footer", func(t *testing.T) {
 		t.Parallel()
 
 		html := `<!DOCTYPE html>
@@ -113,7 +113,7 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 		}
 		data, err := converter.ToPDF(ctx, html, opts)
 		if err != nil {
-			t.Fatalf("ToPDF() error = %v", err)
+			t.Fatalf("ToPDF() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data)
@@ -121,15 +121,15 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestService_Integration - Full Conversion Pipeline
+// TestService_Convert_Integration - Full Conversion Pipeline
 // ---------------------------------------------------------------------------
 
-func TestService_Integration(t *testing.T) {
+func TestService_Convert_Integration(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 
-	t.Run("basic markdown to PDF", func(t *testing.T) {
+	t.Run("happy path: basic markdown", func(t *testing.T) {
 		t.Parallel()
 
 		service := acquireService(t)
@@ -139,13 +139,13 @@ func TestService_Integration(t *testing.T) {
 
 		data, err := service.Convert(ctx, input)
 		if err != nil {
-			t.Fatalf("Convert() error = %v", err)
+			t.Fatalf("Convert() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data.PDF)
 	})
 
-	t.Run("markdown with CSS", func(t *testing.T) {
+	t.Run("with CSS", func(t *testing.T) {
 		t.Parallel()
 
 		service := acquireService(t)
@@ -156,13 +156,13 @@ func TestService_Integration(t *testing.T) {
 
 		data, err := service.Convert(ctx, input)
 		if err != nil {
-			t.Fatalf("Convert() error = %v", err)
+			t.Fatalf("Convert() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data.PDF)
 	})
 
-	t.Run("markdown with footer", func(t *testing.T) {
+	t.Run("with footer", func(t *testing.T) {
 		t.Parallel()
 
 		service := acquireService(t)
@@ -178,13 +178,13 @@ func TestService_Integration(t *testing.T) {
 
 		data, err := service.Convert(ctx, input)
 		if err != nil {
-			t.Fatalf("Convert() error = %v", err)
+			t.Fatalf("Convert() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data.PDF)
 	})
 
-	t.Run("markdown with signature", func(t *testing.T) {
+	t.Run("with signature", func(t *testing.T) {
 		t.Parallel()
 
 		service := acquireService(t)
@@ -202,7 +202,7 @@ func TestService_Integration(t *testing.T) {
 
 		data, err := service.Convert(ctx, input)
 		if err != nil {
-			t.Fatalf("Convert() error = %v", err)
+			t.Fatalf("Convert() unexpected error: %v", err)
 		}
 
 		assertValidPDF(t, data.PDF)
@@ -221,12 +221,12 @@ func TestService_Integration(t *testing.T) {
 
 		data, err := service.Convert(ctx, input)
 		if err != nil {
-			t.Fatalf("Convert() error = %v", err)
+			t.Fatalf("Convert() unexpected error: %v", err)
 		}
 
 		err = os.WriteFile(outputPath, data.PDF, 0644)
 		if err != nil {
-			t.Fatalf("WriteFile() error = %v", err)
+			t.Fatalf("WriteFile() unexpected error: %v", err)
 		}
 
 		assertValidPDFFile(t, outputPath)
@@ -245,7 +245,7 @@ func TestRodRenderer_EnsureBrowser_CI(t *testing.T) {
 
 	err := renderer.ensureBrowser()
 	if err != nil {
-		t.Fatalf("ensureBrowser() with CI=true error = %v", err)
+		t.Fatalf("ensureBrowser() unexpected error: %v", err)
 	}
 
 	if renderer.browser == nil {
@@ -269,10 +269,10 @@ func TestRodRenderer_RenderFromFile_ContextCancelled(t *testing.T) {
 	_, err := renderer.RenderFromFile(ctx, "/tmp/nonexistent.html", nil)
 
 	if err == nil {
-		t.Fatal("expected error for cancelled context, got nil")
+		t.Fatal("RenderFromFile() error = nil, want error")
 	}
 	if err != context.Canceled {
-		t.Errorf("expected context.Canceled, got %v", err)
+		t.Errorf("RenderFromFile() error = %v, want context.Canceled", err)
 	}
 }
 
@@ -293,9 +293,9 @@ func TestRodRenderer_RenderFromFile_ContextDeadlineExceeded(t *testing.T) {
 	_, err := renderer.RenderFromFile(ctx, "/tmp/nonexistent.html", nil)
 
 	if err == nil {
-		t.Fatal("expected error for expired deadline, got nil")
+		t.Fatal("RenderFromFile() error = nil, want error")
 	}
 	if err != context.DeadlineExceeded {
-		t.Errorf("expected context.DeadlineExceeded, got %v", err)
+		t.Errorf("RenderFromFile() error = %v, want context.DeadlineExceeded", err)
 	}
 }

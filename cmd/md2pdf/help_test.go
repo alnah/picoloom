@@ -37,7 +37,7 @@ func TestPrintUsage(t *testing.T) {
 
 	for _, s := range requiredStrings {
 		if !strings.Contains(output, s) {
-			t.Errorf("printUsage output should contain %q", s)
+			t.Errorf("printUsage() output missing %q", s)
 		}
 	}
 }
@@ -69,7 +69,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, group := range flagGroups {
 		if !strings.Contains(output, group) {
-			t.Errorf("printConvertUsage output should contain group header %q", group)
+			t.Errorf("printConvertUsage() output missing group header %q", group)
 		}
 	}
 
@@ -83,7 +83,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, flag := range authorFlags {
 		if !strings.Contains(output, flag) {
-			t.Errorf("printConvertUsage output should contain %q", flag)
+			t.Errorf("printConvertUsage() output missing %q", flag)
 		}
 	}
 
@@ -97,7 +97,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, flag := range documentFlags {
 		if !strings.Contains(output, flag) {
-			t.Errorf("printConvertUsage output should contain %q", flag)
+			t.Errorf("printConvertUsage() output missing %q", flag)
 		}
 	}
 
@@ -111,7 +111,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, flag := range wmFlags {
 		if !strings.Contains(output, flag) {
-			t.Errorf("printConvertUsage output should contain %q", flag)
+			t.Errorf("printConvertUsage() output missing %q", flag)
 		}
 	}
 
@@ -124,7 +124,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, flag := range timeoutFlags {
 		if !strings.Contains(output, flag) {
-			t.Errorf("printConvertUsage output should contain %q", flag)
+			t.Errorf("printConvertUsage() output missing %q", flag)
 		}
 	}
 
@@ -140,13 +140,13 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, s := range exitCodesSection {
 		if !strings.Contains(output, s) {
-			t.Errorf("printConvertUsage output should contain %q", s)
+			t.Errorf("printConvertUsage() output missing %q", s)
 		}
 	}
 
 	// Check for EXAMPLES section
 	if !strings.Contains(output, "EXAMPLES") {
-		t.Error("printConvertUsage output should contain EXAMPLES section")
+		t.Error("printConvertUsage() output missing EXAMPLES section")
 	}
 
 	examples := []string{
@@ -160,7 +160,7 @@ func TestPrintConvertUsage(t *testing.T) {
 
 	for _, ex := range examples {
 		if !strings.Contains(output, ex) {
-			t.Errorf("printConvertUsage output should contain example: %q", ex)
+			t.Errorf("printConvertUsage() output missing example: %q", ex)
 		}
 	}
 }
@@ -196,7 +196,7 @@ func TestHelpDefaultsMatchConstants(t *testing.T) {
 
 	for _, d := range defaults {
 		if !strings.Contains(output, d.expected) {
-			t.Errorf("help for --%s should document %q", d.name, d.expected)
+			t.Errorf("printConvertUsage() help for --%s missing %q", d.name, d.expected)
 		}
 	}
 }
@@ -260,13 +260,13 @@ func TestRunHelp(t *testing.T) {
 
 			for _, want := range tt.wantInStdout {
 				if !strings.Contains(stdoutStr, want) {
-					t.Errorf("stdout should contain %q, got %q", want, stdoutStr)
+					t.Errorf("runHelp(%v) stdout missing %q, got %q", tt.args, want, stdoutStr)
 				}
 			}
 
 			for _, want := range tt.wantInStderr {
 				if !strings.Contains(stderrStr, want) {
-					t.Errorf("stderr should contain %q, got %q", want, stderrStr)
+					t.Errorf("runHelp(%v) stderr missing %q, got %q", tt.args, want, stderrStr)
 				}
 			}
 		})

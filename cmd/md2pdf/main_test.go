@@ -49,14 +49,14 @@ func TestPoolAdapter_Release_WrongType(t *testing.T) {
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Fatal("expected panic for wrong type, got none")
+			t.Fatalf("poolAdapter.Release(wrongType) panic = nil, want panic")
 		}
 		msg, ok := r.(string)
 		if !ok {
-			t.Fatalf("expected string panic, got %T", r)
+			t.Fatalf("poolAdapter.Release(wrongType) panic type = %T, want string", r)
 		}
 		if !strings.Contains(msg, "unexpected type") {
-			t.Errorf("panic message should contain 'unexpected type', got %q", msg)
+			t.Errorf("poolAdapter.Release(wrongType) panic message = %q, want substring \"unexpected type\"", msg)
 		}
 	}()
 
@@ -77,7 +77,7 @@ func TestPoolAdapter_Size(t *testing.T) {
 	adapter := &poolAdapter{pool: pool}
 
 	if adapter.Size() != 3 {
-		t.Errorf("Size() = %d, want 3", adapter.Size())
+		t.Errorf("poolAdapter.Size() = %d, want 3", adapter.Size())
 	}
 }
 
@@ -96,7 +96,7 @@ func TestPoolAdapter_AcquireRelease(t *testing.T) {
 	// Acquire should return a non-nil Converter
 	svc := adapter.Acquire()
 	if svc == nil {
-		t.Fatal("Acquire() returned nil")
+		t.Fatalf("poolAdapter.Acquire() = nil, want non-nil")
 	}
 
 	// Release should not panic
@@ -307,16 +307,16 @@ func TestResolveTimeoutWithEnv(t *testing.T) {
 			got, err := resolveTimeoutWithEnv(tt.flagValue, tt.envValue, tt.configValue)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("expected error, got nil")
+					t.Errorf("resolveTimeoutWithEnv(%q, %v, %q) error = nil, want error", tt.flagValue, tt.envValue, tt.configValue)
 					return
 				}
 				if tt.errSubstr != "" && !strings.Contains(err.Error(), tt.errSubstr) {
-					t.Errorf("error should contain %q, got: %v", tt.errSubstr, err)
+					t.Errorf("resolveTimeoutWithEnv(%q, %v, %q) error = %v, want substring %q", tt.flagValue, tt.envValue, tt.configValue, err, tt.errSubstr)
 				}
 				return
 			}
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("resolveTimeoutWithEnv(%q, %v, %q) unexpected error: %v", tt.flagValue, tt.envValue, tt.configValue, err)
 				return
 			}
 			if got != tt.want {
@@ -473,12 +473,12 @@ func TestRunMain_DoctorCommand(t *testing.T) {
 	// Doctor should return ExitSuccess (0) or ExitGeneral (1) if Chrome not found
 	// It should never return ExitUsage (2) or other codes
 	if code != ExitSuccess && code != ExitGeneral {
-		t.Errorf("runMain(doctor) = %d, want %d or %d", code, ExitSuccess, ExitGeneral)
+		t.Errorf("runMain([md2pdf doctor]) = %d, want %d or %d", code, ExitSuccess, ExitGeneral)
 	}
 
 	// Output should contain doctor header
 	if !strings.Contains(stdout.String(), "md2pdf doctor") {
-		t.Error("doctor output should contain 'md2pdf doctor' header")
+		t.Errorf("runMain([md2pdf doctor]) stdout = %q, want substring \"md2pdf doctor\"", stdout.String())
 	}
 }
 
@@ -498,18 +498,18 @@ func TestRunMain_DoctorJSON(t *testing.T) {
 
 	// Should return valid exit code
 	if code != ExitSuccess && code != ExitGeneral {
-		t.Errorf("runMain(doctor --json) = %d, want %d or %d", code, ExitSuccess, ExitGeneral)
+		t.Errorf("runMain([md2pdf doctor --json]) = %d, want %d or %d", code, ExitSuccess, ExitGeneral)
 	}
 
 	// Output should be valid JSON
 	var result map[string]interface{}
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Errorf("doctor --json should produce valid JSON: %v", err)
+		t.Fatalf("runMain([md2pdf doctor --json]) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// JSON should have status field
 	if _, ok := result["status"]; !ok {
-		t.Error("doctor JSON output should have 'status' field")
+		t.Errorf("runMain([md2pdf doctor --json]) JSON output missing 'status' field")
 	}
 }
 
@@ -528,12 +528,12 @@ func TestRunMain_HelpDoctor(t *testing.T) {
 	code := runMain([]string{"md2pdf", "help", "doctor"}, env)
 
 	if code != ExitSuccess {
-		t.Errorf("runMain(help doctor) = %d, want %d", code, ExitSuccess)
+		t.Errorf("runMain([md2pdf help doctor]) = %d, want %d", code, ExitSuccess)
 	}
 
 	// Should show doctor usage
 	if !strings.Contains(stdout.String(), "Usage: md2pdf doctor") {
-		t.Error("help doctor should show doctor usage")
+		t.Errorf("runMain([md2pdf help doctor]) stdout = %q, want substring \"Usage: md2pdf doctor\"", stdout.String())
 	}
 }
 

@@ -30,146 +30,146 @@ func TestParseDateFormat(t *testing.T) {
 	}{
 		// Valid token conversions
 		{
-			name:   "YYYY converts to Go year format",
+			name:   "happy path: YYYY converts to Go year format",
 			format: "YYYY",
 			want:   "2006",
 		},
 		{
-			name:   "YY converts to short year format",
+			name:   "happy path: YY converts to short year format",
 			format: "YY",
 			want:   "06",
 		},
 		{
-			name:   "MMMM converts to full month name",
+			name:   "happy path: MMMM converts to full month name",
 			format: "MMMM",
 			want:   "January",
 		},
 		{
-			name:   "MMM converts to short month name",
+			name:   "happy path: MMM converts to short month name",
 			format: "MMM",
 			want:   "Jan",
 		},
 		{
-			name:   "MM converts to zero-padded month",
+			name:   "happy path: MM converts to zero-padded month",
 			format: "MM",
 			want:   "01",
 		},
 		{
-			name:   "M converts to non-padded month",
+			name:   "happy path: M converts to non-padded month",
 			format: "M",
 			want:   "1",
 		},
 		{
-			name:   "DD converts to zero-padded day",
+			name:   "happy path: DD converts to zero-padded day",
 			format: "DD",
 			want:   "02",
 		},
 		{
-			name:   "D converts to non-padded day",
+			name:   "happy path: D converts to non-padded day",
 			format: "D",
 			want:   "2",
 		},
 		// Combined formats
 		{
-			name:   "ISO date format YYYY-MM-DD",
+			name:   "happy path: ISO date format YYYY-MM-DD",
 			format: "YYYY-MM-DD",
 			want:   "2006-01-02",
 		},
 		{
-			name:   "European format DD/MM/YYYY",
+			name:   "happy path: European format DD/MM/YYYY",
 			format: "DD/MM/YYYY",
 			want:   "02/01/2006",
 		},
 		{
-			name:   "US format MM/DD/YYYY",
+			name:   "happy path: US format MM/DD/YYYY",
 			format: "MM/DD/YYYY",
 			want:   "01/02/2006",
 		},
 		{
-			name:   "long format with full month name",
+			name:   "happy path: long format with full month name",
 			format: "MMMM D, YYYY",
 			want:   "January 2, 2006",
 		},
 		{
-			name:   "short month with year",
+			name:   "happy path: short month with year",
 			format: "MMM YYYY",
 			want:   "Jan 2006",
 		},
 		// Literal preservation
 		{
-			name:   "preserves literal separators",
+			name:   "happy path: preserves literal separators",
 			format: "YYYY/MM/DD",
 			want:   "2006/01/02",
 		},
 		{
-			name:   "preserves literal text without token chars",
+			name:   "happy path: preserves literal text without token chars",
 			format: "(YYYY-MM-DD)",
 			want:   "(2006-01-02)",
 		},
 		{
-			name:   "preserves spaces",
+			name:   "happy path: preserves spaces",
 			format: "DD MM YYYY",
 			want:   "02 01 2006",
 		},
 		{
-			name:   "D in text is matched as day token",
+			name:   "happy path: D in text is matched as day token",
 			format: "Date: YYYY",
 			want:   "2ate: 2006", // D -> 2 (day), use [Date] to escape
 		},
 		// Bracket escape syntax
 		{
-			name:   "brackets preserve literal text",
+			name:   "happy path: brackets preserve literal text",
 			format: "[Date]: YYYY",
 			want:   "Date: 2006",
 		},
 		{
-			name:   "brackets preserve tokens as literals",
+			name:   "happy path: brackets preserve tokens as literals",
 			format: "[YYYY]-MM-DD",
 			want:   "YYYY-01-02",
 		},
 		{
-			name:   "multiple bracket groups",
+			name:   "happy path: multiple bracket groups",
 			format: "[Day]: D [Month]: M",
 			want:   "Day: 2 Month: 1",
 		},
 		{
-			name:   "empty brackets are valid",
+			name:   "happy path: empty brackets are valid",
 			format: "YYYY[]MM",
 			want:   "200601",
 		},
 		{
-			name:   "brackets with special characters",
+			name:   "happy path: brackets with special characters",
 			format: "[Date/Time]: YYYY-MM-DD",
 			want:   "Date/Time: 2006-01-02",
 		},
 		{
-			name:    "unclosed bracket returns error",
+			name:    "error case: unclosed bracket",
 			format:  "[Date YYYY",
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
 		{
-			name:   "nested-looking brackets use first close",
+			name:   "edge case: nested-looking brackets use first close",
 			format: "[a[b]c",
 			want:   "a[bc", // [a[b] is the escaped part, c is literal
 		},
 		// Edge cases
 		{
-			name:    "empty format returns error",
+			name:    "error case: empty format",
 			format:  "",
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
 		{
-			name:    "format exceeding max length returns error",
+			name:    "error case: format exceeding max length",
 			format:  string(make([]byte, dateutil.MaxDateFormatLength+1)),
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
 		{
-			name:   "format at max length is valid",
+			name:   "edge case: format at max length",
 			format: string(make([]byte, dateutil.MaxDateFormatLength)),
 			want:   string(make([]byte, dateutil.MaxDateFormatLength)),
 		},
 		{
-			name:   "only literal characters",
+			name:   "edge case: only literal characters",
 			format: "---",
 			want:   "---",
 		},
@@ -189,8 +189,7 @@ func TestParseDateFormat(t *testing.T) {
 			}
 
 			if err != nil {
-				t.Errorf("ParseDateFormat(%q) unexpected error: %v", tt.format, err)
-				return
+				t.Fatalf("ParseDateFormat(%q) unexpected error: %v", tt.format, err)
 			}
 
 			if got != tt.want {
@@ -218,112 +217,112 @@ func TestResolveDate(t *testing.T) {
 	}{
 		// Passthrough cases (non-auto values)
 		{
-			name:  "empty string passthrough",
+			name:  "happy path: empty string passthrough",
 			value: "",
 			want:  "",
 		},
 		{
-			name:  "literal date passthrough",
+			name:  "happy path: literal date passthrough",
 			value: "2024-01-01",
 			want:  "2024-01-01",
 		},
 		{
-			name:  "arbitrary text passthrough",
+			name:  "happy path: arbitrary text passthrough",
 			value: "Q1 2024",
 			want:  "Q1 2024",
 		},
 		// Auto with default format
 		{
-			name:  "auto uses default ISO format",
+			name:  "happy path: auto uses default ISO format",
 			value: "auto",
 			want:  "2024-03-15",
 		},
 		{
-			name:  "AUTO is case insensitive",
+			name:  "happy path: AUTO is case insensitive",
 			value: "AUTO",
 			want:  "2024-03-15",
 		},
 		{
-			name:  "Auto mixed case works",
+			name:  "happy path: Auto mixed case works",
 			value: "Auto",
 			want:  "2024-03-15",
 		},
 		// Auto with custom format
 		{
-			name:  "auto:YYYY-MM-DD explicit ISO",
+			name:  "happy path: auto:YYYY-MM-DD explicit ISO",
 			value: "auto:YYYY-MM-DD",
 			want:  "2024-03-15",
 		},
 		{
-			name:  "auto:DD/MM/YYYY European format",
+			name:  "happy path: auto:DD/MM/YYYY European format",
 			value: "auto:DD/MM/YYYY",
 			want:  "15/03/2024",
 		},
 		{
-			name:  "auto:MM/DD/YYYY US format",
+			name:  "happy path: auto:MM/DD/YYYY US format",
 			value: "auto:MM/DD/YYYY",
 			want:  "03/15/2024",
 		},
 		{
-			name:  "auto:MMMM D, YYYY long format",
+			name:  "happy path: auto:MMMM D, YYYY long format",
 			value: "auto:MMMM D, YYYY",
 			want:  "March 15, 2024",
 		},
 		{
-			name:  "auto:MMM YYYY short month with year",
+			name:  "happy path: auto:MMM YYYY short month with year",
 			value: "auto:MMM YYYY",
 			want:  "Mar 2024",
 		},
 		// Preset formats
 		{
-			name:  "auto:iso preset",
+			name:  "happy path: auto:iso preset",
 			value: "auto:iso",
 			want:  "2024-03-15",
 		},
 		{
-			name:  "auto:european preset",
+			name:  "happy path: auto:european preset",
 			value: "auto:european",
 			want:  "15/03/2024",
 		},
 		{
-			name:  "auto:us preset",
+			name:  "happy path: auto:us preset",
 			value: "auto:us",
 			want:  "03/15/2024",
 		},
 		{
-			name:  "auto:long preset",
+			name:  "happy path: auto:long preset",
 			value: "auto:long",
 			want:  "March 15, 2024",
 		},
 		{
-			name:  "preset is case insensitive",
+			name:  "happy path: preset is case insensitive",
 			value: "auto:ISO",
 			want:  "2024-03-15",
 		},
 		{
-			name:  "preset mixed case works",
+			name:  "happy path: preset mixed case works",
 			value: "auto:European",
 			want:  "15/03/2024",
 		},
 		// Bracket escape syntax
 		{
-			name:  "auto with bracket-escaped literal",
+			name:  "happy path: auto with bracket-escaped literal",
 			value: "auto:[Date]: YYYY-MM-DD",
 			want:  "Date: 2024-03-15",
 		},
 		// Error cases
 		{
-			name:    "auto: with empty format returns error",
+			name:    "error case: auto: with empty format",
 			value:   "auto:",
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
 		{
-			name:    "autoX invalid syntax returns error",
+			name:    "error case: autoX invalid syntax",
 			value:   "autoX",
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
 		{
-			name:    "auto123 invalid syntax returns error",
+			name:    "error case: auto123 invalid syntax",
 			value:   "auto123",
 			wantErr: dateutil.ErrInvalidDateFormat,
 		},
@@ -343,8 +342,7 @@ func TestResolveDate(t *testing.T) {
 			}
 
 			if err != nil {
-				t.Errorf("ResolveDate(%q) unexpected error: %v", tt.value, err)
-				return
+				t.Fatalf("ResolveDate(%q) unexpected error: %v", tt.value, err)
 			}
 
 			if got != tt.want {

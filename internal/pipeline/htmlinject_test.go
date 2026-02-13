@@ -76,7 +76,7 @@ func TestSanitizeCSS(t *testing.T) {
 	}
 }
 
-func TestInjectCSS(t *testing.T) {
+func TestCSSInjection_InjectCSS(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -156,13 +156,13 @@ func TestInjectCSS(t *testing.T) {
 			ctx := context.Background()
 			got := injector.InjectCSS(ctx, tt.html, tt.css)
 			if got != tt.expected {
-				t.Errorf("InjectCSS() = %q, want %q", got, tt.expected)
+				t.Errorf("CSSInjection.InjectCSS(%q, %q) = %q, want %q", tt.html, tt.css, got, tt.expected)
 			}
 		})
 	}
 }
 
-func TestInjectCSS_ContextCancellation(t *testing.T) {
+func TestCSSInjection_InjectCSS_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
 	injector := &CSSInjection{}
@@ -176,21 +176,21 @@ func TestInjectCSS_ContextCancellation(t *testing.T) {
 	// When context is cancelled, returns HTML unchanged
 	got := injector.InjectCSS(ctx, html, css)
 	if got != html {
-		t.Errorf("InjectCSS() with cancelled context should return HTML unchanged, got %q", got)
+		t.Errorf("CSSInjection.InjectCSS() with cancelled context = %q, want %q", got, html)
 	}
 }
 
-func TestInjectSignature(t *testing.T) {
+func TestSignatureInjection_InjectSignature(t *testing.T) {
 	t.Parallel()
 
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	injector, err := NewSignatureInjection(ts.Signature)
 	if err != nil {
-		t.Fatalf("failed to create signature injector: %v", err)
+		t.Fatalf("NewSignatureInjection() unexpected error: %v", err)
 	}
 
 	t.Run("nil data returns HTML unchanged", func(t *testing.T) {
@@ -200,10 +200,10 @@ func TestInjectSignature(t *testing.T) {
 		html := "<html><body>Hello</body></html>"
 		got, err := injector.InjectSignature(ctx, html, nil)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 		if got != html {
-			t.Errorf("InjectSignature() = %q, want %q", got, html)
+			t.Errorf("SignatureInjection.InjectSignature(nil) = %q, want %q", got, html)
 		}
 	})
 
@@ -216,7 +216,7 @@ func TestInjectSignature(t *testing.T) {
 
 		got, err := injector.InjectSignature(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 
 		// Verify signature is injected before </body>
@@ -244,7 +244,7 @@ func TestInjectSignature(t *testing.T) {
 
 		got, err := injector.InjectSignature(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Test") {
@@ -261,7 +261,7 @@ func TestInjectSignature(t *testing.T) {
 
 		got, err := injector.InjectSignature(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 
 		// Signature should be at the end
@@ -288,7 +288,7 @@ func TestInjectSignature(t *testing.T) {
 
 		got, err := injector.InjectSignature(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 
 		// Verify all fields are rendered
@@ -321,7 +321,7 @@ func TestInjectSignature(t *testing.T) {
 
 		got, err := injector.InjectSignature(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("SignatureInjection.InjectSignature() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Minimal") {
@@ -334,17 +334,17 @@ func TestInjectSignature(t *testing.T) {
 	})
 }
 
-func TestInjectSignature_ContextCancellation(t *testing.T) {
+func TestSignatureInjection_InjectSignature_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	injector, err := NewSignatureInjection(ts.Signature)
 	if err != nil {
-		t.Fatalf("failed to create signature injector: %v", err)
+		t.Fatalf("NewSignatureInjection() unexpected error: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -354,14 +354,14 @@ func TestInjectSignature_ContextCancellation(t *testing.T) {
 	_, err = injector.InjectSignature(ctx, "<body></body>", data)
 
 	if err == nil {
-		t.Fatal("expected error for cancelled context")
+		t.Fatal("SignatureInjection.InjectSignature() error = nil, want error")
 	}
 	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
+		t.Errorf("SignatureInjection.InjectSignature() error = %v, want context.Canceled", err)
 	}
 }
 
-func TestInjectSignature_TemplateError(t *testing.T) {
+func TestSignatureInjection_InjectSignature_TemplateError(t *testing.T) {
 	t.Parallel()
 
 	// Create injector with a broken template to test error path
@@ -373,11 +373,11 @@ func TestInjectSignature_TemplateError(t *testing.T) {
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	injector, err := NewSignatureInjection(ts.Signature)
 	if err != nil {
-		t.Fatalf("failed to create signature injector: %v", err)
+		t.Fatalf("NewSignatureInjection() unexpected error: %v", err)
 	}
 	ctx := context.Background()
 	data := &SignatureData{Name: "Test"}
@@ -391,17 +391,17 @@ func TestInjectSignature_TemplateError(t *testing.T) {
 	// Note: with valid data and template, no error expected
 }
 
-func TestInjectCover(t *testing.T) {
+func TestCoverInjection_InjectCover(t *testing.T) {
 	t.Parallel()
 
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	injector, err := NewCoverInjection(ts.Cover)
 	if err != nil {
-		t.Fatalf("failed to create cover injector: %v", err)
+		t.Fatalf("NewCoverInjection() unexpected error: %v", err)
 	}
 
 	t.Run("nil data returns HTML unchanged", func(t *testing.T) {
@@ -411,10 +411,10 @@ func TestInjectCover(t *testing.T) {
 		html := "<html><body>Hello</body></html>"
 		got, err := injector.InjectCover(ctx, html, nil)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 		if got != html {
-			t.Errorf("InjectCover() = %q, want %q", got, html)
+			t.Errorf("CoverInjection.InjectCover(nil) = %q, want %q", got, html)
 		}
 	})
 
@@ -427,7 +427,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		// Verify cover is injected after <body>
@@ -452,7 +452,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Test") {
@@ -469,7 +469,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Test") {
@@ -486,7 +486,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		// Cover should be at the start (now wrapped in section)
@@ -513,7 +513,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		// Verify all fields are rendered
@@ -546,7 +546,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Minimal") {
@@ -569,7 +569,7 @@ func TestInjectCover(t *testing.T) {
 
 		got, err := injector.InjectCover(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 		}
 
 		// HTML template should escape these
@@ -583,17 +583,17 @@ func TestInjectCover(t *testing.T) {
 	})
 }
 
-func TestInjectCover_ContextCancellation(t *testing.T) {
+func TestCoverInjection_InjectCover_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	injector, err := NewCoverInjection(ts.Cover)
 	if err != nil {
-		t.Fatalf("failed to create cover injector: %v", err)
+		t.Fatalf("NewCoverInjection() unexpected error: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -603,10 +603,10 @@ func TestInjectCover_ContextCancellation(t *testing.T) {
 	_, err = injector.InjectCover(ctx, "<body></body>", data)
 
 	if err == nil {
-		t.Fatal("expected error for cancelled context")
+		t.Fatal("CoverInjection.InjectCover() error = nil, want error")
 	}
 	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
+		t.Errorf("CoverInjection.InjectCover() error = %v, want context.Canceled", err)
 	}
 }
 
@@ -818,7 +818,7 @@ func TestExtractHeadings(t *testing.T) {
 			got := extractHeadings(tt.html, tt.minDepth, tt.maxDepth)
 
 			if len(got) != len(tt.want) {
-				t.Fatalf("extractHeadings() returned %d headings, want %d", len(got), len(tt.want))
+				t.Fatalf("extractHeadings(%q, %d, %d) returned %d headings, want %d", tt.html, tt.minDepth, tt.maxDepth, len(got), len(tt.want))
 			}
 
 			for i, want := range tt.want {
@@ -879,7 +879,7 @@ func TestStripHTMLTags(t *testing.T) {
 	}
 }
 
-func TestNumberingState_Next(t *testing.T) {
+func TestNumberingState_next(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -948,14 +948,14 @@ func TestNumberingState_Next(t *testing.T) {
 			for i, level := range tt.levels {
 				got, _ := state.next(level)
 				if got != tt.want[i] {
-					t.Errorf("next(%d) at step %d = %q, want %q", level, i, got, tt.want[i])
+					t.Errorf("numberingState.next(%d) at step %d = %q, want %q", level, i, got, tt.want[i])
 				}
 			}
 		})
 	}
 }
 
-func TestNumberingState_Next_EffectiveDepth(t *testing.T) {
+func TestNumberingState_next_EffectiveDepth(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -999,7 +999,7 @@ func TestNumberingState_Next_EffectiveDepth(t *testing.T) {
 			for i, level := range tt.levels {
 				_, depth := state.next(level)
 				if depth != tt.wantDepths[i] {
-					t.Errorf("next(%d) at step %d depth = %d, want %d", level, i, depth, tt.wantDepths[i])
+					t.Errorf("numberingState.next(%d) at step %d depth = %d, want %d", level, i, depth, tt.wantDepths[i])
 				}
 			}
 		})
@@ -1142,13 +1142,13 @@ func TestGenerateNumberedTOC(t *testing.T) {
 
 			if tt.wantEmpty {
 				if got != "" {
-					t.Errorf("generateNumberedTOC() = %q, want empty", got)
+					t.Errorf("generateNumberedTOC(%v, %q) = %q, want empty", tt.headings, tt.title, got)
 				}
 				return
 			}
 
 			if got == "" {
-				t.Fatal("generateNumberedTOC() returned empty, want HTML")
+				t.Fatal("generateNumberedTOC() = empty, want HTML")
 			}
 
 			for _, want := range tt.wantContains {
@@ -1160,7 +1160,7 @@ func TestGenerateNumberedTOC(t *testing.T) {
 	}
 }
 
-func TestInjectTOC(t *testing.T) {
+func TestTOCInjection_InjectTOC(t *testing.T) {
 	t.Parallel()
 
 	injector := NewTOCInjection()
@@ -1172,10 +1172,10 @@ func TestInjectTOC(t *testing.T) {
 		html := "<html><body>Hello</body></html>"
 		got, err := injector.InjectTOC(ctx, html, nil)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 		if got != html {
-			t.Errorf("InjectTOC() = %q, want %q", got, html)
+			t.Errorf("TOCInjection.InjectTOC(nil) = %q, want %q", got, html)
 		}
 	})
 
@@ -1187,10 +1187,10 @@ func TestInjectTOC(t *testing.T) {
 		data := &TOCData{Title: "TOC", MaxDepth: 3}
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 		if got != html {
-			t.Errorf("InjectTOC() should return unchanged HTML when no headings")
+			t.Errorf("TOCInjection.InjectTOC() should return unchanged HTML when no headings")
 		}
 	})
 
@@ -1204,7 +1204,7 @@ func TestInjectTOC(t *testing.T) {
 
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 
 		// TOC should appear after cover-end marker
@@ -1227,7 +1227,7 @@ func TestInjectTOC(t *testing.T) {
 
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 
 		// TOC should appear after <body>
@@ -1250,7 +1250,7 @@ func TestInjectTOC(t *testing.T) {
 
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, `<nav class="toc">`) {
@@ -1267,7 +1267,7 @@ func TestInjectTOC(t *testing.T) {
 
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 
 		if !strings.HasPrefix(got, `<nav class="toc">`) {
@@ -1284,7 +1284,7 @@ func TestInjectTOC(t *testing.T) {
 
 		got, err := injector.InjectTOC(ctx, html, data)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "H1") || !strings.Contains(got, "H2") {
@@ -1297,7 +1297,7 @@ func TestInjectTOC(t *testing.T) {
 	})
 }
 
-func TestInjectTOC_ContextCancellation(t *testing.T) {
+func TestTOCInjection_InjectTOC_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
 	injector := NewTOCInjection()
@@ -1310,29 +1310,29 @@ func TestInjectTOC_ContextCancellation(t *testing.T) {
 	_, err := injector.InjectTOC(ctx, html, data)
 
 	if err == nil {
-		t.Fatal("expected error for cancelled context")
+		t.Fatal("TOCInjection.InjectTOC() error = nil, want error")
 	}
 	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
+		t.Errorf("TOCInjection.InjectTOC() error = %v, want context.Canceled", err)
 	}
 }
 
-// TestInjectTOC_AfterCover verifies that TOC is injected AFTER the cover page.
+// TestTOCInjection_InjectTOC_AfterCover verifies that TOC is injected AFTER the cover page.
 // This is a regression test for a bug where html/template strips HTML comments,
 // causing the <!-- cover-end --> marker to be removed, and TOC to be inserted
 // before the cover (at the <body> fallback position).
-func TestInjectTOC_AfterCover(t *testing.T) {
+func TestTOCInjection_InjectTOC_AfterCover(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 	loader := assets.NewEmbeddedLoader()
 	ts, err := loader.LoadTemplateSet(assets.DefaultTemplateSetName)
 	if err != nil {
-		t.Fatalf("failed to load template set: %v", err)
+		t.Fatalf("LoadTemplateSet() unexpected error: %v", err)
 	}
 	coverInjector, err := NewCoverInjection(ts.Cover)
 	if err != nil {
-		t.Fatalf("failed to create cover injector: %v", err)
+		t.Fatalf("NewCoverInjection() unexpected error: %v", err)
 	}
 	tocInjector := NewTOCInjection()
 
@@ -1353,7 +1353,7 @@ func TestInjectTOC_AfterCover(t *testing.T) {
 	}
 	htmlWithCover, err := coverInjector.InjectCover(ctx, html, CoverData)
 	if err != nil {
-		t.Fatalf("InjectCover failed: %v", err)
+		t.Fatalf("CoverInjection.InjectCover() unexpected error: %v", err)
 	}
 
 	// Step 2: Inject TOC
@@ -1363,7 +1363,7 @@ func TestInjectTOC_AfterCover(t *testing.T) {
 	}
 	htmlWithTOC, err := tocInjector.InjectTOC(ctx, htmlWithCover, TOCData)
 	if err != nil {
-		t.Fatalf("InjectTOC failed: %v", err)
+		t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 	}
 
 	// Verify: TOC must appear AFTER cover, not before
@@ -1385,7 +1385,7 @@ func TestInjectTOC_AfterCover(t *testing.T) {
 	}
 }
 
-func TestInjectTOC_HTMLEntities(t *testing.T) {
+func TestTOCInjection_InjectTOC_HTMLEntities(t *testing.T) {
 	t.Parallel()
 
 	injector := NewTOCInjection()
@@ -1468,18 +1468,18 @@ func TestInjectTOC_HTMLEntities(t *testing.T) {
 			data := &TOCData{MaxDepth: 3}
 			got, err := injector.InjectTOC(ctx, tt.html, data)
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("TOCInjection.InjectTOC() unexpected error: %v", err)
 			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(got, want) {
-					t.Errorf("InjectTOC() missing %q\nGot:\n%s", want, got)
+					t.Errorf("TOCInjection.InjectTOC() missing %q\nGot:\n%s", want, got)
 				}
 			}
 
 			for _, notWant := range tt.wantNotContain {
 				if strings.Contains(got, notWant) {
-					t.Errorf("InjectTOC() should not contain %q (double-encoding bug)\nGot:\n%s", notWant, got)
+					t.Errorf("TOCInjection.InjectTOC() should not contain %q (double-encoding bug)\nGot:\n%s", notWant, got)
 				}
 			}
 		})

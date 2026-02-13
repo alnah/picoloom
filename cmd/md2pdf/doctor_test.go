@@ -31,40 +31,40 @@ func TestRunDoctorCmd_JSONOutput(t *testing.T) {
 	// Should produce valid JSON
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON output: %v\nOutput was: %s", err, stdout.String())
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v\nOutput was: %s", err, stdout.String())
 	}
 
 	// Verify required fields are present
 	if result.Env.OS == "" {
-		t.Error("JSON should contain OS")
+		t.Error("runDoctorCmd([]string{\"--json\"}) result.Env.OS = \"\", want non-empty")
 	}
 	if result.Env.Arch == "" {
-		t.Error("JSON should contain Arch")
+		t.Error("runDoctorCmd([]string{\"--json\"}) result.Env.Arch = \"\", want non-empty")
 	}
 	if result.Status == "" {
-		t.Error("JSON should contain status")
+		t.Error("runDoctorCmd([]string{\"--json\"}) result.Status = \"\", want non-empty")
 	}
 
 	// Status must be one of the valid values
 	validStatuses := map[string]bool{"ready": true, "warnings": true, "errors": true}
 	if !validStatuses[result.Status] {
-		t.Errorf("Invalid status %q, expected ready/warnings/errors", result.Status)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Status = %q, want one of ready/warnings/errors", result.Status)
 	}
 
 	// Exit code should be consistent with status
 	if result.Status == "errors" && exitCode != ExitGeneral {
-		t.Errorf("Expected exit code %d for errors status, got %d", ExitGeneral, exitCode)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) exit code = %d, want %d for errors status", exitCode, ExitGeneral)
 	}
 	if result.Status != "errors" && exitCode != ExitSuccess {
-		t.Errorf("Expected exit code %d for non-error status, got %d", ExitSuccess, exitCode)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) exit code = %d, want %d for non-error status", exitCode, ExitSuccess)
 	}
 
 	// Platform should match runtime
 	if result.Env.OS != runtime.GOOS {
-		t.Errorf("OS = %q, want %q", result.Env.OS, runtime.GOOS)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.OS = %q, want %q", result.Env.OS, runtime.GOOS)
 	}
 	if result.Env.Arch != runtime.GOARCH {
-		t.Errorf("Arch = %q, want %q", result.Env.Arch, runtime.GOARCH)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.Arch = %q, want %q", result.Env.Arch, runtime.GOARCH)
 	}
 }
 
@@ -92,14 +92,14 @@ func TestRunDoctorCmd_HumanOutput(t *testing.T) {
 	}
 	for _, section := range requiredSections {
 		if !strings.Contains(output, section) {
-			t.Errorf("Output should contain section %q", section)
+			t.Errorf("runDoctorCmd([]string{}) output missing section %q", section)
 		}
 	}
 
 	// Should contain platform info
 	platformStr := runtime.GOOS + "/" + runtime.GOARCH
 	if !strings.Contains(output, platformStr) {
-		t.Errorf("Output should contain platform %q", platformStr)
+		t.Errorf("runDoctorCmd([]string{}) output missing platform %q", platformStr)
 	}
 }
 
@@ -118,21 +118,21 @@ func TestRunDoctorCmd_ContainerDetection(t *testing.T) {
 		wantHint      string
 	}{
 		{
-			name:          "explicit MD2PDF_CONTAINER override",
+			name:          "MD2PDF_CONTAINER override",
 			envVar:        "MD2PDF_CONTAINER",
 			envVal:        "1",
 			wantContainer: true,
 			wantHint:      "MD2PDF_CONTAINER=1",
 		},
 		{
-			name:          "kubernetes environment",
+			name:          "Kubernetes environment",
 			envVar:        "KUBERNETES_SERVICE_HOST",
 			envVal:        "10.0.0.1",
 			wantContainer: true,
 			wantHint:      "KUBERNETES_SERVICE_HOST",
 		},
 		{
-			name:          "podman container",
+			name:          "Podman container",
 			envVar:        "container",
 			envVal:        "podman",
 			wantContainer: true,
@@ -155,14 +155,14 @@ func TestRunDoctorCmd_ContainerDetection(t *testing.T) {
 
 			var result doctorResult
 			if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-				t.Fatalf("Invalid JSON: %v", err)
+				t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 			}
 
 			if result.Env.Container != tt.wantContainer {
-				t.Errorf("Container = %v, want %v", result.Env.Container, tt.wantContainer)
+				t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.Container = %v, want %v", result.Env.Container, tt.wantContainer)
 			}
 			if result.Env.ContainerHint != tt.wantHint {
-				t.Errorf("ContainerHint = %q, want %q", result.Env.ContainerHint, tt.wantHint)
+				t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.ContainerHint = %q, want %q", result.Env.ContainerHint, tt.wantHint)
 			}
 		})
 	}
@@ -188,12 +188,12 @@ func TestRunDoctorCmd_ContainerPriority(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// MD2PDF_CONTAINER should have highest priority
 	if result.Env.ContainerHint != "MD2PDF_CONTAINER=1" {
-		t.Errorf("MD2PDF_CONTAINER should have priority, got hint %q", result.Env.ContainerHint)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.ContainerHint = %q, want %q (MD2PDF_CONTAINER should have priority)", result.Env.ContainerHint, "MD2PDF_CONTAINER=1")
 	}
 }
 
@@ -234,11 +234,11 @@ func TestRunDoctorCmd_CIDetection(t *testing.T) {
 
 			var result doctorResult
 			if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-				t.Fatalf("Invalid JSON: %v", err)
+				t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 			}
 
 			if result.Env.CI != tt.wantCI {
-				t.Errorf("CI = %v, want %v", result.Env.CI, tt.wantCI)
+				t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.CI = %v, want %v", result.Env.CI, tt.wantCI)
 			}
 		})
 	}
@@ -268,7 +268,7 @@ func TestRunDoctorCmd_SandboxWarning(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// Should have warning about sandbox
@@ -280,14 +280,14 @@ func TestRunDoctorCmd_SandboxWarning(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Error("Expected warning about ROD_NO_SANDBOX when in CI without sandbox disabled")
+		t.Error("runDoctorCmd([]string{\"--json\"}) result.Warnings missing ROD_NO_SANDBOX warning when in CI without sandbox disabled")
 	}
 
 	// Status should be "warnings"
 	if result.Status != "warnings" && result.Status != "errors" {
 		// Could be errors if Chrome not found, but if ready, that's wrong
 		if result.Status == "ready" && len(result.Warnings) > 0 {
-			t.Error("Status should be 'warnings' when warnings present")
+			t.Error("runDoctorCmd([]string{\"--json\"}) result.Status = \"ready\", want \"warnings\" when warnings present")
 		}
 	}
 }
@@ -311,13 +311,13 @@ func TestRunDoctorCmd_NoSandboxWarningWhenDisabled(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// Should NOT have sandbox warning
 	for _, w := range result.Warnings {
 		if strings.Contains(w, "ROD_NO_SANDBOX") {
-			t.Error("Should not warn about sandbox when ROD_NO_SANDBOX=1")
+			t.Error("runDoctorCmd([]string{\"--json\"}) result.Warnings contains ROD_NO_SANDBOX warning, want no sandbox warning when ROD_NO_SANDBOX=1")
 		}
 	}
 }
@@ -336,13 +336,13 @@ func TestRunDoctorCmd_ExitCodeSuccess(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// If no errors, exit code should be 0
 	if result.Status != "errors" && exitCode != ExitSuccess {
-		t.Errorf("Exit code should be %d for status %q, got %d",
-			ExitSuccess, result.Status, exitCode)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) exit code = %d, want %d for status %q",
+			exitCode, ExitSuccess, result.Status)
 	}
 }
 
@@ -360,12 +360,12 @@ func TestRunDoctorCmd_TempDirWritable(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	// In normal conditions, temp dir should be writable
 	if !result.System.TempWritable {
-		t.Error("Temp directory should be writable in normal conditions")
+		t.Error("runDoctorCmd([]string{\"--json\"}) result.System.TempWritable = false, want true in normal conditions")
 	}
 }
 
@@ -387,11 +387,11 @@ func TestRunDoctorCmd_ReportsRODBrowserBin(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	if result.Env.BrowserBin != testPath {
-		t.Errorf("BrowserBin = %q, want %q", result.Env.BrowserBin, testPath)
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.BrowserBin = %q, want %q", result.Env.BrowserBin, testPath)
 	}
 }
 
@@ -408,11 +408,11 @@ func TestRunDoctorCmd_ReportsRODNoSandbox(t *testing.T) {
 
 	var result doctorResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatalf("Invalid JSON: %v", err)
+		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
 	if result.Env.NoSandbox != "1" {
-		t.Errorf("NoSandbox = %q, want %q", result.Env.NoSandbox, "1")
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.NoSandbox = %q, want %q", result.Env.NoSandbox, "1")
 	}
 }
 
@@ -438,10 +438,10 @@ func TestRunDoctorCmd_HumanOutput_ShowsContainerInfo(t *testing.T) {
 	output := stdout.String()
 
 	if !strings.Contains(output, "Container: detected") {
-		t.Error("Human output should show container detection")
+		t.Error("runDoctorCmd([]string{}) output missing \"Container: detected\"")
 	}
 	if !strings.Contains(output, "MD2PDF_CONTAINER=1") {
-		t.Error("Human output should show container hint")
+		t.Error("runDoctorCmd([]string{}) output missing \"MD2PDF_CONTAINER=1\"")
 	}
 }
 
@@ -463,7 +463,7 @@ func TestRunDoctorCmd_HumanOutput_ShowsCIInfo(t *testing.T) {
 	output := stdout.String()
 
 	if !strings.Contains(output, "CI: detected") {
-		t.Error("Human output should show CI detection")
+		t.Error("runDoctorCmd([]string{}) output missing \"CI: detected\"")
 	}
 }
 
@@ -487,10 +487,10 @@ func TestRunDoctorCmd_HumanOutput_ShowsWarnings(t *testing.T) {
 	output := stdout.String()
 
 	if !strings.Contains(output, "[WARN]") {
-		t.Error("Human output should show warnings with [WARN] prefix")
+		t.Error("runDoctorCmd([]string{}) output missing \"[WARN]\" prefix")
 	}
 	if !strings.Contains(output, "ROD_NO_SANDBOX") {
-		t.Error("Warning about ROD_NO_SANDBOX should be visible")
+		t.Error("runDoctorCmd([]string{}) output missing ROD_NO_SANDBOX warning")
 	}
 }
 
@@ -519,7 +519,7 @@ func TestRunDoctorCmd_HumanOutput_StatusLine(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Error("Human output should contain a valid status line")
+		t.Error("runDoctorCmd([]string{}) output missing valid status line")
 	}
 }
 

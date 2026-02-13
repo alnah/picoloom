@@ -33,17 +33,17 @@ World`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "<h1") {
-			t.Errorf("expected output to contain <h1>, got %q", got)
+			t.Errorf("ToHTML() output missing <h1>, got %q", got)
 		}
 		if !strings.Contains(got, "Hello") {
-			t.Errorf("expected output to contain 'Hello', got %q", got)
+			t.Errorf("ToHTML() output missing 'Hello', got %q", got)
 		}
 		if !strings.Contains(got, "<p>World</p>") && !strings.Contains(got, "<p>World") {
-			t.Errorf("expected output to contain paragraph with 'World', got %q", got)
+			t.Errorf("ToHTML() output missing paragraph with 'World', got %q", got)
 		}
 	})
 
@@ -57,11 +57,11 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "Bonjour") {
-			t.Errorf("expected output to contain unicode text, got %q", got)
+			t.Errorf("ToHTML() output missing unicode text, got %q", got)
 		}
 	})
 
@@ -73,11 +73,11 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "<code") {
-			t.Errorf("expected output to contain <code>, got %q", got)
+			t.Errorf("ToHTML() output missing <code>, got %q", got)
 		}
 	})
 
@@ -89,16 +89,16 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		// Chroma adds class="chroma" to the pre element
 		if !strings.Contains(got, `class="chroma"`) {
-			t.Errorf("expected chroma class on pre element, got %q", got)
+			t.Errorf("ToHTML() output missing chroma class on pre element, got %q", got)
 		}
 		// Chroma adds token classes like "kd" (keyword declaration) for syntax tokens
 		if !strings.Contains(got, `class="kd"`) {
-			t.Errorf("expected syntax token classes (e.g., kd for keyword), got %q", got)
+			t.Errorf("ToHTML() output missing syntax token classes (e.g., kd for keyword), got %q", got)
 		}
 	})
 
@@ -115,14 +115,14 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "<table") {
-			t.Errorf("expected output to contain <table>, got %q", got)
+			t.Errorf("ToHTML() output missing <table>, got %q", got)
 		}
 		if !strings.Contains(got, "Alice") {
-			t.Errorf("expected output to contain table data, got %q", got)
+			t.Errorf("ToHTML() output missing table data, got %q", got)
 		}
 	})
 
@@ -139,14 +139,14 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if !strings.Contains(got, "<ul") {
-			t.Errorf("expected output to contain <ul>, got %q", got)
+			t.Errorf("ToHTML() output missing <ul>, got %q", got)
 		}
 		if !strings.Contains(got, "<li") {
-			t.Errorf("expected output to contain <li>, got %q", got)
+			t.Errorf("ToHTML() output missing <li>, got %q", got)
 		}
 	})
 
@@ -158,7 +158,7 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		_, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("whitespace-only content should be valid, got error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 	})
 
@@ -174,20 +174,18 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		// Placeholders should survive Goldmark
 		if !strings.Contains(got, pipeline.MarkStartPlaceholder) || !strings.Contains(got, pipeline.MarkEndPlaceholder) {
-			t.Errorf("placeholders should pass through Goldmark unchanged.\n"+
-				"Got: %q", got)
+			t.Errorf("ToHTML() placeholders not preserved through Goldmark, got %q", got)
 		}
 
 		// After post-processing, should become <mark>
 		final := pipeline.ConvertMarkPlaceholders(got)
 		if !strings.Contains(final, "<mark>highlighted</mark>") {
-			t.Errorf("pipeline.ConvertMarkPlaceholders should convert to <mark> tags.\n"+
-				"Got: %q", final)
+			t.Errorf("ConvertMarkPlaceholders() did not convert to <mark> tags, got %q", final)
 		}
 	})
 
@@ -201,12 +199,11 @@ Ceci est un test avec des caracteres speciaux.`
 		converter := pipeline.NewGoldmarkConverter()
 		got, err := converter.ToHTML(ctx, content)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML() unexpected error: %v", err)
 		}
 
 		if strings.Contains(got, "<script>") {
-			t.Errorf("raw HTML should be sanitized (no WithUnsafe).\n"+
-				"Got: %q", got)
+			t.Errorf("ToHTML() did not sanitize raw HTML (should not contain <script>), got %q", got)
 		}
 	})
 }
@@ -268,13 +265,12 @@ func TestHighlightFullPipeline(t *testing.T) {
 
 			// Verify the <mark> tag is in the final output
 			if !strings.Contains(final, tt.wantMark) {
-				t.Errorf("highlight not preserved through pipeline.\n"+
-					"Input:        %q\n"+
-					"Preprocessed: %q\n"+
+				t.Errorf("highlight pipeline output missing %q\n"+
+					"Input:          %q\n"+
+					"Preprocessed:   %q\n"+
 					"After Goldmark: %q\n"+
-					"Final HTML:   %q\n"+
-					"Expected:     %q",
-					tt.markdown, preprocessed, html, final, tt.wantMark)
+					"Final HTML:     %q",
+					tt.wantMark, tt.markdown, preprocessed, html, final)
 			}
 		})
 	}

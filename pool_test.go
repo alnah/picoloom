@@ -74,21 +74,21 @@ func TestResolvePoolSize(t *testing.T) {
 func TestResolvePoolSize_Bounds(t *testing.T) {
 	t.Parallel()
 
-	t.Run("minimum is 1", func(t *testing.T) {
+	t.Run("auto calculation respects minimum", func(t *testing.T) {
 		t.Parallel()
 
 		got := ResolvePoolSize(0)
 		if got < MinPoolSize {
-			t.Errorf("ResolvePoolSize(0) = %d, should be at least %d", got, MinPoolSize)
+			t.Errorf("ResolvePoolSize(0) = %d, want >= %d", got, MinPoolSize)
 		}
 	})
 
-	t.Run("maximum is 8", func(t *testing.T) {
+	t.Run("auto calculation respects maximum", func(t *testing.T) {
 		t.Parallel()
 
 		got := ResolvePoolSize(0)
 		if got > MaxPoolSize {
-			t.Errorf("ResolvePoolSize(0) = %d, should be at most %d", got, MaxPoolSize)
+			t.Errorf("ResolvePoolSize(0) = %d, want <= %d", got, MaxPoolSize)
 		}
 	})
 
@@ -115,18 +115,18 @@ func TestServicePool_AcquireRelease(t *testing.T) {
 	// Acquire first service
 	svc1 := pool.Acquire()
 	if svc1 == nil {
-		t.Fatal("Acquire() returned nil")
+		t.Fatalf("Acquire() returned nil")
 	}
 
 	// Acquire second service
 	svc2 := pool.Acquire()
 	if svc2 == nil {
-		t.Fatal("Acquire() returned nil")
+		t.Fatalf("Acquire() returned nil")
 	}
 
 	// Services should be different instances
 	if svc1 == svc2 {
-		t.Error("expected different service instances")
+		t.Errorf("Acquire() returned same service instance, want different instances")
 	}
 
 	// Release and re-acquire
@@ -134,7 +134,7 @@ func TestServicePool_AcquireRelease(t *testing.T) {
 	svc3 := pool.Acquire()
 
 	if svc3 != svc1 {
-		t.Error("expected to get back released service")
+		t.Errorf("Acquire() after Release() returned different service, want reused service")
 	}
 
 	// Cleanup
@@ -154,9 +154,9 @@ func TestServicePool_Size(t *testing.T) {
 		size int
 		want int
 	}{
-		{"size 1", 1, 1},
-		{"size 4", 4, 4},
-		{"size 0 becomes 1", 0, 1},
+		{"explicit size 1", 1, 1},
+		{"explicit size 4", 4, 4},
+		{"zero becomes 1", 0, 1},
 		{"negative becomes 1", -1, 1},
 	}
 
@@ -211,7 +211,7 @@ func TestServicePool_ConcurrentAccess(t *testing.T) {
 	case <-done:
 		// Success
 	case <-timer.C:
-		t.Fatal("concurrent access test timed out - possible deadlock")
+		t.Fatalf("concurrent access test timed out - possible deadlock")
 	}
 }
 
@@ -242,7 +242,7 @@ func TestServicePool_DoubleClose(t *testing.T) {
 
 	// First close
 	if err := pool.Close(); err != nil {
-		t.Errorf("first Close() error = %v", err)
+		t.Errorf("first Close() unexpected error: %v", err)
 	}
 
 	// Second close should not panic
@@ -261,7 +261,7 @@ func TestServicePool_AcquireAfterClose(t *testing.T) {
 	// Acquire one service
 	svc := pool.Acquire()
 	if svc == nil {
-		t.Fatal("Acquire() returned nil")
+		t.Fatalf("Acquire() returned nil")
 	}
 
 	// Close the pool
@@ -337,7 +337,7 @@ func TestServicePool_HighContention(t *testing.T) {
 	case <-done:
 		// Success - no deadlock under high contention
 	case <-timer.C:
-		t.Fatal("high contention test timed out - possible deadlock")
+		t.Fatalf("high contention test timed out - possible deadlock")
 	}
 }
 
@@ -364,7 +364,7 @@ func TestServicePool_AllServicesAcquired(t *testing.T) {
 	seen := make(map[*Service]bool)
 	for _, svc := range services {
 		if seen[svc] {
-			t.Error("got duplicate service from pool")
+			t.Errorf("Acquire() returned duplicate service, want distinct instances")
 		}
 		seen[svc] = true
 	}
@@ -389,7 +389,7 @@ func TestServicePool_LazyCreation(t *testing.T) {
 	// Acquire one service
 	svc1 := pool.Acquire()
 	if svc1 == nil {
-		t.Fatal("first Acquire() returned nil")
+		t.Fatalf("first Acquire() returned nil")
 	}
 
 	// Release it
@@ -398,7 +398,7 @@ func TestServicePool_LazyCreation(t *testing.T) {
 	// Acquire again - should get the same service (reuse)
 	svc2 := pool.Acquire()
 	if svc2 != svc1 {
-		t.Error("expected to reuse released service")
+		t.Errorf("Acquire() after Release() returned different service, want reused service")
 	}
 
 	pool.Release(svc2)
@@ -415,7 +415,7 @@ func TestResolvePoolSize_NegativeWorkers(t *testing.T) {
 	got := ResolvePoolSize(-5)
 
 	if got < MinPoolSize || got > MaxPoolSize {
-		t.Errorf("ResolvePoolSize(-5) = %d, should be between %d and %d", got, MinPoolSize, MaxPoolSize)
+		t.Errorf("ResolvePoolSize(-5) = %d, want value between %d and %d", got, MinPoolSize, MaxPoolSize)
 	}
 }
 
@@ -447,12 +447,12 @@ func TestServicePool_WithOptions(t *testing.T) {
 
 	svc := pool.Acquire()
 	if svc == nil {
-		t.Fatal("Acquire() returned nil")
+		t.Fatalf("Acquire() returned nil")
 	}
 
 	// Verify the timeout was applied
 	if svc.cfg.timeout != 5*time.Minute {
-		t.Errorf("service timeout = %v, want %v", svc.cfg.timeout, 5*time.Minute)
+		t.Errorf("Acquire().cfg.timeout = %v, want %v", svc.cfg.timeout, 5*time.Minute)
 	}
 
 	pool.Release(svc)
@@ -465,7 +465,7 @@ func TestServicePool_WithOptions(t *testing.T) {
 func TestServicePool_InitError(t *testing.T) {
 	t.Parallel()
 
-	t.Run("returns nil when no error", func(t *testing.T) {
+	t.Run("happy path: no error after successful acquire", func(t *testing.T) {
 		t.Parallel()
 
 		pool := NewServicePool(1)
@@ -483,14 +483,14 @@ func TestServicePool_InitError(t *testing.T) {
 		}
 	})
 
-	t.Run("returns nil before any acquire", func(t *testing.T) {
+	t.Run("happy path: no error before any acquire", func(t *testing.T) {
 		t.Parallel()
 
 		pool := NewServicePool(1)
 		defer pool.Close()
 
 		if err := pool.InitError(); err != nil {
-			t.Errorf("InitError() before acquire = %v, want nil", err)
+			t.Errorf("InitError() = %v, want nil", err)
 		}
 	})
 }

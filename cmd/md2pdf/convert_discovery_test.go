@@ -56,17 +56,17 @@ func TestResolveInputPath(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err != tt.wantErr {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("resolveInputPath(%v, cfg) error = %v, want %v", tt.args, err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("resolveInputPath(%v, cfg) unexpected error: %v", tt.args, err)
 			}
 
 			if got != tt.want {
-				t.Errorf("resolveInputPath() = %q, want %q", got, tt.want)
+				t.Errorf("resolveInputPath(%v, cfg) = %q, want %q", tt.args, got, tt.want)
 			}
 		})
 	}
@@ -111,7 +111,7 @@ func TestResolveOutputDir(t *testing.T) {
 
 			got := resolveOutputDir(tt.flagOutput, tt.cfg)
 			if got != tt.want {
-				t.Errorf("resolveOutputDir() = %q, want %q", got, tt.want)
+				t.Errorf("resolveOutputDir(%q, cfg) = %q, want %q", tt.flagOutput, got, tt.want)
 			}
 		})
 	}
@@ -186,7 +186,7 @@ func TestResolveOutputPath(t *testing.T) {
 
 			got := resolveOutputPath(tt.inputPath, tt.outputDir, tt.baseInputDir)
 			if got != tt.want {
-				t.Errorf("resolveOutputPath() = %q, want %q", got, tt.want)
+				t.Errorf("resolveOutputPath(%q, %q, %q) = %q, want %q", tt.inputPath, tt.outputDir, tt.baseInputDir, got, tt.want)
 			}
 		})
 	}
@@ -237,7 +237,11 @@ func TestValidateMarkdownExtension(t *testing.T) {
 
 			err := validateMarkdownExtension(tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateMarkdownExtension() error = %v, wantErr %v", err, tt.wantErr)
+				if tt.wantErr {
+					t.Errorf("validateMarkdownExtension(%q) error = nil, want error", tt.path)
+				} else {
+					t.Errorf("validateMarkdownExtension(%q) unexpected error: %v", tt.path, err)
+				}
 			}
 		})
 	}
@@ -279,13 +283,13 @@ func TestDiscoverFiles(t *testing.T) {
 		inputPath := filepath.Join(tempDir, "doc1.md")
 		got, err := discoverFiles(inputPath, "")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("discoverFiles(%q, \"\") unexpected error: %v", inputPath, err)
 		}
 		if len(got) != 1 {
-			t.Errorf("got %d files, want 1", len(got))
+			t.Errorf("discoverFiles(%q, \"\") returned %d files, want 1", inputPath, len(got))
 		}
 		if got[0].InputPath != inputPath {
-			t.Errorf("InputPath = %q, want %q", got[0].InputPath, inputPath)
+			t.Errorf("discoverFiles(%q, \"\")[0].InputPath = %q, want %q", inputPath, got[0].InputPath, inputPath)
 		}
 	})
 
@@ -294,10 +298,10 @@ func TestDiscoverFiles(t *testing.T) {
 
 		got, err := discoverFiles(tempDir, "")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("discoverFiles(%q, \"\") unexpected error: %v", tempDir, err)
 		}
 		if len(got) != 4 {
-			t.Errorf("got %d files, want 4 (doc1.md, doc2.markdown, subdir/doc3.md, subdir/deep/doc4.md)", len(got))
+			t.Errorf("discoverFiles(%q, \"\") returned %d files, want 4 (doc1.md, doc2.markdown, subdir/doc3.md, subdir/deep/doc4.md)", tempDir, len(got))
 		}
 	})
 
@@ -307,7 +311,7 @@ func TestDiscoverFiles(t *testing.T) {
 		outputDir := filepath.Join(tempDir, "output")
 		got, err := discoverFiles(tempDir, outputDir)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("discoverFiles(%q, %q) unexpected error: %v", tempDir, outputDir, err)
 		}
 
 		// Check that subdir structure is mirrored
@@ -316,13 +320,13 @@ func TestDiscoverFiles(t *testing.T) {
 			if filepath.Base(f.InputPath) == "doc3.md" {
 				expectedOutput := filepath.Join(outputDir, "subdir", "doc3.pdf")
 				if f.OutputPath != expectedOutput {
-					t.Errorf("OutputPath = %q, want %q", f.OutputPath, expectedOutput)
+					t.Errorf("discoverFiles(%q, %q) doc3.md OutputPath = %q, want %q", tempDir, outputDir, f.OutputPath, expectedOutput)
 				}
 				foundMirrored = true
 			}
 		}
 		if !foundMirrored {
-			t.Error("did not find doc3.md in results")
+			t.Errorf("discoverFiles(%q, %q) did not find doc3.md in results", tempDir, outputDir)
 		}
 	})
 
@@ -332,7 +336,7 @@ func TestDiscoverFiles(t *testing.T) {
 		inputPath := filepath.Join(tempDir, "ignored.txt")
 		_, err := discoverFiles(inputPath, "")
 		if err == nil {
-			t.Error("expected error for invalid extension")
+			t.Errorf("discoverFiles(%q, \"\") error = nil, want error", inputPath)
 		}
 	})
 
@@ -341,7 +345,7 @@ func TestDiscoverFiles(t *testing.T) {
 
 		_, err := discoverFiles("/nonexistent/path", "")
 		if err == nil {
-			t.Error("expected error for nonexistent path")
+			t.Errorf("discoverFiles(\"/nonexistent/path\", \"\") error = nil, want error")
 		}
 	})
 }

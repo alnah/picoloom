@@ -11,119 +11,121 @@ import (
 	"testing"
 )
 
-func TestForBrowserConnect_InCI(t *testing.T) {
-	// Save and restore IsInContainer (not parallel-safe, see package notes)
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return false }
+func TestForBrowserConnect(t *testing.T) {
+	t.Run("in CI environment", func(t *testing.T) {
+		// Save and restore IsInContainer (not parallel-safe, see package notes)
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return false }
 
-	t.Setenv("CI", "true")
-	t.Setenv("ROD_NO_SANDBOX", "")
-	t.Setenv("ROD_BROWSER_BIN", "")
+		t.Setenv("CI", "true")
+		t.Setenv("ROD_NO_SANDBOX", "")
+		t.Setenv("ROD_BROWSER_BIN", "")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	if !strings.Contains(hint, "hint:") {
-		t.Error("expected hint prefix")
-	}
-	if !strings.Contains(hint, "ROD_NO_SANDBOX") {
-		t.Error("expected ROD_NO_SANDBOX suggestion in CI")
-	}
-	if !strings.Contains(hint, "ROD_BROWSER_BIN") {
-		t.Error("expected ROD_BROWSER_BIN suggestion")
-	}
-}
+		if !strings.Contains(got, "hint:") {
+			t.Errorf("ForBrowserConnect() missing hint prefix, got %q", got)
+		}
+		if !strings.Contains(got, "ROD_NO_SANDBOX") {
+			t.Errorf("ForBrowserConnect() missing ROD_NO_SANDBOX suggestion in CI, got %q", got)
+		}
+		if !strings.Contains(got, "ROD_BROWSER_BIN") {
+			t.Errorf("ForBrowserConnect() missing ROD_BROWSER_BIN suggestion, got %q", got)
+		}
+	})
 
-func TestForBrowserConnect_InDocker(t *testing.T) {
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return true }
+	t.Run("in Docker container", func(t *testing.T) {
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return true }
 
-	t.Setenv("CI", "")
-	t.Setenv("ROD_NO_SANDBOX", "")
-	t.Setenv("ROD_BROWSER_BIN", "")
+		t.Setenv("CI", "")
+		t.Setenv("ROD_NO_SANDBOX", "")
+		t.Setenv("ROD_BROWSER_BIN", "")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	if !strings.Contains(hint, "ROD_NO_SANDBOX") {
-		t.Error("expected ROD_NO_SANDBOX suggestion in Docker")
-	}
-}
+		if !strings.Contains(got, "ROD_NO_SANDBOX") {
+			t.Errorf("ForBrowserConnect() missing ROD_NO_SANDBOX suggestion in Docker, got %q", got)
+		}
+	})
 
-func TestForBrowserConnect_SandboxAlreadySet(t *testing.T) {
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return true }
+	t.Run("ROD_NO_SANDBOX already set", func(t *testing.T) {
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return true }
 
-	t.Setenv("CI", "")
-	t.Setenv("ROD_NO_SANDBOX", "1")
-	t.Setenv("ROD_BROWSER_BIN", "")
+		t.Setenv("CI", "")
+		t.Setenv("ROD_NO_SANDBOX", "1")
+		t.Setenv("ROD_BROWSER_BIN", "")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	if strings.Contains(hint, "ROD_NO_SANDBOX") {
-		t.Error("should not suggest ROD_NO_SANDBOX when already set")
-	}
-}
+		if strings.Contains(got, "ROD_NO_SANDBOX") {
+			t.Errorf("ForBrowserConnect() should not suggest ROD_NO_SANDBOX when already set, got %q", got)
+		}
+	})
 
-func TestForBrowserConnect_BrowserBinAlreadySet(t *testing.T) {
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return false }
+	t.Run("ROD_BROWSER_BIN already set", func(t *testing.T) {
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return false }
 
-	t.Setenv("CI", "")
-	t.Setenv("ROD_NO_SANDBOX", "")
-	t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
+		t.Setenv("CI", "")
+		t.Setenv("ROD_NO_SANDBOX", "")
+		t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	if strings.Contains(hint, "ROD_BROWSER_BIN") {
-		t.Error("should not suggest ROD_BROWSER_BIN when already set")
-	}
-}
+		if strings.Contains(got, "ROD_BROWSER_BIN") {
+			t.Errorf("ForBrowserConnect() should not suggest ROD_BROWSER_BIN when already set, got %q", got)
+		}
+	})
 
-func TestForBrowserConnect_NoHintsNeeded(t *testing.T) {
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return false }
+	t.Run("no sandbox hint needed outside CI/Docker", func(t *testing.T) {
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return false }
 
-	t.Setenv("CI", "")
-	t.Setenv("ROD_NO_SANDBOX", "")
-	t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
+		t.Setenv("CI", "")
+		t.Setenv("ROD_NO_SANDBOX", "")
+		t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	// Should have no sandbox hint (not in CI/Docker) but no browser hint
-	if strings.Contains(hint, "ROD_BROWSER_BIN") {
-		t.Error("should not suggest ROD_BROWSER_BIN when set")
-	}
-}
+		// Should have no sandbox hint (not in CI/Docker) but no browser hint
+		if strings.Contains(got, "ROD_BROWSER_BIN") {
+			t.Errorf("ForBrowserConnect() should not suggest ROD_BROWSER_BIN when set, got %q", got)
+		}
+	})
 
-func TestForBrowserConnect_AllConfigured(t *testing.T) {
-	orig := IsInContainer
-	defer func() { IsInContainer = orig }()
-	IsInContainer = func() bool { return true } // In Docker
+	t.Run("all environment variables configured", func(t *testing.T) {
+		orig := IsInContainer
+		defer func() { IsInContainer = orig }()
+		IsInContainer = func() bool { return true } // In Docker
 
-	t.Setenv("CI", "true")
-	t.Setenv("ROD_NO_SANDBOX", "1")
-	t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
+		t.Setenv("CI", "true")
+		t.Setenv("ROD_NO_SANDBOX", "1")
+		t.Setenv("ROD_BROWSER_BIN", "/usr/bin/chrome")
 
-	hint := ForBrowserConnect()
+		got := ForBrowserConnect()
 
-	// Both env vars set, should return empty hint
-	if hint != "" {
-		t.Errorf("expected empty hint when all configured, got %q", hint)
-	}
+		// Both env vars set, should return empty hint
+		if got != "" {
+			t.Errorf("ForBrowserConnect() = %q, want empty string", got)
+		}
+	})
 }
 
 func TestForTimeout(t *testing.T) {
-	hint := ForTimeout()
+	got := ForTimeout()
 
-	if !strings.Contains(hint, "hint:") {
-		t.Error("expected hint prefix")
+	if !strings.Contains(got, "hint:") {
+		t.Errorf("ForTimeout() missing hint prefix, got %q", got)
 	}
-	if !strings.Contains(hint, "--timeout") {
-		t.Error("expected --timeout flag mention")
+	if !strings.Contains(got, "--timeout") {
+		t.Errorf("ForTimeout() missing --timeout flag mention, got %q", got)
 	}
 }
 
@@ -150,26 +152,26 @@ func TestForConfigNotFound(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hint := ForConfigNotFound(tt.paths)
+			got := ForConfigNotFound(tt.paths)
 
-			if tt.wantHint && !strings.Contains(hint, "hint:") {
-				t.Error("expected hint prefix")
+			if tt.wantHint && !strings.Contains(got, "hint:") {
+				t.Errorf("ForConfigNotFound(%v) missing hint prefix, got %q", tt.paths, got)
 			}
-			if !strings.Contains(hint, tt.contains) {
-				t.Errorf("expected hint to contain %q, got %q", tt.contains, hint)
+			if !strings.Contains(got, tt.contains) {
+				t.Errorf("ForConfigNotFound(%v) = %q, want to contain %q", tt.paths, got, tt.contains)
 			}
 		})
 	}
 }
 
 func TestForOutputDirectory(t *testing.T) {
-	hint := ForOutputDirectory()
+	got := ForOutputDirectory()
 
-	if !strings.Contains(hint, "hint:") {
-		t.Error("expected hint prefix")
+	if !strings.Contains(got, "hint:") {
+		t.Errorf("ForOutputDirectory() missing hint prefix, got %q", got)
 	}
-	if !strings.Contains(hint, "parent directory") {
-		t.Error("expected parent directory mention")
+	if !strings.Contains(got, "parent directory") {
+		t.Errorf("ForOutputDirectory() missing parent directory mention, got %q", got)
 	}
 }
 
@@ -194,43 +196,45 @@ func TestForStyleNotFound(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hint := ForStyleNotFound(tt.available)
+			got := ForStyleNotFound(tt.available)
 
-			if tt.wantEmpty && hint != "" {
-				t.Errorf("expected empty hint, got %q", hint)
+			if tt.wantEmpty && got != "" {
+				t.Errorf("ForStyleNotFound(%v) = %q, want empty string", tt.available, got)
 			}
-			if !tt.wantEmpty && !strings.Contains(hint, tt.contains) {
-				t.Errorf("expected hint to contain %q, got %q", tt.contains, hint)
+			if !tt.wantEmpty && !strings.Contains(got, tt.contains) {
+				t.Errorf("ForStyleNotFound(%v) = %q, want to contain %q", tt.available, got, tt.contains)
 			}
 		})
 	}
 }
 
 func TestForSignatureImage(t *testing.T) {
-	hint := ForSignatureImage()
+	got := ForSignatureImage()
 
-	if !strings.Contains(hint, "hint:") {
-		t.Error("expected hint prefix")
+	if !strings.Contains(got, "hint:") {
+		t.Errorf("ForSignatureImage() missing hint prefix, got %q", got)
 	}
-	if !strings.Contains(hint, "PNG") {
-		t.Error("expected PNG format mention")
+	if !strings.Contains(got, "PNG") {
+		t.Errorf("ForSignatureImage() missing PNG format mention, got %q", got)
 	}
-	if !strings.Contains(hint, "URL") {
-		t.Error("expected URL mention")
+	if !strings.Contains(got, "URL") {
+		t.Errorf("ForSignatureImage() missing URL mention, got %q", got)
 	}
 }
 
-func TestFormat_Consistency(t *testing.T) {
-	// All hints should start with newline, spaces, and "hint:"
-	hints := []string{
-		ForTimeout(),
-		ForOutputDirectory(),
-		ForSignatureImage(),
-	}
-
-	for _, h := range hints {
-		if !strings.HasPrefix(h, "\n  hint: ") {
-			t.Errorf("hint format inconsistent: %q", h)
+func TestFormat(t *testing.T) {
+	t.Run("consistency across all hint functions", func(t *testing.T) {
+		// All hints should start with newline, spaces, and "hint:"
+		hints := []string{
+			ForTimeout(),
+			ForOutputDirectory(),
+			ForSignatureImage(),
 		}
-	}
+
+		for _, h := range hints {
+			if !strings.HasPrefix(h, "\n  hint: ") {
+				t.Errorf("hint format inconsistent: got %q, want prefix %q", h, "\n  hint: ")
+			}
+		}
+	})
 }

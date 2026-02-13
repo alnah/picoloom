@@ -19,46 +19,46 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// TestNewConversionService - Service Initialization
+// TestNewConverter - Service Initialization
 // ---------------------------------------------------------------------------
 
-func TestNewConversionService(t *testing.T) {
+func TestNewConverter(t *testing.T) {
 	t.Parallel()
 
 	service := acquireService(t)
 
 	if service.preprocessor == nil {
-		t.Error("preprocessor is nil")
+		t.Errorf("NewConverter() preprocessor = nil, want non-nil")
 	}
 	if _, ok := service.preprocessor.(*pipeline.CommonMarkPreprocessor); !ok {
-		t.Errorf("preprocessor type = %T, want *pipeline.CommonMarkPreprocessor", service.preprocessor)
+		t.Errorf("NewConverter() preprocessor type = %T, want *pipeline.CommonMarkPreprocessor", service.preprocessor)
 	}
 
 	if service.htmlConverter == nil {
-		t.Error("htmlConverter is nil")
+		t.Errorf("NewConverter() htmlConverter = nil, want non-nil")
 	}
 	if _, ok := service.htmlConverter.(*pipeline.GoldmarkConverter); !ok {
-		t.Errorf("htmlConverter type = %T, want *pipeline.GoldmarkConverter", service.htmlConverter)
+		t.Errorf("NewConverter() htmlConverter type = %T, want *pipeline.GoldmarkConverter", service.htmlConverter)
 	}
 
 	if service.cssInjector == nil {
-		t.Error("cssInjector is nil")
+		t.Errorf("NewConverter() cssInjector = nil, want non-nil")
 	}
 	if _, ok := service.cssInjector.(*pipeline.CSSInjection); !ok {
-		t.Errorf("cssInjector type = %T, want *pipeline.CSSInjection", service.cssInjector)
+		t.Errorf("NewConverter() cssInjector type = %T, want *pipeline.CSSInjection", service.cssInjector)
 	}
 
 	if service.pdfConverter == nil {
-		t.Error("pdfConverter is nil")
+		t.Errorf("NewConverter() pdfConverter = nil, want non-nil")
 	}
 	// pdfConverter is already *rodConverter (concrete type), type assertion not needed
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_Convert_Integration - Basic Conversion
+// TestConverter_Convert - Basic Conversion
 // ---------------------------------------------------------------------------
 
-func TestConversionService_Convert_Integration(t *testing.T) {
+func TestConverter_Convert(t *testing.T) {
 	t.Parallel()
 
 	service := acquireService(t)
@@ -70,24 +70,24 @@ func TestConversionService_Convert_Integration(t *testing.T) {
 
 	data, err := service.Convert(ctx, input)
 	if err != nil {
-		t.Fatalf("Convert() failed: %v", err)
+		t.Fatalf("Convert() unexpected error: %v", err)
 	}
 
 	// Verify PDF bytes
 	if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
-		t.Error("output does not have PDF magic bytes")
+		t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 	}
 
 	if len(data.PDF) < 100 {
-		t.Error("PDF data suspiciously small")
+		t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_WriteToFile_Integration - File Output
+// TestConverter_Convert_FileOutput - File Output
 // ---------------------------------------------------------------------------
 
-func TestConversionService_WriteToFile_Integration(t *testing.T) {
+func TestConverter_Convert_FileOutput(t *testing.T) {
 	t.Parallel()
 
 	service := acquireService(t)
@@ -99,29 +99,29 @@ func TestConversionService_WriteToFile_Integration(t *testing.T) {
 
 	data, err := service.Convert(ctx, input)
 	if err != nil {
-		t.Fatalf("Convert() failed: %v", err)
+		t.Fatalf("Convert() unexpected error: %v", err)
 	}
 
 	outputPath := filepath.Join(t.TempDir(), "out.pdf")
 	err = os.WriteFile(outputPath, data.PDF, 0644)
 	if err != nil {
-		t.Fatalf("WriteFile failed: %v", err)
+		t.Fatalf("WriteFile() unexpected error: %v", err)
 	}
 
 	info, err := os.Stat(outputPath)
 	if err != nil {
-		t.Fatalf("PDF not created: %v", err)
+		t.Fatalf("Stat() unexpected error: %v", err)
 	}
 	if info.Size() == 0 {
-		t.Error("PDF file is empty")
+		t.Errorf("PDF file size = 0, want > 0")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_PageSettings_Integration - Page Settings Variations
+// TestConverter_Convert_PageSettings - Page Settings Variations
 // ---------------------------------------------------------------------------
 
-func TestConversionService_PageSettings_Integration(t *testing.T) {
+func TestConverter_Convert_PageSettings(t *testing.T) {
 	t.Parallel()
 
 	// Test various page settings combinations to ensure they don't crash
@@ -181,27 +181,27 @@ func TestConversionService_PageSettings_Integration(t *testing.T) {
 
 			data, err := service.Convert(ctx, input)
 			if err != nil {
-				t.Fatalf("Convert() failed: %v", err)
+				t.Fatalf("Convert() unexpected error: %v", err)
 			}
 
 			// Verify PDF magic bytes
 			if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
-				t.Error("output does not have PDF magic bytes")
+				t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 			}
 
 			// Ensure PDF is not suspiciously small
 			if len(data.PDF) < 100 {
-				t.Errorf("PDF data suspiciously small: %d bytes", len(data.PDF))
+				t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_PageSettingsWithFooter_Integration - Page Settings with Footer
+// TestConverter_Convert_PageSettingsWithFooter - Page Settings with Footer
 // ---------------------------------------------------------------------------
 
-func TestConversionService_PageSettingsWithFooter_Integration(t *testing.T) {
+func TestConverter_Convert_PageSettingsWithFooter(t *testing.T) {
 	t.Parallel()
 
 	service := acquireService(t)
@@ -219,19 +219,19 @@ func TestConversionService_PageSettingsWithFooter_Integration(t *testing.T) {
 
 	data, err := service.Convert(ctx, input)
 	if err != nil {
-		t.Fatalf("Convert() failed: %v", err)
+		t.Fatalf("Convert() unexpected error: %v", err)
 	}
 
 	if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
-		t.Error("output does not have PDF magic bytes")
+		t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_PageBreaks_Integration - Page Breaks Configurations
+// TestConverter_Convert_PageBreaks - Page Breaks Configurations
 // ---------------------------------------------------------------------------
 
-func TestConversionService_PageBreaks_Integration(t *testing.T) {
+func TestConverter_Convert_PageBreaks(t *testing.T) {
 	t.Parallel()
 
 	// Test various page break configurations to ensure they produce valid PDF output
@@ -316,27 +316,27 @@ More content here.
 
 			data, err := service.Convert(ctx, input)
 			if err != nil {
-				t.Fatalf("Convert() failed: %v", err)
+				t.Fatalf("Convert() unexpected error: %v", err)
 			}
 
 			// Verify PDF magic bytes
 			if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
-				t.Error("output does not have PDF magic bytes")
+				t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 			}
 
 			// Ensure PDF is not suspiciously small
 			if len(data.PDF) < 100 {
-				t.Errorf("PDF data suspiciously small: %d bytes", len(data.PDF))
+				t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConversionService_PageBreaksWithOtherFeatures_Integration - Combined Features
+// TestConverter_Convert_PageBreaksWithOtherFeatures - Combined Features
 // ---------------------------------------------------------------------------
 
-func TestConversionService_PageBreaksWithOtherFeatures_Integration(t *testing.T) {
+func TestConverter_Convert_PageBreaksWithOtherFeatures(t *testing.T) {
 	t.Parallel()
 
 	service := acquireService(t)
@@ -360,14 +360,14 @@ func TestConversionService_PageBreaksWithOtherFeatures_Integration(t *testing.T)
 
 	data, err := service.Convert(ctx, input)
 	if err != nil {
-		t.Fatalf("Convert() failed: %v", err)
+		t.Fatalf("Convert() unexpected error: %v", err)
 	}
 
 	if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
-		t.Error("output does not have PDF magic bytes")
+		t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 	}
 
 	if len(data.PDF) < 100 {
-		t.Errorf("PDF data suspiciously small: %d bytes", len(data.PDF))
+		t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 	}
 }

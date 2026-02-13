@@ -9,9 +9,9 @@ import (
 	"testing"
 )
 
-// BenchmarkInjectCSS benchmarks CSS injection into HTML.
+// BenchmarkCSSInjection_InjectCSS benchmarks CSS injection into HTML.
 // Critical for styling as it's called on every conversion.
-func BenchmarkInjectCSS(b *testing.B) {
+func BenchmarkCSSInjection_InjectCSS(b *testing.B) {
 	injector := &CSSInjection{}
 	ctx := context.Background()
 
@@ -81,8 +81,8 @@ func BenchmarkSanitizeCSS(b *testing.B) {
 	}
 }
 
-// BenchmarkInjectSignature benchmarks signature block injection.
-func BenchmarkInjectSignature(b *testing.B) {
+// BenchmarkSignatureInjection_InjectSignature benchmarks signature block injection.
+func BenchmarkSignatureInjection_InjectSignature(b *testing.B) {
 	injector := NewSignatureInjection()
 	ctx := context.Background()
 
@@ -123,8 +123,8 @@ func BenchmarkInjectSignature(b *testing.B) {
 	}
 }
 
-// BenchmarkInjectCover benchmarks cover page injection.
-func BenchmarkInjectCover(b *testing.B) {
+// BenchmarkCoverInjection_InjectCover benchmarks cover page injection.
+func BenchmarkCoverInjection_InjectCover(b *testing.B) {
 	injector := NewCoverInjection()
 	ctx := context.Background()
 
@@ -209,8 +209,8 @@ func BenchmarkGenerateNumberedTOC(b *testing.B) {
 	}
 }
 
-// BenchmarkInjectTOC benchmarks full TOC injection.
-func BenchmarkInjectTOC(b *testing.B) {
+// BenchmarkTOCInjection_InjectTOC benchmarks full TOC injection.
+func BenchmarkTOCInjection_InjectTOC(b *testing.B) {
 	injector := NewTOCInjection()
 	ctx := context.Background()
 

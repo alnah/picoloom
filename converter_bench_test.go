@@ -38,10 +38,10 @@ func newBenchService() *Service {
 }
 
 // ---------------------------------------------------------------------------
-// BenchmarkServiceConvert - Full Pipeline Performance
+// BenchmarkService_Convert - Full Pipeline Performance
 // ---------------------------------------------------------------------------
 
-func BenchmarkServiceConvert(b *testing.B) {
+func BenchmarkService_Convert(b *testing.B) {
 	service := newBenchService()
 	defer service.Close()
 
@@ -187,7 +187,7 @@ func BenchmarkServiceConvert(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				result, err := service.Convert(ctx, input.input)
 				if err != nil {
-					b.Fatal(err)
+					b.Fatalf("Convert() unexpected error: %v", err)
 				}
 				_ = result
 			}
@@ -196,10 +196,10 @@ func BenchmarkServiceConvert(b *testing.B) {
 }
 
 // ---------------------------------------------------------------------------
-// BenchmarkServiceConvertBySize - Document Size Scaling
+// BenchmarkService_ConvertBySize - Document Size Scaling
 // ---------------------------------------------------------------------------
 
-func BenchmarkServiceConvertBySize(b *testing.B) {
+func BenchmarkService_ConvertBySize(b *testing.B) {
 	service := newBenchService()
 	defer service.Close()
 
@@ -223,7 +223,7 @@ func BenchmarkServiceConvertBySize(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				result, err := service.Convert(ctx, input)
 				if err != nil {
-					b.Fatal(err)
+					b.Fatalf("Convert() unexpected error: %v", err)
 				}
 				_ = result
 			}
@@ -249,10 +249,10 @@ func sizeName(size int) string {
 }
 
 // ---------------------------------------------------------------------------
-// BenchmarkServiceConvertParallel - Concurrent Conversions
+// BenchmarkService_ConvertParallel - Concurrent Conversions
 // ---------------------------------------------------------------------------
 
-func BenchmarkServiceConvertParallel(b *testing.B) {
+func BenchmarkService_ConvertParallel(b *testing.B) {
 	service := newBenchService()
 	defer service.Close()
 
@@ -276,7 +276,7 @@ func BenchmarkServiceConvertParallel(b *testing.B) {
 		for pb.Next() {
 			result, err := service.Convert(ctx, input)
 			if err != nil {
-				b.Fatal(err)
+				b.Fatalf("Convert() unexpected error: %v", err)
 			}
 			_ = result
 		}

@@ -181,56 +181,56 @@ func TestParseFlags(t *testing.T) {
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatal("parseFlags() error = nil, want error")
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("parseFlags() unexpected error: %v", err)
 			}
 
 			if flags.common.config != tt.wantConfig {
-				t.Errorf("configName = %q, want %q", flags.common.config, tt.wantConfig)
+				t.Errorf("parseFlags() config = %q, want %q", flags.common.config, tt.wantConfig)
 			}
 			if flags.output != tt.wantOutput {
-				t.Errorf("outputPath = %q, want %q", flags.output, tt.wantOutput)
+				t.Errorf("parseFlags() output = %q, want %q", flags.output, tt.wantOutput)
 			}
 			if flags.assets.style != tt.wantCSS {
-				t.Errorf("style = %q, want %q", flags.assets.style, tt.wantCSS)
+				t.Errorf("parseFlags() style = %q, want %q", flags.assets.style, tt.wantCSS)
 			}
 			if flags.common.quiet != tt.wantQuiet {
-				t.Errorf("quiet = %v, want %v", flags.common.quiet, tt.wantQuiet)
+				t.Errorf("parseFlags() quiet = %v, want %v", flags.common.quiet, tt.wantQuiet)
 			}
 			if flags.common.verbose != tt.wantVerbose {
-				t.Errorf("verbose = %v, want %v", flags.common.verbose, tt.wantVerbose)
+				t.Errorf("parseFlags() verbose = %v, want %v", flags.common.verbose, tt.wantVerbose)
 			}
 			if flags.signature.disabled != tt.wantNoSignature {
-				t.Errorf("noSignature = %v, want %v", flags.signature.disabled, tt.wantNoSignature)
+				t.Errorf("parseFlags() signature.disabled = %v, want %v", flags.signature.disabled, tt.wantNoSignature)
 			}
 			if flags.assets.noStyle != tt.wantNoStyle {
-				t.Errorf("noStyle = %v, want %v", flags.assets.noStyle, tt.wantNoStyle)
+				t.Errorf("parseFlags() assets.noStyle = %v, want %v", flags.assets.noStyle, tt.wantNoStyle)
 			}
 			if flags.footer.disabled != tt.wantNoFooter {
-				t.Errorf("noFooter = %v, want %v", flags.footer.disabled, tt.wantNoFooter)
+				t.Errorf("parseFlags() footer.disabled = %v, want %v", flags.footer.disabled, tt.wantNoFooter)
 			}
 			// Note: --version flag removed from convert command
 			_ = tt.wantVersion // Unused, kept for test struct compatibility
 			if flags.page.size != tt.wantPageSize {
-				t.Errorf("pageSize = %q, want %q", flags.page.size, tt.wantPageSize)
+				t.Errorf("parseFlags() page.size = %q, want %q", flags.page.size, tt.wantPageSize)
 			}
 			if flags.page.orientation != tt.wantOrientation {
-				t.Errorf("orientation = %q, want %q", flags.page.orientation, tt.wantOrientation)
+				t.Errorf("parseFlags() page.orientation = %q, want %q", flags.page.orientation, tt.wantOrientation)
 			}
 			if flags.page.margin != tt.wantMargin {
-				t.Errorf("margin = %v, want %v", flags.page.margin, tt.wantMargin)
+				t.Errorf("parseFlags() page.margin = %v, want %v", flags.page.margin, tt.wantMargin)
 			}
 			if len(positional) != len(tt.wantPositional) {
-				t.Errorf("positional args = %v, want %v", positional, tt.wantPositional)
+				t.Errorf("parseFlags() positional args = %v, want %v", positional, tt.wantPositional)
 			}
 			for i := range positional {
 				if positional[i] != tt.wantPositional[i] {
-					t.Errorf("positional[%d] = %q, want %q", i, positional[i], tt.wantPositional[i])
+					t.Errorf("parseFlags() positional[%d] = %q, want %q", i, positional[i], tt.wantPositional[i])
 				}
 			}
 		})
@@ -248,10 +248,10 @@ func TestParseFlags_NoTOC(t *testing.T) {
 		t.Parallel()
 		flags, _, err := parseFlags([]string{"md2pdf", "--no-toc", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if !flags.toc.disabled {
-			t.Error("expected noTOC=true when --no-toc flag provided")
+			t.Error("parseFlags() toc.disabled = false, want true")
 		}
 	})
 
@@ -260,10 +260,10 @@ func TestParseFlags_NoTOC(t *testing.T) {
 
 		flags, _, err := parseFlags([]string{"md2pdf", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if flags.toc.disabled {
-			t.Error("expected noTOC=false when --no-toc flag not provided")
+			t.Error("parseFlags() toc.disabled = true, want false")
 		}
 	})
 
@@ -272,16 +272,16 @@ func TestParseFlags_NoTOC(t *testing.T) {
 
 		flags, _, err := parseFlags([]string{"md2pdf", "--no-toc", "--no-cover", "--quiet", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if !flags.toc.disabled {
-			t.Error("expected noTOC=true")
+			t.Error("parseFlags() toc.disabled = false, want true")
 		}
 		if !flags.cover.disabled {
-			t.Error("expected noCover=true")
+			t.Error("parseFlags() cover.disabled = false, want true")
 		}
 		if !flags.common.quiet {
-			t.Error("expected quiet=true")
+			t.Error("parseFlags() quiet = false, want true")
 		}
 	})
 }
@@ -297,10 +297,10 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 		t.Parallel()
 		flags, _, err := parseFlags([]string{"md2pdf", "--no-page-breaks", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if !flags.pageBreaks.disabled {
-			t.Error("expected noPageBreaks=true when --no-page-breaks flag provided")
+			t.Error("parseFlags() pageBreaks.disabled = false, want true")
 		}
 	})
 
@@ -309,10 +309,10 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 
 		flags, _, err := parseFlags([]string{"md2pdf", "--break-before", "h1,h2", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if flags.pageBreaks.breakBefore != "h1,h2" {
-			t.Errorf("breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1,h2")
+			t.Errorf("parseFlags() breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1,h2")
 		}
 	})
 
@@ -321,10 +321,10 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 
 		flags, _, err := parseFlags([]string{"md2pdf", "--orphans", "3", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if flags.pageBreaks.orphans != 3 {
-			t.Errorf("orphans = %d, want 3", flags.pageBreaks.orphans)
+			t.Errorf("parseFlags() orphans = %d, want 3", flags.pageBreaks.orphans)
 		}
 	})
 
@@ -333,10 +333,10 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 
 		flags, _, err := parseFlags([]string{"md2pdf", "--widows", "4", "test.md"})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if flags.pageBreaks.widows != 4 {
-			t.Errorf("widows = %d, want 4", flags.pageBreaks.widows)
+			t.Errorf("parseFlags() widows = %d, want 4", flags.pageBreaks.widows)
 		}
 	})
 
@@ -351,16 +351,16 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 			"test.md",
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if flags.pageBreaks.breakBefore != "h1,h2,h3" {
-			t.Errorf("breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1,h2,h3")
+			t.Errorf("parseFlags() breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1,h2,h3")
 		}
 		if flags.pageBreaks.orphans != 5 {
-			t.Errorf("orphans = %d, want 5", flags.pageBreaks.orphans)
+			t.Errorf("parseFlags() orphans = %d, want 5", flags.pageBreaks.orphans)
 		}
 		if flags.pageBreaks.widows != 5 {
-			t.Errorf("widows = %d, want 5", flags.pageBreaks.widows)
+			t.Errorf("parseFlags() widows = %d, want 5", flags.pageBreaks.widows)
 		}
 	})
 
@@ -375,17 +375,17 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 			"test.md",
 		})
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("parseFlags() unexpected error: %v", err)
 		}
 		if !flags.pageBreaks.disabled {
-			t.Error("expected noPageBreaks=true")
+			t.Error("parseFlags() pageBreaks.disabled = false, want true")
 		}
 		// Other flags are still parsed, but noPageBreaks takes precedence
 		if flags.pageBreaks.breakBefore != "h1" {
-			t.Errorf("breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1")
+			t.Errorf("parseFlags() breakBefore = %q, want %q", flags.pageBreaks.breakBefore, "h1")
 		}
 		if flags.pageBreaks.orphans != 3 {
-			t.Errorf("orphans = %d, want 3", flags.pageBreaks.orphans)
+			t.Errorf("parseFlags() orphans = %d, want 3", flags.pageBreaks.orphans)
 		}
 	})
 }
@@ -406,7 +406,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--author-name", "John Doe"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.name != "John Doe" {
-					t.Errorf("author.name = %q, want %q", f.author.name, "John Doe")
+					t.Errorf("parseConvertFlags() author.name = %q, want %q", f.author.name, "John Doe")
 				}
 			},
 		},
@@ -415,7 +415,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--author-title", "Senior Developer"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.title != "Senior Developer" {
-					t.Errorf("author.title = %q, want %q", f.author.title, "Senior Developer")
+					t.Errorf("parseConvertFlags() author.title = %q, want %q", f.author.title, "Senior Developer")
 				}
 			},
 		},
@@ -424,7 +424,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--author-email", "john@example.com"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.email != "john@example.com" {
-					t.Errorf("author.email = %q, want %q", f.author.email, "john@example.com")
+					t.Errorf("parseConvertFlags() author.email = %q, want %q", f.author.email, "john@example.com")
 				}
 			},
 		},
@@ -433,7 +433,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--author-org", "Acme Corp"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.org != "Acme Corp" {
-					t.Errorf("author.org = %q, want %q", f.author.org, "Acme Corp")
+					t.Errorf("parseConvertFlags() author.org = %q, want %q", f.author.org, "Acme Corp")
 				}
 			},
 		},
@@ -442,7 +442,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--doc-title", "My Document"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.document.title != "My Document" {
-					t.Errorf("document.title = %q, want %q", f.document.title, "My Document")
+					t.Errorf("parseConvertFlags() document.title = %q, want %q", f.document.title, "My Document")
 				}
 			},
 		},
@@ -451,7 +451,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--doc-subtitle", "A Comprehensive Guide"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.document.subtitle != "A Comprehensive Guide" {
-					t.Errorf("document.subtitle = %q, want %q", f.document.subtitle, "A Comprehensive Guide")
+					t.Errorf("parseConvertFlags() document.subtitle = %q, want %q", f.document.subtitle, "A Comprehensive Guide")
 				}
 			},
 		},
@@ -460,7 +460,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--doc-version", "v1.0.0"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.document.version != "v1.0.0" {
-					t.Errorf("document.version = %q, want %q", f.document.version, "v1.0.0")
+					t.Errorf("parseConvertFlags() document.version = %q, want %q", f.document.version, "v1.0.0")
 				}
 			},
 		},
@@ -469,7 +469,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--doc-date", "auto"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.document.date != "auto" {
-					t.Errorf("document.date = %q, want %q", f.document.date, "auto")
+					t.Errorf("parseConvertFlags() document.date = %q, want %q", f.document.date, "auto")
 				}
 			},
 		},
@@ -478,7 +478,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--footer-position", "left"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.footer.position != "left" {
-					t.Errorf("footer.position = %q, want %q", f.footer.position, "left")
+					t.Errorf("parseConvertFlags() footer.position = %q, want %q", f.footer.position, "left")
 				}
 			},
 		},
@@ -487,7 +487,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--footer-text", "Confidential"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.footer.text != "Confidential" {
-					t.Errorf("footer.text = %q, want %q", f.footer.text, "Confidential")
+					t.Errorf("parseConvertFlags() footer.text = %q, want %q", f.footer.text, "Confidential")
 				}
 			},
 		},
@@ -496,7 +496,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--footer-page-number"},
 			check: func(t *testing.T, f *convertFlags) {
 				if !f.footer.pageNumber {
-					t.Error("footer.pageNumber should be true")
+					t.Error("parseConvertFlags() footer.pageNumber = false, want true")
 				}
 			},
 		},
@@ -505,7 +505,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--cover-logo", "/path/to/logo.png"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.cover.logo != "/path/to/logo.png" {
-					t.Errorf("cover.logo = %q, want %q", f.cover.logo, "/path/to/logo.png")
+					t.Errorf("parseConvertFlags() cover.logo = %q, want %q", f.cover.logo, "/path/to/logo.png")
 				}
 			},
 		},
@@ -514,7 +514,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--sig-image", "/path/to/sig.png"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.signature.image != "/path/to/sig.png" {
-					t.Errorf("signature.image = %q, want %q", f.signature.image, "/path/to/sig.png")
+					t.Errorf("parseConvertFlags() signature.image = %q, want %q", f.signature.image, "/path/to/sig.png")
 				}
 			},
 		},
@@ -523,7 +523,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--toc-title", "Table of Contents"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.toc.title != "Table of Contents" {
-					t.Errorf("toc.title = %q, want %q", f.toc.title, "Table of Contents")
+					t.Errorf("parseConvertFlags() toc.title = %q, want %q", f.toc.title, "Table of Contents")
 				}
 			},
 		},
@@ -532,7 +532,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--toc-min-depth", "2"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.toc.minDepth != 2 {
-					t.Errorf("toc.minDepth = %d, want %d", f.toc.minDepth, 2)
+					t.Errorf("parseConvertFlags() toc.minDepth = %d, want %d", f.toc.minDepth, 2)
 				}
 			},
 		},
@@ -541,7 +541,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--toc-max-depth", "4"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.toc.maxDepth != 4 {
-					t.Errorf("toc.maxDepth = %d, want %d", f.toc.maxDepth, 4)
+					t.Errorf("parseConvertFlags() toc.maxDepth = %d, want %d", f.toc.maxDepth, 4)
 				}
 			},
 		},
@@ -550,7 +550,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--wm-text", "DRAFT"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.watermark.text != "DRAFT" {
-					t.Errorf("watermark.text = %q, want %q", f.watermark.text, "DRAFT")
+					t.Errorf("parseConvertFlags() watermark.text = %q, want %q", f.watermark.text, "DRAFT")
 				}
 			},
 		},
@@ -559,7 +559,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--wm-color", "#ff0000"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.watermark.color != "#ff0000" {
-					t.Errorf("watermark.color = %q, want %q", f.watermark.color, "#ff0000")
+					t.Errorf("parseConvertFlags() watermark.color = %q, want %q", f.watermark.color, "#ff0000")
 				}
 			},
 		},
@@ -568,7 +568,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--wm-opacity", "0.5"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.watermark.opacity != 0.5 {
-					t.Errorf("watermark.opacity = %v, want %v", f.watermark.opacity, 0.5)
+					t.Errorf("parseConvertFlags() watermark.opacity = %v, want %v", f.watermark.opacity, 0.5)
 				}
 			},
 		},
@@ -577,7 +577,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--wm-angle", "-30"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.watermark.angle != -30 {
-					t.Errorf("watermark.angle = %v, want %v", f.watermark.angle, -30)
+					t.Errorf("parseConvertFlags() watermark.angle = %v, want %v", f.watermark.angle, -30)
 				}
 			},
 		},
@@ -591,16 +591,16 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.name != "John" {
-					t.Errorf("author.name = %q, want %q", f.author.name, "John")
+					t.Errorf("parseConvertFlags() author.name = %q, want %q", f.author.name, "John")
 				}
 				if f.author.title != "Dev" {
-					t.Errorf("author.title = %q, want %q", f.author.title, "Dev")
+					t.Errorf("parseConvertFlags() author.title = %q, want %q", f.author.title, "Dev")
 				}
 				if f.author.email != "j@x.com" {
-					t.Errorf("author.email = %q, want %q", f.author.email, "j@x.com")
+					t.Errorf("parseConvertFlags() author.email = %q, want %q", f.author.email, "j@x.com")
 				}
 				if f.author.org != "Acme" {
-					t.Errorf("author.org = %q, want %q", f.author.org, "Acme")
+					t.Errorf("parseConvertFlags() author.org = %q, want %q", f.author.org, "Acme")
 				}
 			},
 		},
@@ -614,16 +614,16 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.document.title != "Title" {
-					t.Errorf("document.title = %q, want %q", f.document.title, "Title")
+					t.Errorf("parseConvertFlags() document.title = %q, want %q", f.document.title, "Title")
 				}
 				if f.document.subtitle != "Subtitle" {
-					t.Errorf("document.subtitle = %q, want %q", f.document.subtitle, "Subtitle")
+					t.Errorf("parseConvertFlags() document.subtitle = %q, want %q", f.document.subtitle, "Subtitle")
 				}
 				if f.document.version != "v1.0" {
-					t.Errorf("document.version = %q, want %q", f.document.version, "v1.0")
+					t.Errorf("parseConvertFlags() document.version = %q, want %q", f.document.version, "v1.0")
 				}
 				if f.document.date != "2025-01-15" {
-					t.Errorf("document.date = %q, want %q", f.document.date, "2025-01-15")
+					t.Errorf("parseConvertFlags() document.date = %q, want %q", f.document.date, "2025-01-15")
 				}
 			},
 		},
@@ -632,7 +632,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--author-name", "John", "doc.md", "doc2.md"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.author.name != "John" {
-					t.Errorf("author.name = %q, want %q", f.author.name, "John")
+					t.Errorf("parseConvertFlags() author.name = %q, want %q", f.author.name, "John")
 				}
 			},
 		},
@@ -641,7 +641,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--timeout", "2m"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.timeout != "2m" {
-					t.Errorf("timeout = %q, want %q", f.timeout, "2m")
+					t.Errorf("parseConvertFlags() timeout = %q, want %q", f.timeout, "2m")
 				}
 			},
 		},
@@ -650,7 +650,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"-t", "30s"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.timeout != "30s" {
-					t.Errorf("timeout = %q, want %q", f.timeout, "30s")
+					t.Errorf("parseConvertFlags() timeout = %q, want %q", f.timeout, "30s")
 				}
 			},
 		},
@@ -659,7 +659,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--timeout", "1m30s"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.timeout != "1m30s" {
-					t.Errorf("timeout = %q, want %q", f.timeout, "1m30s")
+					t.Errorf("parseConvertFlags() timeout = %q, want %q", f.timeout, "1m30s")
 				}
 			},
 		},
@@ -668,13 +668,13 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 			args: []string{"--timeout", "5m", "--workers", "4", "-o", "output.pdf"},
 			check: func(t *testing.T, f *convertFlags) {
 				if f.timeout != "5m" {
-					t.Errorf("timeout = %q, want %q", f.timeout, "5m")
+					t.Errorf("parseConvertFlags() timeout = %q, want %q", f.timeout, "5m")
 				}
 				if f.workers != 4 {
-					t.Errorf("workers = %d, want %d", f.workers, 4)
+					t.Errorf("parseConvertFlags() workers = %d, want %d", f.workers, 4)
 				}
 				if f.output != "output.pdf" {
-					t.Errorf("output = %q, want %q", f.output, "output.pdf")
+					t.Errorf("parseConvertFlags() output = %q, want %q", f.output, "output.pdf")
 				}
 			},
 		},
@@ -686,7 +686,7 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 
 			flags, _, err := parseConvertFlags(tt.args)
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("parseConvertFlags() unexpected error: %v", err)
 			}
 			tt.check(t, flags)
 		})
@@ -702,18 +702,18 @@ func TestParseConvertFlags_PositionalArgs(t *testing.T) {
 
 	flags, positional, err := parseConvertFlags([]string{"--author-name", "John", "doc.md", "doc2.md"})
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("parseConvertFlags() unexpected error: %v", err)
 	}
 	if flags.author.name != "John" {
-		t.Errorf("author.name = %q, want %q", flags.author.name, "John")
+		t.Errorf("parseConvertFlags() author.name = %q, want %q", flags.author.name, "John")
 	}
 	if len(positional) != 2 {
-		t.Fatalf("positional count = %d, want 2", len(positional))
+		t.Fatalf("parseConvertFlags() positional count = %d, want 2", len(positional))
 	}
 	if positional[0] != "doc.md" {
-		t.Errorf("positional[0] = %q, want %q", positional[0], "doc.md")
+		t.Errorf("parseConvertFlags() positional[0] = %q, want %q", positional[0], "doc.md")
 	}
 	if positional[1] != "doc2.md" {
-		t.Errorf("positional[1] = %q, want %q", positional[1], "doc2.md")
+		t.Errorf("parseConvertFlags() positional[1] = %q, want %q", positional[1], "doc2.md")
 	}
 }

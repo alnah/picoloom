@@ -230,18 +230,18 @@ func TestGoldmarkConverter_ToHTML(t *testing.T) {
 
 			result, err := converter.ToHTML(ctx, tt.input)
 			if err != nil {
-				t.Fatalf("ToHTML() unexpected error: %v", err)
+				t.Fatalf("ToHTML(%q) unexpected error: %v", tt.input, err)
 			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(result, want) {
-					t.Errorf("ToHTML() result should contain %q\nGot:\n%s", want, result)
+					t.Errorf("ToHTML(%q) missing expected content %q\nGot:\n%s", tt.input, want, result)
 				}
 			}
 
 			for _, notWant := range tt.wantNot {
 				if strings.Contains(result, notWant) {
-					t.Errorf("ToHTML() result should NOT contain %q\nGot:\n%s", notWant, result)
+					t.Errorf("ToHTML(%q) contains unwanted content %q\nGot:\n%s", tt.input, notWant, result)
 				}
 			}
 		})
@@ -253,7 +253,7 @@ func TestGoldmarkConverter_ToHTML_ContextCancellation(t *testing.T) {
 
 	converter := NewGoldmarkConverter()
 
-	t.Run("cancelled context returns error", func(t *testing.T) {
+	t.Run("error case: cancelled context", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithCancel(context.Background())
@@ -261,14 +261,14 @@ func TestGoldmarkConverter_ToHTML_ContextCancellation(t *testing.T) {
 
 		_, err := converter.ToHTML(ctx, "# Test")
 		if err == nil {
-			t.Fatal("expected error for cancelled context")
+			t.Fatal("ToHTML(ctx, \"# Test\") error = nil, want error")
 		}
 		if err != context.Canceled {
-			t.Errorf("expected context.Canceled, got %v", err)
+			t.Errorf("ToHTML(ctx, \"# Test\") error = %v, want context.Canceled", err)
 		}
 	})
 
-	t.Run("deadline exceeded returns error", func(t *testing.T) {
+	t.Run("error case: deadline exceeded", func(t *testing.T) {
 		t.Parallel()
 
 		// Create an already-expired context to avoid flaky timing issues
@@ -277,14 +277,14 @@ func TestGoldmarkConverter_ToHTML_ContextCancellation(t *testing.T) {
 
 		_, err := converter.ToHTML(ctx, "# Test")
 		if err == nil {
-			t.Fatal("expected error for timed out context")
+			t.Fatal("ToHTML(ctx, \"# Test\") error = nil, want error")
 		}
 		if err != context.DeadlineExceeded {
-			t.Errorf("expected context.DeadlineExceeded, got %v", err)
+			t.Errorf("ToHTML(ctx, \"# Test\") error = %v, want context.DeadlineExceeded", err)
 		}
 	})
 
-	t.Run("valid context succeeds", func(t *testing.T) {
+	t.Run("happy path: valid context", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -292,10 +292,10 @@ func TestGoldmarkConverter_ToHTML_ContextCancellation(t *testing.T) {
 
 		result, err := converter.ToHTML(ctx, "# Test")
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML(ctx, \"# Test\") unexpected error: %v", err)
 		}
 		if !strings.Contains(result, "Test") {
-			t.Error("result should contain converted content")
+			t.Errorf("ToHTML(ctx, \"# Test\") missing expected content \"Test\"\nGot:\n%s", result)
 		}
 	})
 }
@@ -326,13 +326,13 @@ func TestGoldmarkConverter_GFMExtensions(t *testing.T) {
 		input := "| Left | Center | Right |\n|:-----|:------:|------:|\n| L | C | R |"
 		result, err := converter.ToHTML(ctx, input)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML(ctx, %q) unexpected error: %v", input, err)
 		}
 
 		if !strings.Contains(result, "left") && !strings.Contains(result, "align") {
 			// Table structure should exist even if alignment styling varies
 			if !strings.Contains(result, "<table>") {
-				t.Error("expected table markup")
+				t.Errorf("ToHTML(ctx, %q) missing expected table markup", input)
 			}
 		}
 	})
@@ -343,13 +343,13 @@ func TestGoldmarkConverter_GFMExtensions(t *testing.T) {
 		input := "- Item 1\n  - Nested 1\n  - Nested 2\n- Item 2"
 		result, err := converter.ToHTML(ctx, input)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML(ctx, %q) unexpected error: %v", input, err)
 		}
 
 		// Count list elements to verify nesting
 		ulCount := strings.Count(result, "<ul>")
 		if ulCount < 2 {
-			t.Errorf("expected nested lists (at least 2 <ul>), got %d", ulCount)
+			t.Errorf("ToHTML(ctx, %q) <ul> count = %d, want >= 2", input, ulCount)
 		}
 	})
 
@@ -387,7 +387,7 @@ This is a paragraph with **bold** and *italic* text.
 `
 		result, err := converter.ToHTML(ctx, input)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("ToHTML(ctx, complex input) unexpected error: %v", err)
 		}
 
 		checks := []string{
@@ -403,7 +403,7 @@ This is a paragraph with **bold** and *italic* text.
 
 		for _, check := range checks {
 			if !strings.Contains(result, check) {
-				t.Errorf("expected %q in complex document output", check)
+				t.Errorf("ToHTML(ctx, complex input) missing expected content %q", check)
 			}
 		}
 	})
@@ -443,11 +443,11 @@ func TestGoldmarkConverter_HeadingIDs(t *testing.T) {
 
 			result, err := converter.ToHTML(ctx, tt.input)
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("ToHTML(ctx, %q) unexpected error: %v", tt.input, err)
 			}
 
 			if !strings.Contains(result, tt.wantID) {
-				t.Errorf("expected heading ID %q in result:\n%s", tt.wantID, result)
+				t.Errorf("ToHTML(ctx, %q) missing expected heading ID %q\nGot:\n%s", tt.input, tt.wantID, result)
 			}
 		})
 	}

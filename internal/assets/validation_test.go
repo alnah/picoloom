@@ -15,102 +15,102 @@ func TestValidateAssetName(t *testing.T) {
 	}{
 		// Valid names
 		{
-			name:    "simple name",
+			name:    "happy path: simple name",
 			input:   "creative",
 			wantErr: nil,
 		},
 		{
-			name:    "name with hyphen",
+			name:    "happy path: name with hyphen",
 			input:   "my-style",
 			wantErr: nil,
 		},
 		{
-			name:    "name with underscore",
+			name:    "happy path: name with underscore",
 			input:   "my_style",
 			wantErr: nil,
 		},
 		{
-			name:    "name with numbers",
+			name:    "happy path: name with numbers",
 			input:   "style123",
 			wantErr: nil,
 		},
 		{
-			name:    "mixed case",
+			name:    "happy path: mixed case",
 			input:   "MyStyle",
 			wantErr: nil,
 		},
 
 		// Invalid names - empty
 		{
-			name:    "empty name",
+			name:    "error case: empty name",
 			input:   "",
 			wantErr: ErrInvalidAssetName,
 		},
 
 		// Invalid names - path separators
 		{
-			name:    "forward slash",
+			name:    "error case: forward slash",
 			input:   "path/to/style",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "backslash",
+			name:    "error case: backslash",
 			input:   "path\\to\\style",
 			wantErr: ErrInvalidAssetName,
 		},
 
 		// Invalid names - path traversal
 		{
-			name:    "parent directory traversal",
+			name:    "error case: parent directory traversal",
 			input:   "../secret",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "windows parent traversal",
+			name:    "error case: windows parent traversal",
 			input:   "..\\secret",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "double parent traversal",
+			name:    "error case: double parent traversal",
 			input:   "../../etc/passwd",
 			wantErr: ErrInvalidAssetName,
 		},
 
 		// Invalid names - dots (could allow extension manipulation)
 		{
-			name:    "dot in name",
+			name:    "error case: dot in name",
 			input:   "style.css",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "hidden file",
+			name:    "error case: hidden file",
 			input:   ".hidden",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "double extension",
+			name:    "error case: double extension",
 			input:   "style.css.bak",
 			wantErr: ErrInvalidAssetName,
 		},
 
 		// Edge cases
 		{
-			name:    "absolute path unix",
+			name:    "edge case: absolute path unix",
 			input:   "/etc/passwd",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "absolute path windows",
+			name:    "edge case: absolute path windows",
 			input:   "C:\\Windows\\System32",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "just a dot",
+			name:    "edge case: just a dot",
 			input:   ".",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "two dots",
+			name:    "edge case: two dots",
 			input:   "..",
 			wantErr: ErrInvalidAssetName,
 		},
@@ -124,7 +124,7 @@ func TestValidateAssetName(t *testing.T) {
 
 			if tt.wantErr == nil {
 				if err != nil {
-					t.Errorf("ValidateAssetName(%q) unexpected error: %v", tt.input, err)
+					t.Fatalf("ValidateAssetName(%q) unexpected error: %v", tt.input, err)
 				}
 				return
 			}
@@ -144,7 +144,7 @@ func TestValidateAssetName_ErrorMessages(t *testing.T) {
 
 		err := ValidateAssetName("")
 		if err == nil {
-			t.Fatal("expected error for empty name")
+			t.Fatal("ValidateAssetName(\"\") error = nil, want error")
 		}
 		if err.Error() == "" {
 			t.Error("error message should not be empty")
@@ -156,7 +156,7 @@ func TestValidateAssetName_ErrorMessages(t *testing.T) {
 
 		err := ValidateAssetName("../evil")
 		if err == nil {
-			t.Fatal("expected error for invalid name")
+			t.Fatal("ValidateAssetName(\"../evil\") error = nil, want error")
 		}
 		// The error message should contain the invalid name for debugging
 		errStr := err.Error()

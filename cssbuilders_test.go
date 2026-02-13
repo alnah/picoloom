@@ -195,7 +195,7 @@ func TestBuildWatermarkCSS(t *testing.T) {
 
 			for _, notWant := range tt.wantNotContain {
 				if strings.Contains(got, notWant) {
-					t.Errorf("buildWatermarkCSS() should not contain %q\nGot:\n%s", notWant, got)
+					t.Errorf("buildWatermarkCSS() contains unwanted %q\nGot:\n%s", notWant, got)
 				}
 			}
 		})
@@ -431,7 +431,7 @@ func TestBuildPageBreaksCSS(t *testing.T) {
 
 			for _, notWant := range tt.wantNotContain {
 				if strings.Contains(got, notWant) {
-					t.Errorf("buildPageBreaksCSS() should not contain %q\nGot:\n%s", notWant, got)
+					t.Errorf("buildPageBreaksCSS() contains unwanted %q\nGot:\n%s", notWant, got)
 				}
 			}
 		})

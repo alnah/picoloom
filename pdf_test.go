@@ -112,26 +112,26 @@ func TestRodConverter_ToPDF(t *testing.T) {
 
 			if tt.wantAnyErr || tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("ToPDF(ctx, %q, nil) error = nil, want error", tt.html)
 				}
 				if tt.wantErr != nil && !errors.Is(err, tt.wantErr) {
-					t.Errorf("expected error %v, got %v", tt.wantErr, err)
+					t.Errorf("ToPDF(ctx, %q, nil) error = %v, want %v", tt.html, err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("ToPDF(ctx, %q, nil) unexpected error: %v", tt.html, err)
 			}
 
 			// Verify PDF bytes returned
 			if string(result) != string(tt.mock.Result) {
-				t.Errorf("expected result %q, got %q", tt.mock.Result, result)
+				t.Errorf("ToPDF(ctx, %q, nil) = %q, want %q", tt.html, result, tt.mock.Result)
 			}
 
 			// Verify renderer was called with temp file
 			if !strings.Contains(tt.mock.CalledWith, "md2pdf-") {
-				t.Errorf("expected temp file path with 'md2pdf-', got %q", tt.mock.CalledWith)
+				t.Errorf("ToPDF(ctx, %q, nil) temp file path = %q, want path containing 'md2pdf-'", tt.html, tt.mock.CalledWith)
 			}
 		})
 	}
@@ -157,7 +157,7 @@ func TestRodConverter_ToPDF_ContextCancellation(t *testing.T) {
 	_, err := converter.ToPDF(ctx, "<html></html>", nil)
 	// Mock doesn't check context, so it succeeds
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf("ToPDF(ctx, \"<html></html>\", nil) unexpected error: %v", err)
 	}
 }
 
@@ -171,11 +171,11 @@ func TestNewRodConverter(t *testing.T) {
 	converter := newRodConverter(defaultTimeout)
 
 	if converter.renderer == nil {
-		t.Fatal("expected non-nil renderer")
+		t.Fatalf("newRodConverter(%v).renderer = nil, want non-nil", defaultTimeout)
 	}
 
 	if converter.renderer.timeout != defaultTimeout {
-		t.Errorf("expected timeout %v, got %v", defaultTimeout, converter.renderer.timeout)
+		t.Errorf("newRodConverter(%v).renderer.timeout = %v, want %v", defaultTimeout, converter.renderer.timeout, defaultTimeout)
 	}
 }
 
@@ -280,10 +280,10 @@ func TestBuildFooterTemplate(t *testing.T) {
 			result := buildFooterTemplate(tt.data)
 
 			if tt.wantPart != "" && !strings.Contains(result, tt.wantPart) {
-				t.Errorf("expected %q in result, got: %s", tt.wantPart, result)
+				t.Errorf("buildFooterTemplate(%v) missing substring %q, got: %s", tt.data, tt.wantPart, result)
 			}
 			if tt.wantNot != "" && strings.Contains(result, tt.wantNot) {
-				t.Errorf("expected %q NOT in result, got: %s", tt.wantNot, result)
+				t.Errorf("buildFooterTemplate(%v) contains forbidden substring %q, got: %s", tt.data, tt.wantNot, result)
 			}
 		})
 	}
@@ -458,16 +458,16 @@ func TestResolvePageDimensions(t *testing.T) {
 			w, h, margin, bottomMargin := resolvePageDimensions(tt.page, tt.hasFooter)
 
 			if w != tt.wantW {
-				t.Errorf("width = %v, want %v", w, tt.wantW)
+				t.Errorf("resolvePageDimensions(%v, %v) width = %v, want %v", tt.page, tt.hasFooter, w, tt.wantW)
 			}
 			if h != tt.wantH {
-				t.Errorf("height = %v, want %v", h, tt.wantH)
+				t.Errorf("resolvePageDimensions(%v, %v) height = %v, want %v", tt.page, tt.hasFooter, h, tt.wantH)
 			}
 			if margin != tt.wantMargin {
-				t.Errorf("margin = %v, want %v", margin, tt.wantMargin)
+				t.Errorf("resolvePageDimensions(%v, %v) margin = %v, want %v", tt.page, tt.hasFooter, margin, tt.wantMargin)
 			}
 			if bottomMargin != tt.wantBottomMargin {
-				t.Errorf("bottomMargin = %v, want %v", bottomMargin, tt.wantBottomMargin)
+				t.Errorf("resolvePageDimensions(%v, %v) bottomMargin = %v, want %v", tt.page, tt.hasFooter, bottomMargin, tt.wantBottomMargin)
 			}
 		})
 	}
@@ -488,13 +488,13 @@ func TestRodRenderer_Close_Idempotent(t *testing.T) {
 	err3 := renderer.Close()
 
 	if err1 != nil {
-		t.Errorf("first Close() error = %v", err1)
+		t.Errorf("renderer.Close() first call error = %v, want nil", err1)
 	}
 	if err2 != nil {
-		t.Errorf("second Close() error = %v", err2)
+		t.Errorf("renderer.Close() second call error = %v, want nil", err2)
 	}
 	if err3 != nil {
-		t.Errorf("third Close() error = %v", err3)
+		t.Errorf("renderer.Close() third call error = %v, want nil", err3)
 	}
 }
 
@@ -509,7 +509,7 @@ func TestRodConverter_Close_NilRenderer(t *testing.T) {
 
 	err := converter.Close()
 	if err != nil {
-		t.Errorf("Close() with nil renderer should not error, got %v", err)
+		t.Errorf("converter.Close() with nil renderer = %v, want nil", err)
 	}
 }
 
@@ -528,10 +528,10 @@ func TestBuildPDFOptions(t *testing.T) {
 		pdfOpts := renderer.buildPDFOptions(nil)
 
 		if *pdfOpts.MarginBottom != DefaultMargin {
-			t.Errorf("expected margin %v, got %v", DefaultMargin, *pdfOpts.MarginBottom)
+			t.Errorf("buildPDFOptions(nil).MarginBottom = %v, want %v", *pdfOpts.MarginBottom, DefaultMargin)
 		}
 		if pdfOpts.DisplayHeaderFooter {
-			t.Error("expected no header/footer by default")
+			t.Errorf("buildPDFOptions(nil).DisplayHeaderFooter = true, want false")
 		}
 	})
 
@@ -543,10 +543,10 @@ func TestBuildPDFOptions(t *testing.T) {
 
 		expectedMargin := DefaultMargin + footerMarginExtra
 		if *pdfOpts.MarginBottom != expectedMargin {
-			t.Errorf("expected margin %v, got %v", expectedMargin, *pdfOpts.MarginBottom)
+			t.Errorf("buildPDFOptions(opts).MarginBottom = %v, want %v", *pdfOpts.MarginBottom, expectedMargin)
 		}
 		if !pdfOpts.DisplayHeaderFooter {
-			t.Error("expected header/footer enabled")
+			t.Errorf("buildPDFOptions(opts).DisplayHeaderFooter = false, want true")
 		}
 	})
 
@@ -559,16 +559,16 @@ func TestBuildPDFOptions(t *testing.T) {
 		pdfOpts := renderer.buildPDFOptions(opts)
 
 		if *pdfOpts.PaperWidth != 11.69 {
-			t.Errorf("PaperWidth = %v, want 11.69", *pdfOpts.PaperWidth)
+			t.Errorf("buildPDFOptions(opts).PaperWidth = %v, want 11.69", *pdfOpts.PaperWidth)
 		}
 		if *pdfOpts.PaperHeight != 8.27 {
-			t.Errorf("PaperHeight = %v, want 8.27", *pdfOpts.PaperHeight)
+			t.Errorf("buildPDFOptions(opts).PaperHeight = %v, want 8.27", *pdfOpts.PaperHeight)
 		}
 		if *pdfOpts.MarginTop != 1.0 {
-			t.Errorf("MarginTop = %v, want 1.0", *pdfOpts.MarginTop)
+			t.Errorf("buildPDFOptions(opts).MarginTop = %v, want 1.0", *pdfOpts.MarginTop)
 		}
 		if *pdfOpts.MarginBottom != 1.0 {
-			t.Errorf("MarginBottom = %v, want 1.0", *pdfOpts.MarginBottom)
+			t.Errorf("buildPDFOptions(opts).MarginBottom = %v, want 1.0", *pdfOpts.MarginBottom)
 		}
 	})
 
@@ -582,14 +582,14 @@ func TestBuildPDFOptions(t *testing.T) {
 		pdfOpts := renderer.buildPDFOptions(opts)
 
 		if *pdfOpts.MarginTop != 0.75 {
-			t.Errorf("MarginTop = %v, want 0.75", *pdfOpts.MarginTop)
+			t.Errorf("buildPDFOptions(opts).MarginTop = %v, want 0.75", *pdfOpts.MarginTop)
 		}
 		expectedBottom := 0.75 + footerMarginExtra
 		if *pdfOpts.MarginBottom != expectedBottom {
-			t.Errorf("MarginBottom = %v, want %v", *pdfOpts.MarginBottom, expectedBottom)
+			t.Errorf("buildPDFOptions(opts).MarginBottom = %v, want %v", *pdfOpts.MarginBottom, expectedBottom)
 		}
 		if !pdfOpts.DisplayHeaderFooter {
-			t.Error("expected header/footer enabled")
+			t.Errorf("buildPDFOptions(opts).DisplayHeaderFooter = false, want true")
 		}
 	})
 }
@@ -605,7 +605,7 @@ func TestPageDimensions_AllSizesPresent(t *testing.T) {
 
 	for _, size := range requiredSizes {
 		if _, ok := pageDimensions[size]; !ok {
-			t.Errorf("missing page dimensions for size %q", size)
+			t.Errorf("pageDimensions[%q] missing entry, want present", size)
 		}
 	}
 }
@@ -622,14 +622,14 @@ func TestPageDimensions_ValidValues(t *testing.T) {
 			t.Parallel()
 
 			if dims.width <= 0 {
-				t.Errorf("width must be positive, got %v", dims.width)
+				t.Errorf("pageDimensions[%q].width = %v, want > 0", size, dims.width)
 			}
 			if dims.height <= 0 {
-				t.Errorf("height must be positive, got %v", dims.height)
+				t.Errorf("pageDimensions[%q].height = %v, want > 0", size, dims.height)
 			}
 			// Portrait dimensions: height > width
 			if dims.height <= dims.width {
-				t.Errorf("expected portrait dimensions (height > width), got %v x %v", dims.width, dims.height)
+				t.Errorf("pageDimensions[%q] = (%v x %v), want height > width", size, dims.width, dims.height)
 			}
 		})
 	}

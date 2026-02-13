@@ -35,7 +35,7 @@ func TestUnmarshal(t *testing.T) {
 		check   func(t *testing.T, v any)
 	}{
 		{
-			name: "valid YAML",
+			name: "happy path",
 			data: []byte("name: test\ncount: 42\nenabled: true"),
 			dest: &testConfig{},
 			check: func(t *testing.T, v any) {
@@ -52,31 +52,31 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		{
-			name:    "nil data",
+			name:    "error case: nil data",
 			data:    nil,
 			dest:    &testConfig{},
 			wantErr: yamlutil.ErrNilData,
 		},
 		{
-			name:    "empty data",
+			name:    "error case: empty data",
 			data:    []byte{},
 			dest:    &testConfig{},
 			wantErr: yamlutil.ErrNilData,
 		},
 		{
-			name:    "nil destination",
+			name:    "error case: nil destination",
 			data:    []byte("name: test"),
 			dest:    nil,
 			wantErr: yamlutil.ErrNilDestination,
 		},
 		{
-			name:    "invalid YAML syntax",
+			name:    "error case: invalid YAML syntax",
 			data:    []byte("name: [unclosed"),
 			dest:    &testConfig{},
 			wantErr: errors.New("yamlutil:"), // partial match
 		},
 		{
-			name: "unicode content",
+			name: "edge case: unicode content",
 			data: []byte("name: 日本語テスト"),
 			dest: &testConfig{},
 			check: func(t *testing.T, v any) {
@@ -95,18 +95,18 @@ func TestUnmarshal(t *testing.T) {
 			err := yamlutil.Unmarshal(tt.data, tt.dest)
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatalf("expected error containing %q, got nil", tt.wantErr)
+					t.Fatalf("Unmarshal(data, dest) error = nil, want error")
 				}
 				if errors.Is(err, tt.wantErr) {
 					return // exact match via errors.Is
 				}
 				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
-					t.Fatalf("error = %q, want containing %q", err, tt.wantErr)
+					t.Fatalf("Unmarshal(data, dest) error = %q, want containing %q", err, tt.wantErr)
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("Unmarshal(data, dest) unexpected error: %v", err)
 			}
 			if tt.check != nil {
 				tt.check(t, tt.dest)
@@ -130,7 +130,7 @@ func TestUnmarshalStrict(t *testing.T) {
 		check   func(t *testing.T, v any)
 	}{
 		{
-			name: "valid YAML with known fields only",
+			name: "happy path",
 			data: []byte("name: strict\ncount: 10"),
 			dest: &testConfig{},
 			check: func(t *testing.T, v any) {
@@ -144,25 +144,25 @@ func TestUnmarshalStrict(t *testing.T) {
 			},
 		},
 		{
-			name:    "unknown field causes error",
+			name:    "error case: unknown field",
 			data:    []byte("name: test\nunknown_field: value"),
 			dest:    &testConfig{},
 			wantErr: errors.New("yamlutil:"), // should error on unknown field
 		},
 		{
-			name:    "nil data",
+			name:    "error case: nil data",
 			data:    nil,
 			dest:    &testConfig{},
 			wantErr: yamlutil.ErrNilData,
 		},
 		{
-			name:    "empty data",
+			name:    "error case: empty data",
 			data:    []byte{},
 			dest:    &testConfig{},
 			wantErr: yamlutil.ErrNilData,
 		},
 		{
-			name:    "nil destination",
+			name:    "error case: nil destination",
 			data:    []byte("name: test"),
 			dest:    nil,
 			wantErr: yamlutil.ErrNilDestination,
@@ -176,18 +176,18 @@ func TestUnmarshalStrict(t *testing.T) {
 			err := yamlutil.UnmarshalStrict(tt.data, tt.dest)
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatalf("expected error containing %q, got nil", tt.wantErr)
+					t.Fatalf("UnmarshalStrict(data, dest) error = nil, want error")
 				}
 				if errors.Is(err, tt.wantErr) {
 					return
 				}
 				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
-					t.Fatalf("error = %q, want containing %q", err, tt.wantErr)
+					t.Fatalf("UnmarshalStrict(data, dest) error = %q, want containing %q", err, tt.wantErr)
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("UnmarshalStrict(data, dest) unexpected error: %v", err)
 			}
 			if tt.check != nil {
 				tt.check(t, tt.dest)
@@ -210,7 +210,7 @@ func TestMarshal(t *testing.T) {
 		check   func(t *testing.T, data []byte)
 	}{
 		{
-			name:  "valid struct",
+			name:  "happy path",
 			input: &testConfig{Name: "marshal", Count: 5, Enabled: true},
 			check: func(t *testing.T, data []byte) {
 				s := string(data)
@@ -226,7 +226,7 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		{
-			name:  "nil value produces null",
+			name:  "edge case: nil value produces null",
 			input: nil,
 			check: func(t *testing.T, data []byte) {
 				s := strings.TrimSpace(string(data))
@@ -236,7 +236,7 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		{
-			name:  "unicode content",
+			name:  "edge case: unicode content",
 			input: &testConfig{Name: "日本語"},
 			check: func(t *testing.T, data []byte) {
 				if !strings.Contains(string(data), "日本語") {
@@ -253,12 +253,12 @@ func TestMarshal(t *testing.T) {
 			data, err := yamlutil.Marshal(tt.input)
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatal("Marshal(input) error = nil, want error")
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatalf("Marshal(input) unexpected error: %v", err)
 			}
 			if tt.check != nil {
 				tt.check(t, data)
@@ -282,12 +282,12 @@ func TestRoundTrip(t *testing.T) {
 
 	data, err := yamlutil.Marshal(original)
 	if err != nil {
-		t.Fatalf("Marshal failed: %v", err)
+		t.Fatalf("Marshal(original) unexpected error: %v", err)
 	}
 
 	var decoded testConfig
 	if err := yamlutil.Unmarshal(data, &decoded); err != nil {
-		t.Fatalf("Unmarshal failed: %v", err)
+		t.Fatalf("Unmarshal(data, &decoded) unexpected error: %v", err)
 	}
 
 	if decoded.Name != original.Name {
@@ -331,7 +331,7 @@ func TestErrorWrapping(t *testing.T) {
 
 		err := yamlutil.Unmarshal([]byte("invalid: [unclosed"), &testConfig{})
 		if err == nil {
-			t.Fatal("expected error, got nil")
+			t.Fatal("Unmarshal(invalid) error = nil, want error")
 		}
 		if !strings.HasPrefix(err.Error(), "yamlutil:") {
 			t.Errorf("error = %q, want prefix 'yamlutil:'", err)
@@ -351,25 +351,25 @@ func TestInputSizeLimit(t *testing.T) {
 	originalMax := yamlutil.MaxInputSize
 	t.Cleanup(func() { yamlutil.MaxInputSize = originalMax })
 
-	t.Run("input at limit succeeds", func(t *testing.T) {
+	t.Run("edge case: input at limit succeeds", func(t *testing.T) {
 		yamlutil.MaxInputSize = 100
 		data := make([]byte, 100)
 		copy(data, []byte("name: x"))
 		var cfg testConfig
 		err := yamlutil.Unmarshal(data, &cfg)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Unmarshal(data, &cfg) unexpected error: %v", err)
 		}
 	})
 
-	t.Run("input exceeding limit fails", func(t *testing.T) {
+	t.Run("error case: input exceeding limit", func(t *testing.T) {
 		yamlutil.MaxInputSize = 100
 		data := make([]byte, 101)
 		copy(data, []byte("name: x"))
 		var cfg testConfig
 		err := yamlutil.Unmarshal(data, &cfg)
 		if !errors.Is(err, yamlutil.ErrInputTooLarge) {
-			t.Errorf("errors.Is(err, ErrInputTooLarge) = false, got: %v", err)
+			t.Errorf("Unmarshal(oversized) = %v, want ErrInputTooLarge", err)
 		}
 	})
 
@@ -379,7 +379,7 @@ func TestInputSizeLimit(t *testing.T) {
 		var cfg testConfig
 		err := yamlutil.Unmarshal(data, &cfg)
 		if err == nil {
-			t.Fatal("expected error, got nil")
+			t.Fatal("Unmarshal(oversized) error = nil, want error")
 		}
 		msg := err.Error()
 		if !strings.Contains(msg, "100 bytes") {
@@ -397,7 +397,7 @@ func TestInputSizeLimit(t *testing.T) {
 		var cfg testConfig
 		err := yamlutil.UnmarshalStrict(data, &cfg)
 		if !errors.Is(err, yamlutil.ErrInputTooLarge) {
-			t.Errorf("errors.Is(err, ErrInputTooLarge) = false, got: %v", err)
+			t.Errorf("UnmarshalStrict(oversized) = %v, want ErrInputTooLarge", err)
 		}
 	})
 }

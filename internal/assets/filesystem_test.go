@@ -10,39 +10,39 @@ import (
 func TestNewFilesystemLoader(t *testing.T) {
 	t.Parallel()
 
-	t.Run("valid directory", func(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 		if loader == nil {
-			t.Fatal("NewFilesystemLoader() returned nil")
+			t.Fatal("NewFilesystemLoader() = nil, want non-nil")
 		}
 	})
 
-	t.Run("empty path returns error", func(t *testing.T) {
+	t.Run("error case: empty path", func(t *testing.T) {
 		t.Parallel()
 
 		_, err := NewFilesystemLoader("")
 		if !errors.Is(err, ErrInvalidBasePath) {
-			t.Errorf("NewFilesystemLoader(\"\") error = %v, want ErrInvalidBasePath", err)
+			t.Errorf("NewFilesystemLoader(\"\") = %v, want ErrInvalidBasePath", err)
 		}
 	})
 
-	t.Run("nonexistent directory returns error", func(t *testing.T) {
+	t.Run("error case: nonexistent directory", func(t *testing.T) {
 		t.Parallel()
 
 		_, err := NewFilesystemLoader("/nonexistent/path/abc123xyz")
 		if !errors.Is(err, ErrInvalidBasePath) {
-			t.Errorf("NewFilesystemLoader() error = %v, want ErrInvalidBasePath", err)
+			t.Errorf("NewFilesystemLoader(\"/nonexistent/path/abc123xyz\") = %v, want ErrInvalidBasePath", err)
 		}
 	})
 
-	t.Run("file instead of directory returns error", func(t *testing.T) {
+	t.Run("error case: file instead of directory", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -53,7 +53,7 @@ func TestNewFilesystemLoader(t *testing.T) {
 
 		_, err := NewFilesystemLoader(filePath)
 		if !errors.Is(err, ErrInvalidBasePath) {
-			t.Errorf("NewFilesystemLoader() error = %v, want ErrInvalidBasePath", err)
+			t.Errorf("NewFilesystemLoader(%q) = %v, want ErrInvalidBasePath", filePath, err)
 		}
 	})
 }
@@ -61,7 +61,7 @@ func TestNewFilesystemLoader(t *testing.T) {
 func TestFilesystemLoader_LoadStyle(t *testing.T) {
 	t.Parallel()
 
-	t.Run("loads existing style", func(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -77,19 +77,19 @@ func TestFilesystemLoader_LoadStyle(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		got, err := loader.LoadStyle("custom")
 		if err != nil {
-			t.Fatalf("LoadStyle() error = %v", err)
+			t.Fatalf("LoadStyle(\"custom\") unexpected error: %v", err)
 		}
 		if got != cssContent {
-			t.Errorf("LoadStyle() = %q, want %q", got, cssContent)
+			t.Errorf("LoadStyle(\"custom\") = %q, want %q", got, cssContent)
 		}
 	})
 
-	t.Run("returns ErrStyleNotFound for nonexistent", func(t *testing.T) {
+	t.Run("error case: nonexistent style", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -100,29 +100,29 @@ func TestFilesystemLoader_LoadStyle(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		_, err = loader.LoadStyle("nonexistent")
 		if !errors.Is(err, ErrStyleNotFound) {
-			t.Errorf("LoadStyle() error = %v, want ErrStyleNotFound", err)
+			t.Errorf("LoadStyle(\"nonexistent\") = %v, want ErrStyleNotFound", err)
 		}
 	})
 
-	t.Run("returns ErrInvalidAssetName for invalid name", func(t *testing.T) {
+	t.Run("error case: invalid asset name", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		tests := []string{"", "../secret", "..\\secret", "style.evil"}
 		for _, name := range tests {
 			_, err := loader.LoadStyle(name)
 			if !errors.Is(err, ErrInvalidAssetName) {
-				t.Errorf("LoadStyle(%q) error = %v, want ErrInvalidAssetName", name, err)
+				t.Errorf("LoadStyle(%q) = %v, want ErrInvalidAssetName", name, err)
 			}
 		}
 	})
@@ -131,7 +131,7 @@ func TestFilesystemLoader_LoadStyle(t *testing.T) {
 func TestFilesystemLoader_LoadTemplateSet(t *testing.T) {
 	t.Parallel()
 
-	t.Run("loads existing template set", func(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -151,22 +151,22 @@ func TestFilesystemLoader_LoadTemplateSet(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		ts, err := loader.LoadTemplateSet("custom")
 		if err != nil {
-			t.Fatalf("LoadTemplateSet() error = %v", err)
+			t.Fatalf("LoadTemplateSet(\"custom\") unexpected error: %v", err)
 		}
 		if ts.Cover != coverContent {
-			t.Errorf("LoadTemplateSet() cover = %q, want %q", ts.Cover, coverContent)
+			t.Errorf("LoadTemplateSet(\"custom\").Cover = %q, want %q", ts.Cover, coverContent)
 		}
 		if ts.Signature != sigContent {
-			t.Errorf("LoadTemplateSet() signature = %q, want %q", ts.Signature, sigContent)
+			t.Errorf("LoadTemplateSet(\"custom\").Signature = %q, want %q", ts.Signature, sigContent)
 		}
 	})
 
-	t.Run("returns ErrTemplateSetNotFound for nonexistent", func(t *testing.T) {
+	t.Run("error case: nonexistent template set", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -177,34 +177,34 @@ func TestFilesystemLoader_LoadTemplateSet(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		_, err = loader.LoadTemplateSet("nonexistent")
 		if !errors.Is(err, ErrTemplateSetNotFound) {
-			t.Errorf("LoadTemplateSet() error = %v, want ErrTemplateSetNotFound", err)
+			t.Errorf("LoadTemplateSet(\"nonexistent\") = %v, want ErrTemplateSetNotFound", err)
 		}
 	})
 
-	t.Run("returns ErrInvalidAssetName for invalid name", func(t *testing.T) {
+	t.Run("error case: invalid asset name", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		tests := []string{"", "../secret", "..\\secret", "template.evil"}
 		for _, name := range tests {
 			_, err := loader.LoadTemplateSet(name)
 			if !errors.Is(err, ErrInvalidAssetName) {
-				t.Errorf("LoadTemplateSet(%q) error = %v, want ErrInvalidAssetName", name, err)
+				t.Errorf("LoadTemplateSet(%q) = %v, want ErrInvalidAssetName", name, err)
 			}
 		}
 	})
 
-	t.Run("returns ErrIncompleteTemplateSet for missing cover", func(t *testing.T) {
+	t.Run("error case: incomplete template set missing cover", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -220,12 +220,12 @@ func TestFilesystemLoader_LoadTemplateSet(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		_, err = loader.LoadTemplateSet("incomplete")
 		if !errors.Is(err, ErrIncompleteTemplateSet) {
-			t.Errorf("LoadTemplateSet() error = %v, want ErrIncompleteTemplateSet", err)
+			t.Errorf("LoadTemplateSet(\"incomplete\") = %v, want ErrIncompleteTemplateSet", err)
 		}
 	})
 }
@@ -233,7 +233,7 @@ func TestFilesystemLoader_LoadTemplateSet(t *testing.T) {
 func TestFilesystemLoader_PathContainment(t *testing.T) {
 	t.Parallel()
 
-	t.Run("rejects symlink escape attempt", func(t *testing.T) {
+	t.Run("error case: symlink escape attempt", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -257,14 +257,14 @@ func TestFilesystemLoader_PathContainment(t *testing.T) {
 
 		loader, err := NewFilesystemLoader(tmpDir)
 		if err != nil {
-			t.Fatalf("NewFilesystemLoader() error = %v", err)
+			t.Fatalf("NewFilesystemLoader(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		// The symlink resolves to a path outside basePath
 		// verifyPathContainment uses EvalSymlinks to detect this
 		_, err = loader.LoadStyle("evil")
 		if !errors.Is(err, ErrPathTraversal) {
-			t.Errorf("LoadStyle() with symlink escape error = %v, want ErrPathTraversal", err)
+			t.Errorf("LoadStyle(\"evil\") = %v, want ErrPathTraversal", err)
 		}
 	})
 }

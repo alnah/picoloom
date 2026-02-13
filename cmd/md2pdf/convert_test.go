@@ -31,22 +31,22 @@ func TestResolveCSSContent(t *testing.T) {
 
 	loader, _ := md2pdf.NewAssetLoader("")
 
-	t.Run("empty style flag and no config returns default style", func(t *testing.T) {
+	t.Run("empty style and no config returns default style", func(t *testing.T) {
 		t.Parallel()
 		got, err := resolveCSSContent("", nil, false, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(\"\", nil, false, loader) unexpected error: %v", err)
 		}
 		if got == "" {
-			t.Error("expected default CSS content, got empty string")
+			t.Errorf("resolveCSSContent(\"\", nil, false, loader) = \"\", want default CSS content")
 		}
 		// Verify it's the default style (contains our default.css markers)
 		if !strings.Contains(got, "Default theme") {
-			t.Error("expected default style content")
+			t.Errorf("resolveCSSContent(\"\", nil, false, loader) missing \"Default theme\" marker")
 		}
 	})
 
-	t.Run("reads CSS file content", func(t *testing.T) {
+	t.Run("CSS file path returns file content", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -58,36 +58,36 @@ func TestResolveCSSContent(t *testing.T) {
 
 		got, err := resolveCSSContent(cssPath, nil, false, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(%q, nil, false, loader) unexpected error: %v", cssPath, err)
 		}
 		if got != cssContent {
-			t.Errorf("got %q, want %q", got, cssContent)
+			t.Errorf("resolveCSSContent(%q, nil, false, loader) = %q, want %q", cssPath, got, cssContent)
 		}
 	})
 
-	t.Run("nonexistent file returns error", func(t *testing.T) {
+	t.Run("error case: nonexistent file", func(t *testing.T) {
 		t.Parallel()
 
 		_, err := resolveCSSContent("/nonexistent/style.css", nil, false, loader)
 		if err == nil {
-			t.Error("expected error for nonexistent file")
+			t.Errorf("resolveCSSContent(\"/nonexistent/style.css\", nil, false, loader) error = nil, want error")
 		}
 	})
 
-	t.Run("config style loads from embedded assets", func(t *testing.T) {
+	t.Run("config style name loads from embedded assets", func(t *testing.T) {
 		t.Parallel()
 
 		cfg := &Config{Style: "creative"}
 		got, err := resolveCSSContent("", cfg, false, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(\"\", cfg, false, loader) unexpected error: %v", err)
 		}
 		if got == "" {
-			t.Error("expected CSS content from embedded assets, got empty string")
+			t.Errorf("resolveCSSContent(\"\", cfg, false, loader) = \"\", want embedded CSS content")
 		}
 	})
 
-	t.Run("css flag overrides config style", func(t *testing.T) {
+	t.Run("CSS file path overrides config style", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -100,37 +100,37 @@ func TestResolveCSSContent(t *testing.T) {
 		cfg := &Config{Style: "creative"}
 		got, err := resolveCSSContent(cssPath, cfg, false, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(%q, cfg, false, loader) unexpected error: %v", cssPath, err)
 		}
 		if got != cssContent {
-			t.Errorf("got %q, want %q (flag should override config)", got, cssContent)
+			t.Errorf("resolveCSSContent(%q, cfg, false, loader) = %q, want %q", cssPath, got, cssContent)
 		}
 	})
 
-	t.Run("unknown config style returns error", func(t *testing.T) {
+	t.Run("error case: unknown config style", func(t *testing.T) {
 		t.Parallel()
 
 		cfg := &Config{Style: "nonexistent"}
 		_, err := resolveCSSContent("", cfg, false, loader)
 		if err == nil {
-			t.Error("expected error for unknown style")
+			t.Errorf("resolveCSSContent(\"\", cfg, false, loader) error = nil, want error")
 		}
 	})
 
-	t.Run("noStyle flag returns empty even with config style", func(t *testing.T) {
+	t.Run("noStyle flag returns empty with config style", func(t *testing.T) {
 		t.Parallel()
 
 		cfg := &Config{Style: "creative"}
 		got, err := resolveCSSContent("", cfg, true, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(\"\", cfg, true, loader) unexpected error: %v", err)
 		}
 		if got != "" {
-			t.Errorf("got %q, want empty string (noStyle should disable CSS)", got)
+			t.Errorf("resolveCSSContent(\"\", cfg, true, loader) = %q, want \"\"", got)
 		}
 	})
 
-	t.Run("noStyle flag returns empty even with css file", func(t *testing.T) {
+	t.Run("noStyle flag returns empty with CSS file path", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -141,10 +141,10 @@ func TestResolveCSSContent(t *testing.T) {
 
 		got, err := resolveCSSContent(cssPath, nil, true, loader)
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("resolveCSSContent(%q, nil, true, loader) unexpected error: %v", cssPath, err)
 		}
 		if got != "" {
-			t.Errorf("got %q, want empty string (noStyle should disable CSS)", got)
+			t.Errorf("resolveCSSContent(%q, nil, true, loader) = %q, want \"\"", cssPath, got)
 		}
 	})
 }
@@ -156,7 +156,7 @@ func TestResolveCSSContent(t *testing.T) {
 func TestPrintResultsOutput(t *testing.T) {
 	t.Parallel()
 
-	t.Run("returns zero for all success", func(t *testing.T) {
+	t.Run("all successful conversions", func(t *testing.T) {
 		t.Parallel()
 		results := []ConversionResult{
 			{InputPath: "a.md", OutputPath: "a.pdf", Err: nil},
@@ -164,11 +164,11 @@ func TestPrintResultsOutput(t *testing.T) {
 		}
 		failed := printResults(results, true, false)
 		if failed != 0 {
-			t.Errorf("failed = %d, want 0", failed)
+			t.Errorf("printResults(results, true, false) = %d, want 0", failed)
 		}
 	})
 
-	t.Run("returns count for failures", func(t *testing.T) {
+	t.Run("mixed success and failures", func(t *testing.T) {
 		t.Parallel()
 
 		results := []ConversionResult{
@@ -178,16 +178,16 @@ func TestPrintResultsOutput(t *testing.T) {
 		}
 		failed := printResults(results, true, false)
 		if failed != 2 {
-			t.Errorf("failed = %d, want 2", failed)
+			t.Errorf("printResults(results, true, false) = %d, want 2", failed)
 		}
 	})
 
-	t.Run("returns zero for empty results", func(t *testing.T) {
+	t.Run("edge case: empty results", func(t *testing.T) {
 		t.Parallel()
 
 		failed := printResults(nil, true, false)
 		if failed != 0 {
-			t.Errorf("failed = %d, want 0", failed)
+			t.Errorf("printResults(nil, true, false) = %d, want 0", failed)
 		}
 	})
 }
@@ -202,7 +202,7 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 	// Mock converter that returns success
 	mockConv := &staticMockConverter{result: []byte("%PDF-1.4 mock")}
 
-	t.Run("mkdir failure returns error", func(t *testing.T) {
+	t.Run("error case: mkdir failure", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -228,11 +228,11 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 		result := convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
 		if result.Err == nil {
-			t.Error("expected error when mkdir fails")
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = nil, want error")
 		}
 	})
 
-	t.Run("write failure returns ErrWritePDF", func(t *testing.T) {
+	t.Run("error case: write failure returns ErrWritePDF", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -263,14 +263,14 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 		result := convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
 		if result.Err == nil {
-			t.Error("expected error when write fails")
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = nil, want error")
 		}
 		if !errors.Is(result.Err, ErrWritePDF) {
-			t.Errorf("expected ErrWritePDF, got: %v", result.Err)
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = %v, want ErrWritePDF", result.Err)
 		}
 	})
 
-	t.Run("read failure returns ErrReadMarkdown", func(t *testing.T) {
+	t.Run("error case: read failure returns ErrReadMarkdown", func(t *testing.T) {
 		t.Parallel()
 
 		f := FileToConvert{
@@ -281,14 +281,14 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 		result := convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
 		if result.Err == nil {
-			t.Error("expected error when read fails")
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = nil, want error")
 		}
 		if !errors.Is(result.Err, ErrReadMarkdown) {
-			t.Errorf("expected ErrReadMarkdown, got: %v", result.Err)
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = %v, want ErrReadMarkdown", result.Err)
 		}
 	})
 
-	t.Run("read failure error includes file path", func(t *testing.T) {
+	t.Run("read failure error message includes file path", func(t *testing.T) {
 		t.Parallel()
 
 		inputPath := "/nonexistent/specific/doc.md"
@@ -300,14 +300,14 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 		result := convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
 		if result.Err == nil {
-			t.Fatal("expected error when read fails")
+			t.Fatalf("convertFile(ctx, mockConv, f, params) error = nil, want error")
 		}
 		if !strings.Contains(result.Err.Error(), inputPath) {
-			t.Errorf("error should include file path %q, got: %v", inputPath, result.Err)
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = %v, want error containing %q", result.Err, inputPath)
 		}
 	})
 
-	t.Run("mkdir failure error includes hint", func(t *testing.T) {
+	t.Run("mkdir failure error message includes hint", func(t *testing.T) {
 		t.Parallel()
 
 		tempDir := t.TempDir()
@@ -332,14 +332,14 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 		result := convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
 		if result.Err == nil {
-			t.Fatal("expected error when mkdir fails")
+			t.Fatalf("convertFile(ctx, mockConv, f, params) error = nil, want error")
 		}
 		errMsg := result.Err.Error()
 		if !strings.Contains(errMsg, "hint:") {
-			t.Error("mkdir error should include hint")
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = %v, want error containing \"hint:\"", result.Err)
 		}
 		if !strings.Contains(errMsg, "parent directory") {
-			t.Errorf("mkdir error hint should mention parent directory, got: %v", result.Err)
+			t.Errorf("convertFile(ctx, mockConv, f, params) error = %v, want error containing \"parent directory\"", result.Err)
 		}
 	})
 }
@@ -348,63 +348,67 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 // TestConvertFile_SourceDir - SourceDir auto-setting from input path
 // ---------------------------------------------------------------------------
 
-func TestConvertFile_SourceDir_AutoSet(t *testing.T) {
+func TestConvertFile_SourceDir(t *testing.T) {
 	t.Parallel()
 
-	tempDir := t.TempDir()
+	t.Run("set to input file parent directory with nested path", func(t *testing.T) {
+		t.Parallel()
 
-	// Create a nested directory structure: tempDir/docs/report.md
-	docsDir := filepath.Join(tempDir, "docs")
-	if err := os.MkdirAll(docsDir, 0750); err != nil {
-		t.Fatalf("failed to create docs dir: %v", err)
-	}
+		tempDir := t.TempDir()
 
-	inputPath := filepath.Join(docsDir, "report.md")
-	if err := os.WriteFile(inputPath, []byte("# Report\n![image](./images/logo.png)"), 0644); err != nil {
-		t.Fatalf("failed to create input: %v", err)
-	}
+		// Create a nested directory structure: tempDir/docs/report.md
+		docsDir := filepath.Join(tempDir, "docs")
+		if err := os.MkdirAll(docsDir, 0750); err != nil {
+			t.Fatalf("failed to create docs dir: %v", err)
+		}
 
-	// Use capturing mock to verify SourceDir
-	mockConv := &capturingMockConverter{result: []byte("%PDF-1.4 mock")}
+		inputPath := filepath.Join(docsDir, "report.md")
+		if err := os.WriteFile(inputPath, []byte("# Report\n![image](./images/logo.png)"), 0644); err != nil {
+			t.Fatalf("failed to create input: %v", err)
+		}
 
-	f := FileToConvert{
-		InputPath:  inputPath,
-		OutputPath: filepath.Join(tempDir, "output.pdf"),
-	}
+		// Use capturing mock to verify SourceDir
+		mockConv := &capturingMockConverter{result: []byte("%PDF-1.4 mock")}
 
-	_ = convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
+		f := FileToConvert{
+			InputPath:  inputPath,
+			OutputPath: filepath.Join(tempDir, "output.pdf"),
+		}
 
-	// Verify SourceDir was set to the directory containing the input file
-	expectedSourceDir := docsDir
-	if mockConv.capturedIn.SourceDir != expectedSourceDir {
-		t.Errorf("SourceDir = %q, want %q", mockConv.capturedIn.SourceDir, expectedSourceDir)
-	}
-}
+		_ = convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
 
-func TestConvertFile_SourceDir_UsesFilepathDir(t *testing.T) {
-	t.Parallel()
+		// Verify SourceDir was set to the directory containing the input file
+		expectedSourceDir := docsDir
+		if mockConv.capturedIn.SourceDir != expectedSourceDir {
+			t.Errorf("convertFile(ctx, mockConv, f, params) SourceDir = %q, want %q", mockConv.capturedIn.SourceDir, expectedSourceDir)
+		}
+	})
 
-	tempDir := t.TempDir()
+	t.Run("set to input file parent directory at root", func(t *testing.T) {
+		t.Parallel()
 
-	// Create file in temp root
-	inputPath := filepath.Join(tempDir, "doc.md")
-	if err := os.WriteFile(inputPath, []byte("# Doc"), 0644); err != nil {
-		t.Fatalf("failed to create input: %v", err)
-	}
+		tempDir := t.TempDir()
 
-	mockConv := &capturingMockConverter{result: []byte("%PDF-1.4 mock")}
+		// Create file in temp root
+		inputPath := filepath.Join(tempDir, "doc.md")
+		if err := os.WriteFile(inputPath, []byte("# Doc"), 0644); err != nil {
+			t.Fatalf("failed to create input: %v", err)
+		}
 
-	f := FileToConvert{
-		InputPath:  inputPath,
-		OutputPath: filepath.Join(tempDir, "doc.pdf"),
-	}
+		mockConv := &capturingMockConverter{result: []byte("%PDF-1.4 mock")}
 
-	_ = convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
+		f := FileToConvert{
+			InputPath:  inputPath,
+			OutputPath: filepath.Join(tempDir, "doc.pdf"),
+		}
 
-	// SourceDir should be tempDir (the parent directory of the input file)
-	if mockConv.capturedIn.SourceDir != tempDir {
-		t.Errorf("SourceDir = %q, want %q", mockConv.capturedIn.SourceDir, tempDir)
-	}
+		_ = convertFile(context.Background(), mockConv, f, &conversionParams{cfg: config.DefaultConfig()})
+
+		// SourceDir should be tempDir (the parent directory of the input file)
+		if mockConv.capturedIn.SourceDir != tempDir {
+			t.Errorf("convertFile(ctx, mockConv, f, params) SourceDir = %q, want %q", mockConv.capturedIn.SourceDir, tempDir)
+		}
+	})
 }
 
 // ---------------------------------------------------------------------------
@@ -470,7 +474,7 @@ func TestHtmlOutputPath(t *testing.T) {
 func TestLoadTemplateSetFromDir(t *testing.T) {
 	t.Parallel()
 
-	t.Run("valid directory with both templates", func(t *testing.T) {
+	t.Run("happy path: loads both templates", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -486,21 +490,21 @@ func TestLoadTemplateSetFromDir(t *testing.T) {
 
 		ts, err := loadTemplateSetFromDir(tmpDir)
 		if err != nil {
-			t.Fatalf("loadTemplateSetFromDir() error = %v", err)
+			t.Fatalf("loadTemplateSetFromDir(%q) unexpected error: %v", tmpDir, err)
 		}
 
 		if ts.Cover != coverContent {
-			t.Errorf("Cover = %q, want %q", ts.Cover, coverContent)
+			t.Errorf("loadTemplateSetFromDir(%q) Cover = %q, want %q", tmpDir, ts.Cover, coverContent)
 		}
 		if ts.Signature != sigContent {
-			t.Errorf("Signature = %q, want %q", ts.Signature, sigContent)
+			t.Errorf("loadTemplateSetFromDir(%q) Signature = %q, want %q", tmpDir, ts.Signature, sigContent)
 		}
 		if ts.Name != tmpDir {
-			t.Errorf("Name = %q, want %q", ts.Name, tmpDir)
+			t.Errorf("loadTemplateSetFromDir(%q) Name = %q, want %q", tmpDir, ts.Name, tmpDir)
 		}
 	})
 
-	t.Run("missing cover returns ErrIncompleteTemplateSet", func(t *testing.T) {
+	t.Run("error case: missing cover.html", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -510,11 +514,11 @@ func TestLoadTemplateSetFromDir(t *testing.T) {
 
 		_, err := loadTemplateSetFromDir(tmpDir)
 		if !errors.Is(err, md2pdf.ErrIncompleteTemplateSet) {
-			t.Errorf("loadTemplateSetFromDir() error = %v, want ErrIncompleteTemplateSet", err)
+			t.Errorf("loadTemplateSetFromDir(%q) error = %v, want ErrIncompleteTemplateSet", tmpDir, err)
 		}
 	})
 
-	t.Run("missing signature returns ErrIncompleteTemplateSet", func(t *testing.T) {
+	t.Run("error case: missing signature.html", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -524,27 +528,27 @@ func TestLoadTemplateSetFromDir(t *testing.T) {
 
 		_, err := loadTemplateSetFromDir(tmpDir)
 		if !errors.Is(err, md2pdf.ErrIncompleteTemplateSet) {
-			t.Errorf("loadTemplateSetFromDir() error = %v, want ErrIncompleteTemplateSet", err)
+			t.Errorf("loadTemplateSetFromDir(%q) error = %v, want ErrIncompleteTemplateSet", tmpDir, err)
 		}
 	})
 
-	t.Run("empty directory returns ErrTemplateSetNotFound", func(t *testing.T) {
+	t.Run("error case: empty directory", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
 
 		_, err := loadTemplateSetFromDir(tmpDir)
 		if !errors.Is(err, md2pdf.ErrTemplateSetNotFound) {
-			t.Errorf("loadTemplateSetFromDir() error = %v, want ErrTemplateSetNotFound", err)
+			t.Errorf("loadTemplateSetFromDir(%q) error = %v, want ErrTemplateSetNotFound", tmpDir, err)
 		}
 	})
 
-	t.Run("nonexistent directory returns ErrTemplateSetNotFound", func(t *testing.T) {
+	t.Run("error case: nonexistent directory", func(t *testing.T) {
 		t.Parallel()
 
 		_, err := loadTemplateSetFromDir("/nonexistent/path/to/templates")
 		if !errors.Is(err, md2pdf.ErrTemplateSetNotFound) {
-			t.Errorf("loadTemplateSetFromDir() error = %v, want ErrTemplateSetNotFound", err)
+			t.Errorf("loadTemplateSetFromDir(\"/nonexistent/path/to/templates\") error = %v, want ErrTemplateSetNotFound", err)
 		}
 	})
 }
@@ -567,14 +571,14 @@ func TestResolveTemplateSet(t *testing.T) {
 
 		ts, err := resolveTemplateSet("", loader)
 		if err != nil {
-			t.Fatalf("resolveTemplateSet() error = %v", err)
+			t.Fatalf("resolveTemplateSet(\"\", loader) unexpected error: %v", err)
 		}
 		if ts.Name != "default" {
-			t.Errorf("Name = %q, want %q", ts.Name, "default")
+			t.Errorf("resolveTemplateSet(\"\", loader) Name = %q, want %q", ts.Name, "default")
 		}
 	})
 
-	t.Run("name loads from loader", func(t *testing.T) {
+	t.Run("template set name loads from loader", func(t *testing.T) {
 		t.Parallel()
 
 		loader := &mockTemplateLoader{
@@ -585,14 +589,14 @@ func TestResolveTemplateSet(t *testing.T) {
 
 		ts, err := resolveTemplateSet("corporate", loader)
 		if err != nil {
-			t.Fatalf("resolveTemplateSet() error = %v", err)
+			t.Fatalf("resolveTemplateSet(\"corporate\", loader) unexpected error: %v", err)
 		}
 		if ts.Name != "corporate" {
-			t.Errorf("Name = %q, want %q", ts.Name, "corporate")
+			t.Errorf("resolveTemplateSet(\"corporate\", loader) Name = %q, want %q", ts.Name, "corporate")
 		}
 	})
 
-	t.Run("path loads from filesystem", func(t *testing.T) {
+	t.Run("directory path loads from filesystem", func(t *testing.T) {
 		t.Parallel()
 
 		tmpDir := t.TempDir()
@@ -610,14 +614,14 @@ func TestResolveTemplateSet(t *testing.T) {
 
 		ts, err := resolveTemplateSet(pathValue, loader)
 		if err != nil {
-			t.Fatalf("resolveTemplateSet() error = %v", err)
+			t.Fatalf("resolveTemplateSet(%q, loader) unexpected error: %v", pathValue, err)
 		}
 		if ts.Cover != "<cover/>" {
-			t.Errorf("Cover = %q, want %q", ts.Cover, "<cover/>")
+			t.Errorf("resolveTemplateSet(%q, loader) Cover = %q, want %q", pathValue, ts.Cover, "<cover/>")
 		}
 	})
 
-	t.Run("nonexistent name returns error", func(t *testing.T) {
+	t.Run("error case: nonexistent template set name", func(t *testing.T) {
 		t.Parallel()
 
 		loader := &mockTemplateLoader{
@@ -626,7 +630,7 @@ func TestResolveTemplateSet(t *testing.T) {
 
 		_, err := resolveTemplateSet("nonexistent", loader)
 		if !errors.Is(err, md2pdf.ErrTemplateSetNotFound) {
-			t.Errorf("resolveTemplateSet() error = %v, want ErrTemplateSetNotFound", err)
+			t.Errorf("resolveTemplateSet(\"nonexistent\", loader) error = %v, want ErrTemplateSetNotFound", err)
 		}
 	})
 }

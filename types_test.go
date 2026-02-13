@@ -188,16 +188,16 @@ func TestPageSettings_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
@@ -362,44 +362,44 @@ func TestFooter_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestWithTimeoutPanic - WithTimeout Panic Behavior
+// TestWithTimeout_panic - WithTimeout Panic Behavior
 // ---------------------------------------------------------------------------
 
-func TestWithTimeoutPanic(t *testing.T) {
+func TestWithTimeout_panic(t *testing.T) {
 	t.Parallel()
 
-	t.Run("zero duration panics", func(t *testing.T) {
+	t.Run("zero duration", func(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if r := recover(); r == nil {
-				t.Error("expected panic for zero duration")
+				t.Error("WithTimeout(0) did not panic, want panic")
 			}
 		}()
 		WithTimeout(0)
 	})
 
-	t.Run("negative duration panics", func(t *testing.T) {
+	t.Run("negative duration", func(t *testing.T) {
 		t.Parallel()
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Error("expected panic for negative duration")
+				t.Error("WithTimeout(-1 * time.Second) did not panic, want panic")
 			}
 		}()
 		WithTimeout(-1 * time.Second)
@@ -546,16 +546,16 @@ func TestCover_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
@@ -638,16 +638,16 @@ func TestWatermark_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
@@ -760,16 +760,16 @@ func TestPageBreaks_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
@@ -882,16 +882,16 @@ func TestTOC_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
@@ -1013,33 +1013,31 @@ func TestSignature_Validate(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatalf("Validate() error = nil, want error")
 				}
 				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("error = %v, want %v", err, tt.wantErr)
+					t.Errorf("Validate() error = %v, want %v", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Validate() unexpected error: %v", err)
 			}
 		})
 	}
-}
 
-func TestSignature_Validate_ErrorMessageIncludesPath(t *testing.T) {
-	t.Parallel()
+	t.Run("error message includes path", func(t *testing.T) {
+		badPath := "/nonexistent/path/to/signature.png"
+		sig := &Signature{ImagePath: badPath}
 
-	badPath := "/nonexistent/path/to/signature.png"
-	sig := &Signature{ImagePath: badPath}
+		err := sig.Validate()
+		if err == nil {
+			t.Fatalf("Validate() error = nil, want error")
+		}
 
-	err := sig.Validate()
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
-
-	if !strings.Contains(err.Error(), badPath) {
-		t.Errorf("error message %q should contain path %q", err.Error(), badPath)
-	}
+		if !strings.Contains(err.Error(), badPath) {
+			t.Errorf("Validate() error message = %q, want path %q included", err.Error(), badPath)
+		}
+	})
 }

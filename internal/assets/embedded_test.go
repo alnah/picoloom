@@ -27,33 +27,33 @@ func TestEmbeddedLoader_LoadStyle(t *testing.T) {
 		wantContain string
 	}{
 		{
-			name:        "loads creative style",
+			name:        "happy path: loads creative style",
 			styleName:   "creative",
 			wantErr:     nil,
 			wantContain: "font-family",
 		},
 		{
-			name:      "returns ErrStyleNotFound for nonexistent",
+			name:      "error case: nonexistent style",
 			styleName: "nonexistent-style-xyz",
 			wantErr:   ErrStyleNotFound,
 		},
 		{
-			name:      "returns ErrInvalidAssetName for empty name",
+			name:      "error case: empty name",
 			styleName: "",
 			wantErr:   ErrInvalidAssetName,
 		},
 		{
-			name:      "returns ErrInvalidAssetName for path traversal",
+			name:      "error case: path traversal with forward slash",
 			styleName: "../secret",
 			wantErr:   ErrInvalidAssetName,
 		},
 		{
-			name:      "returns ErrInvalidAssetName for backslash traversal",
+			name:      "error case: path traversal with backslash",
 			styleName: "..\\secret",
 			wantErr:   ErrInvalidAssetName,
 		},
 		{
-			name:      "returns ErrInvalidAssetName for name with dot",
+			name:      "error case: name with dot",
 			styleName: "style.name",
 			wantErr:   ErrInvalidAssetName,
 		},
@@ -94,22 +94,22 @@ func TestEmbeddedLoader_LoadTemplateSet(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "loads default template set",
+			name:    "happy path: loads default template set",
 			setName: "default",
 			wantErr: nil,
 		},
 		{
-			name:    "returns ErrTemplateSetNotFound for nonexistent",
+			name:    "error case: nonexistent template set",
 			setName: "nonexistent-template-xyz",
 			wantErr: ErrTemplateSetNotFound,
 		},
 		{
-			name:    "returns ErrInvalidAssetName for empty name",
+			name:    "error case: empty name",
 			setName: "",
 			wantErr: ErrInvalidAssetName,
 		},
 		{
-			name:    "returns ErrInvalidAssetName for path traversal",
+			name:    "error case: path traversal",
 			setName: "../secret",
 			wantErr: ErrInvalidAssetName,
 		},
@@ -142,7 +142,7 @@ func TestEmbeddedLoader_LoadTemplateSet(t *testing.T) {
 	}
 }
 
-func TestEmbeddedLoader_ImplementsAssetLoader(t *testing.T) {
+func TestEmbeddedLoaderImplementsAssetLoader(t *testing.T) {
 	t.Parallel()
 
 	var _ AssetLoader = (*EmbeddedLoader)(nil)
@@ -180,24 +180,24 @@ func TestAvailableStyles(t *testing.T) {
 	}
 }
 
-func TestLoadStyle_ErrorIncludesAvailableStyles(t *testing.T) {
+func TestEmbeddedLoader_LoadStyle_ErrorIncludesAvailableStyles(t *testing.T) {
 	t.Parallel()
 
 	loader := NewEmbeddedLoader()
 	_, err := loader.LoadStyle("nonexistent-style")
 
 	if err == nil {
-		t.Fatal("expected error for nonexistent style")
+		t.Fatal("LoadStyle(\"nonexistent-style\") error = nil, want error")
 	}
 
 	errMsg := err.Error()
 	if !strings.Contains(errMsg, "hint:") {
-		t.Error("error should contain hint")
+		t.Error("LoadStyle(\"nonexistent-style\") error should contain hint")
 	}
 	if !strings.Contains(errMsg, "available:") {
-		t.Error("error should list available styles")
+		t.Error("LoadStyle(\"nonexistent-style\") error should list available styles")
 	}
 	if !strings.Contains(errMsg, "default") {
-		t.Error("error hint should include 'default' style")
+		t.Error("LoadStyle(\"nonexistent-style\") error hint should include 'default' style")
 	}
 }

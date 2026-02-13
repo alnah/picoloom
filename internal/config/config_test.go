@@ -12,22 +12,22 @@ func TestDefaultConfig(t *testing.T) {
 	cfg := DefaultConfig()
 
 	if cfg.Input.DefaultDir != "" {
-		t.Errorf("Input.DefaultDir = %q, want empty", cfg.Input.DefaultDir)
+		t.Errorf("DefaultConfig().Input.DefaultDir = %q, want empty", cfg.Input.DefaultDir)
 	}
 	if cfg.Output.DefaultDir != "" {
-		t.Errorf("Output.DefaultDir = %q, want empty", cfg.Output.DefaultDir)
+		t.Errorf("DefaultConfig().Output.DefaultDir = %q, want empty", cfg.Output.DefaultDir)
 	}
 	if cfg.Style != "" {
-		t.Errorf("Style = %q, want empty", cfg.Style)
+		t.Errorf("DefaultConfig().Style = %q, want empty", cfg.Style)
 	}
 	if cfg.Footer.Enabled {
-		t.Error("Footer.Enabled = true, want false")
+		t.Error("DefaultConfig().Footer.Enabled = true, want false")
 	}
 	if cfg.Signature.Enabled {
-		t.Error("Signature.Enabled = true, want false")
+		t.Error("DefaultConfig().Signature.Enabled = true, want false")
 	}
 	if cfg.Assets.BasePath != "" {
-		t.Errorf("Assets.BasePath = %q, want empty", cfg.Assets.BasePath)
+		t.Errorf("DefaultConfig().Assets.BasePath = %q, want empty", cfg.Assets.BasePath)
 	}
 }
 
@@ -74,14 +74,14 @@ func TestValidateFieldLength(t *testing.T) {
 			err := validateFieldLength(tt.fieldName, tt.value, tt.maxLength)
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("expected error, got nil")
+					t.Fatal("validateFieldLength(tt.fieldName, tt.value, tt.maxLength) error = nil, want error")
 				}
 				if !errors.Is(err, ErrFieldTooLong) {
-					t.Errorf("error = %v, want ErrFieldTooLong", err)
+					t.Errorf("validateFieldLength(tt.fieldName, tt.value, tt.maxLength) error = %v, want ErrFieldTooLong", err)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("unexpected error: %v", err)
+					t.Errorf("validateFieldLength(tt.fieldName, tt.value, tt.maxLength) unexpected error: %v", err)
 				}
 			}
 		})
@@ -111,7 +111,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -123,7 +123,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -135,7 +135,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -149,7 +149,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -161,7 +161,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -173,7 +173,7 @@ func TestConfig_Validate(t *testing.T) {
 		}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 }
@@ -182,7 +182,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("empty name returns ErrEmptyConfigName", func(t *testing.T) {
 		_, err := LoadConfig("")
 		if !errors.Is(err, ErrEmptyConfigName) {
-			t.Errorf("error = %v, want ErrEmptyConfigName", err)
+			t.Errorf("LoadConfig(\"\") error = %v, want ErrEmptyConfigName", err)
 		}
 	})
 
@@ -195,21 +195,21 @@ footer:
   position: "center"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Style != "default" {
-			t.Errorf("CSS.Style = %q, want %q", cfg.Style, "default")
+			t.Errorf("LoadConfig(configPath).Style = %q, want %q", cfg.Style, "default")
 		}
 		if !cfg.Footer.Enabled {
-			t.Error("Footer.Enabled = false, want true")
+			t.Error("LoadConfig(configPath).Footer.Enabled = false, want true")
 		}
 		if cfg.Footer.Position != "center" {
-			t.Errorf("Footer.Position = %q, want %q", cfg.Footer.Position, "center")
+			t.Errorf("LoadConfig(configPath).Footer.Position = %q, want %q", cfg.Footer.Position, "center")
 		}
 	})
 
@@ -222,25 +222,25 @@ output:
   defaultDir: "/path/to/output"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Input.DefaultDir != "/path/to/input" {
-			t.Errorf("Input.DefaultDir = %q, want %q", cfg.Input.DefaultDir, "/path/to/input")
+			t.Errorf("LoadConfig(configPath).Input.DefaultDir = %q, want %q", cfg.Input.DefaultDir, "/path/to/input")
 		}
 		if cfg.Output.DefaultDir != "/path/to/output" {
-			t.Errorf("Output.DefaultDir = %q, want %q", cfg.Output.DefaultDir, "/path/to/output")
+			t.Errorf("LoadConfig(configPath).Output.DefaultDir = %q, want %q", cfg.Output.DefaultDir, "/path/to/output")
 		}
 	})
 
 	t.Run("nonexistent file path returns ErrConfigNotFound", func(t *testing.T) {
 		_, err := LoadConfig("/nonexistent/path/config.yaml")
 		if !errors.Is(err, ErrConfigNotFound) {
-			t.Errorf("error = %v, want ErrConfigNotFound", err)
+			t.Errorf("LoadConfig(\"/nonexistent/path/config.yaml\") error = %v, want ErrConfigNotFound", err)
 		}
 	})
 
@@ -253,7 +253,7 @@ output:
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrConfigParse) {
-			t.Errorf("error = %v, want ErrConfigParse", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrConfigParse", err)
 		}
 	})
 
@@ -264,12 +264,12 @@ output:
 unknownField: "should fail"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrConfigParse) {
-			t.Errorf("error = %v, want ErrConfigParse", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrConfigParse", err)
 		}
 	})
 
@@ -279,12 +279,12 @@ unknownField: "should fail"
 		longName := string(make([]byte, MaxNameLength+1))
 		content := "author:\n  name: \"" + longName + "\"\n"
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -301,10 +301,10 @@ unknownField: "should fail"
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Fatal("expected error for unreadable file")
+			t.Fatal("LoadConfig(configPath) error = nil, want error")
 		}
 		if errors.Is(err, ErrConfigNotFound) {
-			t.Error("error should not be ErrConfigNotFound for permission error")
+			t.Error("LoadConfig(configPath) error should not be ErrConfigNotFound for permission error")
 		}
 	})
 
@@ -326,10 +326,10 @@ unknownField: "should fail"
 
 		cfg, err := LoadConfig("myconfig")
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(\"myconfig\") unexpected error: %v", err)
 		}
 		if cfg.Style != "fromname" {
-			t.Errorf("CSS.Style = %q, want %q", cfg.Style, "fromname")
+			t.Errorf("LoadConfig(\"myconfig\").Style = %q, want %q", cfg.Style, "fromname")
 		}
 	})
 
@@ -351,10 +351,10 @@ unknownField: "should fail"
 
 		cfg, err := LoadConfig("myconfig")
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(\"myconfig\") unexpected error: %v", err)
 		}
 		if cfg.Style != "fromyml" {
-			t.Errorf("CSS.Style = %q, want %q", cfg.Style, "fromyml")
+			t.Errorf("LoadConfig(\"myconfig\").Style = %q, want %q", cfg.Style, "fromyml")
 		}
 	})
 
@@ -378,10 +378,10 @@ unknownField: "should fail"
 
 		cfg, err := LoadConfig("myconfig")
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(\"myconfig\") unexpected error: %v", err)
 		}
 		if cfg.Style != "yaml" {
-			t.Errorf("CSS.Style = %q, want %q (should prefer .yaml)", cfg.Style, "yaml")
+			t.Errorf("LoadConfig(\"myconfig\").Style = %q, want %q (should prefer .yaml)", cfg.Style, "yaml")
 		}
 	})
 
@@ -415,10 +415,10 @@ unknownField: "should fail"
 
 		cfg, err := LoadConfig("testconfig")
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(\"testconfig\") unexpected error: %v", err)
 		}
 		if cfg.Style != "userdir" {
-			t.Errorf("CSS.Style = %q, want %q", cfg.Style, "userdir")
+			t.Errorf("LoadConfig(\"testconfig\").Style = %q, want %q", cfg.Style, "userdir")
 		}
 	})
 
@@ -435,7 +435,7 @@ unknownField: "should fail"
 
 		_, err = LoadConfig("nonexistent")
 		if !errors.Is(err, ErrConfigNotFound) {
-			t.Errorf("error = %v, want ErrConfigNotFound", err)
+			t.Errorf("LoadConfig(\"nonexistent\") error = %v, want ErrConfigNotFound", err)
 		}
 	})
 
@@ -452,17 +452,17 @@ unknownField: "should fail"
 
 		_, err = LoadConfig("nonexistent")
 		if err == nil {
-			t.Fatal("expected error for nonexistent config")
+			t.Fatal("LoadConfig(\"nonexistent\") error = nil, want error")
 		}
 		errMsg := err.Error()
 		if !strings.Contains(errMsg, "searched:") {
-			t.Error("error should include searched paths")
+			t.Error("LoadConfig(\"nonexistent\") error should include searched paths")
 		}
 		if !strings.Contains(errMsg, "hint:") {
-			t.Error("error should include hint")
+			t.Error("LoadConfig(\"nonexistent\") error should include hint")
 		}
 		if !strings.Contains(errMsg, "--config") {
-			t.Error("error hint should mention --config flag")
+			t.Error("LoadConfig(\"nonexistent\") error hint should mention --config flag")
 		}
 	})
 
@@ -475,21 +475,21 @@ unknownField: "should fail"
   margin: 1.0
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Page.Size != "a4" {
-			t.Errorf("Page.Size = %q, want %q", cfg.Page.Size, "a4")
+			t.Errorf("LoadConfig(configPath).Page.Size = %q, want %q", cfg.Page.Size, "a4")
 		}
 		if cfg.Page.Orientation != "landscape" {
-			t.Errorf("Page.Orientation = %q, want %q", cfg.Page.Orientation, "landscape")
+			t.Errorf("LoadConfig(configPath).Page.Orientation = %q, want %q", cfg.Page.Orientation, "landscape")
 		}
 		if cfg.Page.Margin != 1.0 {
-			t.Errorf("Page.Margin = %v, want %v", cfg.Page.Margin, 1.0)
+			t.Errorf("LoadConfig(configPath).Page.Margin = %v, want %v", cfg.Page.Margin, 1.0)
 		}
 	})
 
@@ -499,12 +499,12 @@ unknownField: "should fail"
 		longSize := string(make([]byte, MaxPageSizeLength+1))
 		content := "page:\n  size: \"" + longSize + "\"\n"
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -514,12 +514,12 @@ unknownField: "should fail"
 		longOrientation := string(make([]byte, MaxOrientationLength+1))
 		content := "page:\n  orientation: \"" + longOrientation + "\"\n"
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -532,21 +532,21 @@ unknownField: "should fail"
   maxDepth: 4
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if !cfg.TOC.Enabled {
-			t.Error("TOC.Enabled = false, want true")
+			t.Error("LoadConfig(configPath).TOC.Enabled = false, want true")
 		}
 		if cfg.TOC.Title != "Table of Contents" {
-			t.Errorf("TOC.Title = %q, want %q", cfg.TOC.Title, "Table of Contents")
+			t.Errorf("LoadConfig(configPath).TOC.Title = %q, want %q", cfg.TOC.Title, "Table of Contents")
 		}
 		if cfg.TOC.MaxDepth != 4 {
-			t.Errorf("TOC.MaxDepth = %d, want %d", cfg.TOC.MaxDepth, 4)
+			t.Errorf("LoadConfig(configPath).TOC.MaxDepth = %d, want %d", cfg.TOC.MaxDepth, 4)
 		}
 	})
 
@@ -556,12 +556,12 @@ unknownField: "should fail"
 		longTitle := string(make([]byte, MaxTOCTitleLength+1))
 		content := "toc:\n  title: \"" + longTitle + "\"\n"
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("LoadConfig(configPath) error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -573,12 +573,12 @@ unknownField: "should fail"
   maxDepth: 7
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Fatal("expected error for invalid maxDepth")
+			t.Fatal("LoadConfig(configPath) error = nil, want error")
 		}
 	})
 
@@ -590,15 +590,15 @@ unknownField: "should fail"
   maxDepth: 0
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.TOC.MaxDepth != 0 {
-			t.Errorf("TOC.MaxDepth = %d, want 0 (will use default)", cfg.TOC.MaxDepth)
+			t.Errorf("LoadConfig(configPath).TOC.MaxDepth = %d, want 0 (will use default)", cfg.TOC.MaxDepth)
 		}
 	})
 
@@ -617,24 +617,24 @@ document:
   date: "auto"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Author.Name != "John Doe" {
-			t.Errorf("Author.Name = %q, want %q", cfg.Author.Name, "John Doe")
+			t.Errorf("LoadConfig(configPath).Author.Name = %q, want %q", cfg.Author.Name, "John Doe")
 		}
 		if cfg.Author.Organization != "Acme Corp" {
-			t.Errorf("Author.Organization = %q, want %q", cfg.Author.Organization, "Acme Corp")
+			t.Errorf("LoadConfig(configPath).Author.Organization = %q, want %q", cfg.Author.Organization, "Acme Corp")
 		}
 		if cfg.Document.Title != "My Document" {
-			t.Errorf("Document.Title = %q, want %q", cfg.Document.Title, "My Document")
+			t.Errorf("LoadConfig(configPath).Document.Title = %q, want %q", cfg.Document.Title, "My Document")
 		}
 		if cfg.Document.Date != "auto" {
-			t.Errorf("Document.Date = %q, want %q", cfg.Document.Date, "auto")
+			t.Errorf("LoadConfig(configPath).Document.Date = %q, want %q", cfg.Document.Date, "auto")
 		}
 	})
 }
@@ -647,7 +647,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -656,7 +656,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "letter"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -665,7 +665,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "a4"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -674,7 +674,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "legal"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -683,7 +683,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "A4"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -692,10 +692,10 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "tabloid"}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid size")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "page.size") {
-			t.Errorf("error should mention page.size, got: %v", err)
+			t.Errorf("Config.Validate() error should mention page.size, got: %v", err)
 		}
 	})
 
@@ -704,7 +704,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Orientation: "portrait"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -713,7 +713,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Orientation: "landscape"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -722,7 +722,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Orientation: "LANDSCAPE"}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -731,10 +731,10 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Orientation: "diagonal"}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid orientation")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "page.orientation") {
-			t.Errorf("error should mention page.orientation, got: %v", err)
+			t.Errorf("Config.Validate() error should mention page.orientation, got: %v", err)
 		}
 	})
 
@@ -743,7 +743,7 @@ func TestConfig_Validate_Page(t *testing.T) {
 		cfg := &Config{Page: PageConfig{Size: "a4", Orientation: "landscape", Margin: 1.0}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -753,7 +753,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: false}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -761,7 +761,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Orphans: 3}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -769,7 +769,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Widows: 4}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -777,7 +777,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Orphans: 0}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -785,7 +785,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Widows: 0}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -793,7 +793,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Orphans: 1}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -801,7 +801,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Orphans: 5}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -809,7 +809,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Widows: 1}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -817,7 +817,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Enabled: true, Widows: 5}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -825,7 +825,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Orphans: -1}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid orphans")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -833,7 +833,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Orphans: 6}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid orphans")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -841,7 +841,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Widows: -1}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid widows")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -849,7 +849,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		cfg := &Config{PageBreaks: PageBreaksConfig{Widows: 6}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid widows")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -864,7 +864,7 @@ func TestConfig_Validate_PageBreaks(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -882,30 +882,30 @@ func TestLoadConfig_PageBreaks(t *testing.T) {
   widows: 4
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if !cfg.PageBreaks.Enabled {
-			t.Error("PageBreaks.Enabled = false, want true")
+			t.Error("LoadConfig(configPath).PageBreaks.Enabled = false, want true")
 		}
 		if !cfg.PageBreaks.BeforeH1 {
-			t.Error("PageBreaks.BeforeH1 = false, want true")
+			t.Error("LoadConfig(configPath).PageBreaks.BeforeH1 = false, want true")
 		}
 		if cfg.PageBreaks.BeforeH2 {
-			t.Error("PageBreaks.BeforeH2 = true, want false")
+			t.Error("LoadConfig(configPath).PageBreaks.BeforeH2 = true, want false")
 		}
 		if !cfg.PageBreaks.BeforeH3 {
-			t.Error("PageBreaks.BeforeH3 = false, want true")
+			t.Error("LoadConfig(configPath).PageBreaks.BeforeH3 = false, want true")
 		}
 		if cfg.PageBreaks.Orphans != 3 {
-			t.Errorf("PageBreaks.Orphans = %d, want 3", cfg.PageBreaks.Orphans)
+			t.Errorf("LoadConfig(configPath).PageBreaks.Orphans = %d, want 3", cfg.PageBreaks.Orphans)
 		}
 		if cfg.PageBreaks.Widows != 4 {
-			t.Errorf("PageBreaks.Widows = %d, want 4", cfg.PageBreaks.Widows)
+			t.Errorf("LoadConfig(configPath).PageBreaks.Widows = %d, want 4", cfg.PageBreaks.Widows)
 		}
 	})
 
@@ -917,12 +917,12 @@ func TestLoadConfig_PageBreaks(t *testing.T) {
   orphans: 10
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Fatal("expected error for invalid orphans")
+			t.Fatal("LoadConfig(configPath) error = nil, want error")
 		}
 	})
 
@@ -934,12 +934,12 @@ func TestLoadConfig_PageBreaks(t *testing.T) {
   widows: 10
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Fatal("expected error for invalid widows")
+			t.Fatal("LoadConfig(configPath) error = nil, want error")
 		}
 	})
 }
@@ -949,7 +949,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: false}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -957,7 +957,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MaxDepth: 3}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -965,7 +965,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MaxDepth: 0}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -973,7 +973,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Title: string(make([]byte, MaxTOCTitleLength))}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -981,7 +981,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Title: string(make([]byte, MaxTOCTitleLength+1))}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -989,7 +989,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MaxDepth: 7}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid depth")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -997,7 +997,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MaxDepth: -1}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for negative depth")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1005,7 +1005,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: 2, MaxDepth: 4}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1013,7 +1013,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: 0, MaxDepth: 3}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1021,7 +1021,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: 7}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid minDepth")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1029,7 +1029,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: -1}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for negative minDepth")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1037,7 +1037,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: 4, MaxDepth: 2}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for minDepth > maxDepth")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1045,7 +1045,7 @@ func TestConfig_Validate_TOC(t *testing.T) {
 		cfg := &Config{TOC: TOCConfig{Enabled: true, MinDepth: 3, MaxDepth: 3}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1058,7 +1058,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		cfg := &Config{Watermark: WatermarkConfig{Enabled: false}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1072,7 +1072,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for missing text")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1086,7 +1086,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1101,7 +1101,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1115,7 +1115,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for opacity below minimum")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1129,7 +1129,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for opacity above maximum")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1143,7 +1143,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for angle below minimum")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1157,7 +1157,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for angle above maximum")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1172,7 +1172,7 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1188,7 +1188,7 @@ func TestConfig_Validate_Footer(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Fatal("expected error for invalid position")
+			t.Fatal("Config.Validate() error = nil, want error")
 		}
 	})
 
@@ -1200,7 +1200,7 @@ func TestConfig_Validate_Footer(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1212,7 +1212,7 @@ func TestConfig_Validate_Footer(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1227,7 +1227,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1238,7 +1238,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1249,7 +1249,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1260,7 +1260,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1271,7 +1271,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1285,7 +1285,7 @@ func TestConfig_Validate_Author(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1300,7 +1300,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1311,7 +1311,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1322,7 +1322,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1333,7 +1333,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1344,7 +1344,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1355,7 +1355,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1377,7 +1377,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1388,7 +1388,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1399,7 +1399,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1410,7 +1410,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1421,7 +1421,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1432,7 +1432,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1448,7 +1448,7 @@ func TestConfig_Validate_Document(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1463,7 +1463,7 @@ func TestConfig_Validate_Signature(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1476,7 +1476,7 @@ func TestConfig_Validate_Signature(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 }
@@ -1491,7 +1491,7 @@ func TestConfig_Validate_Cover(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if !errors.Is(err, ErrFieldTooLong) {
-			t.Errorf("error = %v, want ErrFieldTooLong", err)
+			t.Errorf("Config.Validate() error = %v, want ErrFieldTooLong", err)
 		}
 	})
 
@@ -1503,7 +1503,7 @@ func TestConfig_Validate_Cover(t *testing.T) {
 		}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 }
@@ -1516,7 +1516,7 @@ func TestConfig_Validate_Assets(t *testing.T) {
 		cfg := &Config{Assets: AssetsConfig{BasePath: ""}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1526,7 +1526,7 @@ func TestConfig_Validate_Assets(t *testing.T) {
 		cfg := &Config{Assets: AssetsConfig{BasePath: tmpDir}}
 		err := cfg.Validate()
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("Config.Validate() unexpected error: %v", err)
 		}
 	})
 
@@ -1535,10 +1535,10 @@ func TestConfig_Validate_Assets(t *testing.T) {
 		cfg := &Config{Assets: AssetsConfig{BasePath: "/nonexistent/path/xyz123"}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Error("expected error for nonexistent path")
+			t.Error("Config.Validate() error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "does not exist") {
-			t.Errorf("error should mention 'does not exist', got: %v", err)
+			t.Errorf("Config.Validate() error should mention 'does not exist', got: %v", err)
 		}
 	})
 
@@ -1553,10 +1553,10 @@ func TestConfig_Validate_Assets(t *testing.T) {
 		cfg := &Config{Assets: AssetsConfig{BasePath: filePath}}
 		err := cfg.Validate()
 		if err == nil {
-			t.Error("expected error for file path")
+			t.Error("Config.Validate() error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "not a directory") {
-			t.Errorf("error should mention 'not a directory', got: %v", err)
+			t.Errorf("Config.Validate() error should mention 'not a directory', got: %v", err)
 		}
 	})
 }
@@ -1633,15 +1633,15 @@ func TestConfig_Validate_Timeout(t *testing.T) {
 			err := cfg.Validate()
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("expected error for timeout %q", tt.timeout)
+					t.Fatalf("Config.Validate() error = nil, want error")
 					return
 				}
 				if tt.errSubstr != "" && !strings.Contains(err.Error(), tt.errSubstr) {
-					t.Errorf("error should contain %q, got: %v", tt.errSubstr, err)
+					t.Errorf("Config.Validate() error should contain %q, got: %v", tt.errSubstr, err)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("unexpected error for timeout %q: %v", tt.timeout, err)
+					t.Errorf("Config.Validate() unexpected error: %v", err)
 				}
 			}
 		})
@@ -1663,15 +1663,15 @@ func TestLoadConfig_Timeout(t *testing.T) {
 style: "default"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Timeout != "2m" {
-			t.Errorf("Timeout = %q, want %q", cfg.Timeout, "2m")
+			t.Errorf("LoadConfig(configPath).Timeout = %q, want %q", cfg.Timeout, "2m")
 		}
 	})
 
@@ -1682,15 +1682,15 @@ style: "default"
 		content := `timeout: "1m30s"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Timeout != "1m30s" {
-			t.Errorf("Timeout = %q, want %q", cfg.Timeout, "1m30s")
+			t.Errorf("LoadConfig(configPath).Timeout = %q, want %q", cfg.Timeout, "1m30s")
 		}
 	})
 
@@ -1701,15 +1701,15 @@ style: "default"
 		content := `timeout: "invalid"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Error("expected error for invalid timeout, got nil")
+			t.Error("LoadConfig(configPath) error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "invalid duration") {
-			t.Errorf("error should mention 'invalid duration', got: %v", err)
+			t.Errorf("LoadConfig(configPath) error should mention 'invalid duration', got: %v", err)
 		}
 	})
 
@@ -1720,15 +1720,15 @@ style: "default"
 		content := `timeout: "-5s"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		_, err := LoadConfig(configPath)
 		if err == nil {
-			t.Error("expected error for negative timeout, got nil")
+			t.Error("LoadConfig(configPath) error = nil, want error")
 		}
 		if !strings.Contains(err.Error(), "must be positive") {
-			t.Errorf("error should mention 'must be positive', got: %v", err)
+			t.Errorf("LoadConfig(configPath) error should mention 'must be positive', got: %v", err)
 		}
 	})
 
@@ -1739,15 +1739,15 @@ style: "default"
 		content := `style: "default"
 `
 		if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-			t.Fatalf("setup: %v", err)
+			t.Fatalf("setup WriteFile: %v", err)
 		}
 
 		cfg, err := LoadConfig(configPath)
 		if err != nil {
-			t.Fatalf("LoadConfig() error = %v", err)
+			t.Fatalf("LoadConfig(configPath) unexpected error: %v", err)
 		}
 		if cfg.Timeout != "" {
-			t.Errorf("Timeout = %q, want empty string", cfg.Timeout)
+			t.Errorf("LoadConfig(configPath).Timeout = %q, want empty string", cfg.Timeout)
 		}
 	})
 }

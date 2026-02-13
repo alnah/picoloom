@@ -246,12 +246,12 @@ func withTOCInjector(t pipeline.TOCInjector) Option {
 // TestValidateInput - Input Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput(t *testing.T) {
+func TestService_validateInput(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -261,17 +261,17 @@ func TestValidateInput(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "valid input",
+			name:    "happy path",
 			input:   Input{Markdown: "# Hello"},
 			wantErr: nil,
 		},
 		{
-			name:    "empty markdown",
+			name:    "error case: empty markdown",
 			input:   Input{Markdown: ""},
 			wantErr: ErrEmptyMarkdown,
 		},
 		{
-			name:    "with CSS",
+			name:    "with CSS provided",
 			input:   Input{Markdown: "# Hello", CSS: "body { color: red; }"},
 			wantErr: nil,
 		},
@@ -283,17 +283,17 @@ func TestValidateInput(t *testing.T) {
 
 			err := service.validateInput(tt.input)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("validateInput() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("validateInput(%v) error = %v, want %v", tt.input, err, tt.wantErr)
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_Success - Successful Conversion Pipeline
+// TestService_Convert - Successful Conversion Pipeline
 // ---------------------------------------------------------------------------
 
-func TestConvert_Success(t *testing.T) {
+func TestService_Convert(t *testing.T) {
 	t.Parallel()
 
 	preprocessor := &mockPreprocessor{output: "preprocessed"}
@@ -310,7 +310,7 @@ func TestConvert_Success(t *testing.T) {
 		withPDFConverter(pdfConv),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -322,84 +322,85 @@ func TestConvert_Success(t *testing.T) {
 	ctx := context.Background()
 	result, err := service.Convert(ctx, input)
 	if err != nil {
-		t.Fatalf("Convert() unexpected error: %v", err)
+		t.Fatalf("Convert(%v, %v) unexpected error: %v", ctx, input, err)
 	}
 
 	if string(result.PDF) != "%PDF-1.4 test" {
-		t.Errorf("Convert() result.PDF = %q, want %q", result.PDF, "%PDF-1.4 test")
+		t.Errorf("Convert(%v, %v).PDF = %q, want %q", ctx, input, result.PDF, "%PDF-1.4 test")
 	}
 
 	// Verify pipeline was called in order with correct inputs
 	if !preprocessor.called {
-		t.Error("preprocessor was not called")
+		t.Errorf("preprocessor.called = false, want true")
 	}
 	if preprocessor.input != "# Hello" {
-		t.Errorf("preprocessor input = %q, want %q", preprocessor.input, "# Hello")
+		t.Errorf("preprocessor.input = %q, want %q", preprocessor.input, "# Hello")
 	}
 
 	if !htmlConv.called {
-		t.Error("htmlConverter was not called")
+		t.Errorf("htmlConverter.called = false, want true")
 	}
 	if htmlConv.input != "preprocessed" {
-		t.Errorf("htmlConverter input = %q, want %q", htmlConv.input, "preprocessed")
+		t.Errorf("htmlConverter.input = %q, want %q", htmlConv.input, "preprocessed")
 	}
 
 	if !cssInj.called {
-		t.Error("pipeline.CSSInjector was not called")
+		t.Errorf("cssInjector.called = false, want true")
 	}
 	if cssInj.inputHTML != "<html>converted</html>" {
-		t.Errorf("pipeline.CSSInjector inputHTML = %q, want %q", cssInj.inputHTML, "<html>converted</html>")
+		t.Errorf("cssInjector.inputHTML = %q, want %q", cssInj.inputHTML, "<html>converted</html>")
 	}
 	// Page breaks CSS is always prepended, user CSS should be at the end
 	if !strings.HasSuffix(cssInj.inputCSS, "body {}") {
-		t.Errorf("pipeline.CSSInjector inputCSS should end with user CSS %q, got %q", "body {}", cssInj.inputCSS)
+		t.Errorf("cssInjector.inputCSS should end with user CSS %q, got %q", "body {}", cssInj.inputCSS)
 	}
 	// Verify page breaks CSS is present
 	if !strings.Contains(cssInj.inputCSS, "break-after: avoid") {
-		t.Errorf("pipeline.CSSInjector inputCSS should contain page breaks CSS, got %q", cssInj.inputCSS)
+		t.Errorf("cssInjector.inputCSS should contain page breaks CSS, got %q", cssInj.inputCSS)
 	}
 
 	if !sigInjector.called {
-		t.Error("pipeline.SignatureInjector was not called")
+		t.Errorf("signatureInjector.called = false, want true")
 	}
 	if sigInjector.inputHTML != "<html>with-css</html>" {
-		t.Errorf("pipeline.SignatureInjector inputHTML = %q, want %q", sigInjector.inputHTML, "<html>with-css</html>")
+		t.Errorf("signatureInjector.inputHTML = %q, want %q", sigInjector.inputHTML, "<html>with-css</html>")
 	}
 
 	if !pdfConv.called {
-		t.Error("pdfConverter was not called")
+		t.Errorf("pdfConverter.called = false, want true")
 	}
 	if pdfConv.inputHTML != "<html>with-sig</html>" {
-		t.Errorf("pdfConverter inputHTML = %q, want %q", pdfConv.inputHTML, "<html>with-sig</html>")
+		t.Errorf("pdfConverter.inputHTML = %q, want %q", pdfConv.inputHTML, "<html>with-sig</html>")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_ValidationError - Validation Error Handling
+// TestService_Convert_validationError - Validation Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_ValidationError(t *testing.T) {
+func TestService_Convert_validationError(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: ""})
+	input := Input{Markdown: ""}
+	_, err = service.Convert(ctx, input)
 
 	if !errors.Is(err, ErrEmptyMarkdown) {
-		t.Errorf("Convert() error = %v, want %v", err, ErrEmptyMarkdown)
+		t.Errorf("Convert(%v, %v) error = %v, want %v", ctx, input, err, ErrEmptyMarkdown)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_HTMLConverterError - HTML Converter Error Handling
+// TestService_Convert_htmlConverterError - HTML Converter Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_HTMLConverterError(t *testing.T) {
+func TestService_Convert_htmlConverterError(t *testing.T) {
 	t.Parallel()
 
 	htmlErr := errors.New("pandoc failed")
@@ -412,26 +413,27 @@ func TestConvert_HTMLConverterError(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("Convert() expected error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, htmlErr) {
-		t.Errorf("Convert() error should wrap %v, got %v", htmlErr, err)
+		t.Errorf("Convert(%v, %v) error should wrap %v, got %v", ctx, input, htmlErr, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_PDFConverterError - PDF Converter Error Handling
+// TestService_Convert_pdfConverterError - PDF Converter Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_PDFConverterError(t *testing.T) {
+func TestService_Convert_pdfConverterError(t *testing.T) {
 	t.Parallel()
 
 	pdfErr := errors.New("chrome failed")
@@ -444,26 +446,27 @@ func TestConvert_PDFConverterError(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{err: pdfErr}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("Convert() expected error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, pdfErr) {
-		t.Errorf("Convert() error should wrap %v, got %v", pdfErr, err)
+		t.Errorf("Convert(%v, %v) error should wrap %v, got %v", ctx, input, pdfErr, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_SignatureInjectorError - Signature Injector Error Handling
+// TestService_Convert_signatureInjectorError - Signature Injector Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_SignatureInjectorError(t *testing.T) {
+func TestService_Convert_signatureInjectorError(t *testing.T) {
 	t.Parallel()
 
 	sigErr := errors.New("signature template failed")
@@ -476,26 +479,27 @@ func TestConvert_SignatureInjectorError(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("Convert() expected error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, sigErr) {
-		t.Errorf("Convert() error should wrap %v, got %v", sigErr, err)
+		t.Errorf("Convert(%v, %v) error should wrap %v, got %v", ctx, input, sigErr, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_NoCSSByDefault - Default CSS Behavior
+// TestService_Convert_noCSSByDefault - Default CSS Behavior
 // ---------------------------------------------------------------------------
 
-func TestConvert_NoCSSByDefault(t *testing.T) {
+func TestService_Convert_noCSSByDefault(t *testing.T) {
 	t.Parallel()
 
 	cssInj := &mockCSSInjector{}
@@ -508,24 +512,25 @@ func TestConvert_NoCSSByDefault(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err != nil {
-		t.Fatalf("Convert() unexpected error: %v", err)
+		t.Fatalf("Convert(%v, %v) unexpected error: %v", ctx, input, err)
 	}
 
 	// Page breaks CSS is always generated, so we should get at least that
 	if !strings.Contains(cssInj.inputCSS, "break-after: avoid") {
-		t.Errorf("pipeline.CSSInjector should receive page breaks CSS by default, got %q", cssInj.inputCSS)
+		t.Errorf("cssInjector.inputCSS should receive page breaks CSS by default, got %q", cssInj.inputCSS)
 	}
 	// But no user CSS should be appended
 	if strings.Contains(cssInj.inputCSS, "body") {
-		t.Errorf("pipeline.CSSInjector should not contain user CSS rules, got %q", cssInj.inputCSS)
+		t.Errorf("cssInjector.inputCSS should not contain user CSS rules, got %q", cssInj.inputCSS)
 	}
 }
 
@@ -538,24 +543,24 @@ func TestNew(t *testing.T) {
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	if service.preprocessor == nil {
-		t.Error("preprocessor is nil")
+		t.Errorf("New().preprocessor = nil, want non-nil")
 	}
 	if service.htmlConverter == nil {
-		t.Error("htmlConverter is nil")
+		t.Errorf("New().htmlConverter = nil, want non-nil")
 	}
 	if service.cssInjector == nil {
-		t.Error("cssInjector is nil")
+		t.Errorf("New().cssInjector = nil, want non-nil")
 	}
 	if service.signatureInjector == nil {
-		t.Error("signatureInjector is nil")
+		t.Errorf("New().signatureInjector = nil, want non-nil")
 	}
 	if service.pdfConverter == nil {
-		t.Error("pdfConverter is nil")
+		t.Errorf("New().pdfConverter = nil, want non-nil")
 	}
 }
 
@@ -568,12 +573,12 @@ func TestWithTimeout(t *testing.T) {
 
 	service, err := New(WithTimeout(60 * defaultTimeout))
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New(WithTimeout()) unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	if service.cfg.timeout != 60*defaultTimeout {
-		t.Errorf("timeout = %v, want %v", service.cfg.timeout, 60*defaultTimeout)
+		t.Errorf("New(WithTimeout()).cfg.timeout = %v, want %v", service.cfg.timeout, 60*defaultTimeout)
 	}
 }
 
@@ -595,7 +600,7 @@ func TestWithAssetLoader(t *testing.T) {
 
 	service, err := New(WithAssetLoader(customLoader))
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -619,7 +624,7 @@ func TestWithAssetLoader_UsedByInjectors(t *testing.T) {
 
 	service, err := New(WithAssetLoader(loader))
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -641,7 +646,7 @@ func TestService_Close(t *testing.T) {
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 
 	// Close should not error
@@ -662,15 +667,15 @@ func TestService_Close(t *testing.T) {
 func TestToSignatureData(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil returns nil", func(t *testing.T) {
+	t.Run("edge case: nil returns nil", func(t *testing.T) {
 		t.Parallel()
 		result := toSignatureData(nil)
 		if result != nil {
-			t.Error("expected nil for nil input")
+			t.Errorf("toSignatureData(nil) = %v, want nil", result)
 		}
 	})
 
-	t.Run("converts all fields", func(t *testing.T) {
+	t.Run("happy path: converts all fields", func(t *testing.T) {
 		t.Parallel()
 
 		sig := &Signature{
@@ -705,7 +710,7 @@ func TestToSignatureData(t *testing.T) {
 		}
 	})
 
-	t.Run("converts extended metadata fields", func(t *testing.T) {
+	t.Run("happy path: converts extended metadata fields", func(t *testing.T) {
 		t.Parallel()
 
 		sig := &Signature{
@@ -736,15 +741,15 @@ func TestToSignatureData(t *testing.T) {
 func TestToFooterData(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil returns nil", func(t *testing.T) {
+	t.Run("edge case: nil returns nil", func(t *testing.T) {
 		t.Parallel()
 		result := toFooterData(nil)
 		if result != nil {
-			t.Error("expected nil for nil input")
+			t.Errorf("toFooterData(nil) = %v, want nil", result)
 		}
 	})
 
-	t.Run("converts all fields", func(t *testing.T) {
+	t.Run("happy path: converts all fields", func(t *testing.T) {
 		t.Parallel()
 
 		footer := &Footer{
@@ -797,15 +802,15 @@ func TestToFooterData(t *testing.T) {
 func TestToCoverData(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil returns nil", func(t *testing.T) {
+	t.Run("edge case: nil returns nil", func(t *testing.T) {
 		t.Parallel()
 		result := toCoverData(nil)
 		if result != nil {
-			t.Error("expected nil for nil input")
+			t.Errorf("toCoverData(nil) = %v, want nil", result)
 		}
 	})
 
-	t.Run("converts all fields", func(t *testing.T) {
+	t.Run("happy path: converts all fields", func(t *testing.T) {
 		t.Parallel()
 
 		cover := &Cover{
@@ -847,7 +852,7 @@ func TestToCoverData(t *testing.T) {
 		}
 	})
 
-	t.Run("empty fields preserved", func(t *testing.T) {
+	t.Run("edge case: empty fields preserved", func(t *testing.T) {
 		t.Parallel()
 
 		cover := &Cover{
@@ -871,7 +876,7 @@ func TestToCoverData(t *testing.T) {
 		}
 	})
 
-	t.Run("converts extended metadata fields", func(t *testing.T) {
+	t.Run("happy path: converts extended metadata fields", func(t *testing.T) {
 		t.Parallel()
 
 		cover := &Cover{
@@ -914,15 +919,15 @@ func TestToCoverData(t *testing.T) {
 func TestToTOCData(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil returns nil", func(t *testing.T) {
+	t.Run("edge case: nil returns nil", func(t *testing.T) {
 		t.Parallel()
 		result := toTOCData(nil)
 		if result != nil {
-			t.Error("expected nil for nil input")
+			t.Errorf("toTOCData(nil) = %v, want nil", result)
 		}
 	})
 
-	t.Run("converts all fields", func(t *testing.T) {
+	t.Run("happy path: converts all fields", func(t *testing.T) {
 		t.Parallel()
 
 		toc := &TOC{
@@ -944,7 +949,7 @@ func TestToTOCData(t *testing.T) {
 		}
 	})
 
-	t.Run("zero MinDepth gets default", func(t *testing.T) {
+	t.Run("edge case: zero MinDepth gets default", func(t *testing.T) {
 		t.Parallel()
 
 		toc := &TOC{
@@ -960,7 +965,7 @@ func TestToTOCData(t *testing.T) {
 		}
 	})
 
-	t.Run("zero MaxDepth gets default", func(t *testing.T) {
+	t.Run("edge case: zero MaxDepth gets default", func(t *testing.T) {
 		t.Parallel()
 
 		toc := &TOC{
@@ -975,7 +980,7 @@ func TestToTOCData(t *testing.T) {
 		}
 	})
 
-	t.Run("empty title preserved", func(t *testing.T) {
+	t.Run("edge case: empty title preserved", func(t *testing.T) {
 		t.Parallel()
 
 		toc := &TOC{
@@ -992,28 +997,28 @@ func TestToTOCData(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_TOC - TOC Validation
+// TestService_validateInput_TOC - TOC Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_TOC(t *testing.T) {
+func TestService_validateInput_TOC(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
-	t.Run("nil TOC is valid", func(t *testing.T) {
+	t.Run("happy path: nil TOC", func(t *testing.T) {
 		t.Parallel()
 		input := Input{Markdown: "# Hello", TOC: nil}
 		err := service.validateInput(input)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("validateInput(%v) unexpected error: %v", input, err)
 		}
 	})
 
-	t.Run("valid TOC passes", func(t *testing.T) {
+	t.Run("happy path: valid TOC", func(t *testing.T) {
 		t.Parallel()
 
 		input := Input{
@@ -1022,11 +1027,11 @@ func TestValidateInput_TOC(t *testing.T) {
 		}
 		err := service.validateInput(input)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("validateInput(%v) unexpected error: %v", input, err)
 		}
 	})
 
-	t.Run("invalid TOC depth fails", func(t *testing.T) {
+	t.Run("error case: invalid TOC depth", func(t *testing.T) {
 		t.Parallel()
 
 		input := Input{
@@ -1035,19 +1040,19 @@ func TestValidateInput_TOC(t *testing.T) {
 		}
 		err := service.validateInput(input)
 		if err == nil {
-			t.Fatal("expected error for invalid TOC depth")
+			t.Fatalf("validateInput(%v) error = nil, want error", input)
 		}
 		if !errors.Is(err, ErrInvalidTOCDepth) {
-			t.Errorf("error = %v, want ErrInvalidTOCDepth", err)
+			t.Errorf("validateInput(%v) error = %v, want ErrInvalidTOCDepth", input, err)
 		}
 	})
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_RecoversPanic - Panic Recovery
+// TestService_Convert_recoversPanic - Panic Recovery
 // ---------------------------------------------------------------------------
 
-func TestConvert_RecoversPanic(t *testing.T) {
+func TestService_Convert_recoversPanic(t *testing.T) {
 	t.Parallel()
 
 	service, err := New(
@@ -1058,26 +1063,27 @@ func TestConvert_RecoversPanic(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Test"})
+	input := Input{Markdown: "# Test"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("expected error from panic recovery, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !strings.Contains(err.Error(), "internal error") {
-		t.Errorf("expected 'internal error' in message, got %q", err.Error())
+		t.Errorf("Convert(%v, %v) error should contain 'internal error', got %q", ctx, input, err.Error())
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_ContextCancellation - Context Cancellation Handling
+// TestService_Convert_contextCancellation - Context Cancellation Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_ContextCancellation(t *testing.T) {
+func TestService_Convert_contextCancellation(t *testing.T) {
 	t.Parallel()
 
 	service, err := New(
@@ -1088,7 +1094,7 @@ func TestConvert_ContextCancellation(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1096,26 +1102,27 @@ func TestConvert_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, err = service.Convert(ctx, Input{Markdown: "# Test"})
+	input := Input{Markdown: "# Test"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("expected context error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
+		t.Errorf("Convert(%v, %v) error = %v, want context.Canceled", ctx, input, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidWatermark - Watermark Validation
+// TestService_validateInput_invalidWatermark - Watermark Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidWatermark(t *testing.T) {
+func TestService_validateInput_invalidWatermark(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1125,22 +1132,22 @@ func TestValidateInput_InvalidWatermark(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name:      "opacity too high",
+			name:      "error case: opacity too high",
 			watermark: &Watermark{Text: "DRAFT", Opacity: 1.5},
 			wantErr:   true,
 		},
 		{
-			name:      "opacity negative",
+			name:      "error case: opacity negative",
 			watermark: &Watermark{Text: "DRAFT", Opacity: -0.1},
 			wantErr:   true,
 		},
 		{
-			name:      "angle too high",
+			name:      "error case: angle too high",
 			watermark: &Watermark{Text: "DRAFT", Opacity: 0.5, Angle: 100},
 			wantErr:   true,
 		},
 		{
-			name:      "angle too low",
+			name:      "error case: angle too low",
 			watermark: &Watermark{Text: "DRAFT", Opacity: 0.5, Angle: -100},
 			wantErr:   true,
 		},
@@ -1153,22 +1160,22 @@ func TestValidateInput_InvalidWatermark(t *testing.T) {
 			input := Input{Markdown: "# Test", Watermark: tt.watermark}
 			err := service.validateInput(input)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateInput() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("validateInput(%v) error = %v, wantErr %v", input, err, tt.wantErr)
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidPageBreaks - Page Breaks Validation
+// TestService_validateInput_invalidPageBreaks - Page Breaks Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidPageBreaks(t *testing.T) {
+func TestService_validateInput_invalidPageBreaks(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1178,22 +1185,22 @@ func TestValidateInput_InvalidPageBreaks(t *testing.T) {
 		wantErr    error
 	}{
 		{
-			name:       "orphans too high",
+			name:       "error case: orphans too high",
 			pageBreaks: &PageBreaks{Orphans: MaxOrphans + 1},
 			wantErr:    ErrInvalidOrphans,
 		},
 		{
-			name:       "widows too high",
+			name:       "error case: widows too high",
 			pageBreaks: &PageBreaks{Widows: MaxWidows + 1},
 			wantErr:    ErrInvalidWidows,
 		},
 		{
-			name:       "orphans negative",
+			name:       "error case: orphans negative",
 			pageBreaks: &PageBreaks{Orphans: -1},
 			wantErr:    ErrInvalidOrphans,
 		},
 		{
-			name:       "widows negative",
+			name:       "error case: widows negative",
 			pageBreaks: &PageBreaks{Widows: -1},
 			wantErr:    ErrInvalidWidows,
 		},
@@ -1206,7 +1213,7 @@ func TestValidateInput_InvalidPageBreaks(t *testing.T) {
 			input := Input{Markdown: "# Test", PageBreaks: tt.pageBreaks}
 			err := service.validateInput(input)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("validateInput() error = %v, want %v", err, tt.wantErr)
+				t.Errorf("validateInput(%v) error = %v, want %v", input, err, tt.wantErr)
 			}
 		})
 	}
@@ -1230,10 +1237,10 @@ func TestService_CloseNilConverter(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_WatermarkCSSOrder - CSS Ordering with Watermark
+// TestService_Convert_watermarkCSSOrder - CSS Ordering with Watermark
 // ---------------------------------------------------------------------------
 
-func TestConvert_WatermarkCSSOrder(t *testing.T) {
+func TestService_Convert_watermarkCSSOrder(t *testing.T) {
 	t.Parallel()
 
 	cssInj := &mockCSSInjector{}
@@ -1248,7 +1255,7 @@ func TestConvert_WatermarkCSSOrder(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1300,10 +1307,10 @@ func TestConvert_WatermarkCSSOrder(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_CoverInjectorError - Cover Injector Error Handling
+// TestService_Convert_coverInjectorError - Cover Injector Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_CoverInjectorError(t *testing.T) {
+func TestService_Convert_coverInjectorError(t *testing.T) {
 	t.Parallel()
 
 	coverErr := errors.New("cover template failed")
@@ -1318,29 +1325,30 @@ func TestConvert_CoverInjectorError(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, coverErr) {
-		t.Errorf("error should wrap %v, got %v", coverErr, err)
+		t.Errorf("Convert(%v, %v) error should wrap %v, got %v", ctx, input, coverErr, err)
 	}
 	if !strings.Contains(err.Error(), "injecting cover") {
-		t.Errorf("error should mention 'injecting cover', got %q", err.Error())
+		t.Errorf("Convert(%v, %v) error should mention 'injecting cover', got %q", ctx, input, err.Error())
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_TOCInjectorError - TOC Injector Error Handling
+// TestService_Convert_tocInjectorError - TOC Injector Error Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_TOCInjectorError(t *testing.T) {
+func TestService_Convert_tocInjectorError(t *testing.T) {
 	t.Parallel()
 
 	tocErr := errors.New("TOC generation failed")
@@ -1355,29 +1363,30 @@ func TestConvert_TOCInjectorError(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
 	ctx := context.Background()
-	_, err = service.Convert(ctx, Input{Markdown: "# Hello"})
+	input := Input{Markdown: "# Hello"}
+	_, err = service.Convert(ctx, input)
 
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatalf("Convert(%v, %v) error = nil, want error", ctx, input)
 	}
 	if !errors.Is(err, tocErr) {
-		t.Errorf("error should wrap %v, got %v", tocErr, err)
+		t.Errorf("Convert(%v, %v) error should wrap %v, got %v", ctx, input, tocErr, err)
 	}
 	if !strings.Contains(err.Error(), "injecting TOC") {
-		t.Errorf("error should mention 'injecting TOC', got %q", err.Error())
+		t.Errorf("Convert(%v, %v) error should mention 'injecting TOC', got %q", ctx, input, err.Error())
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_PDFOptionsTransmission - PDF Options Passing
+// TestService_Convert_pdfOptionsTransmission - PDF Options Passing
 // ---------------------------------------------------------------------------
 
-func TestConvert_PDFOptionsTransmission(t *testing.T) {
+func TestService_Convert_pdfOptionsTransmission(t *testing.T) {
 	t.Parallel()
 
 	pdfConv := &mockPDFConverter{}
@@ -1392,7 +1401,7 @@ func TestConvert_PDFOptionsTransmission(t *testing.T) {
 		withPDFConverter(pdfConv),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1446,10 +1455,10 @@ func TestConvert_PDFOptionsTransmission(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_CoverDataTransmission - Cover Data Passing
+// TestService_Convert_coverDataTransmission - Cover Data Passing
 // ---------------------------------------------------------------------------
 
-func TestConvert_CoverDataTransmission(t *testing.T) {
+func TestService_Convert_coverDataTransmission(t *testing.T) {
 	t.Parallel()
 
 	coverInj := &mockCoverInjector{}
@@ -1464,7 +1473,7 @@ func TestConvert_CoverDataTransmission(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1502,10 +1511,10 @@ func TestConvert_CoverDataTransmission(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_TOCDataTransmission - TOC Data Passing
+// TestService_Convert_tocDataTransmission - TOC Data Passing
 // ---------------------------------------------------------------------------
 
-func TestConvert_TOCDataTransmission(t *testing.T) {
+func TestService_Convert_tocDataTransmission(t *testing.T) {
 	t.Parallel()
 
 	tocInj := &mockTOCInjector{}
@@ -1520,7 +1529,7 @@ func TestConvert_TOCDataTransmission(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1553,10 +1562,10 @@ func TestConvert_TOCDataTransmission(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_NilOptionalFieldsNotPassed - Nil Optional Fields Handling
+// TestService_Convert_nilOptionalFieldsNotPassed - Nil Optional Fields Handling
 // ---------------------------------------------------------------------------
 
-func TestConvert_NilOptionalFieldsNotPassed(t *testing.T) {
+func TestService_Convert_nilOptionalFieldsNotPassed(t *testing.T) {
 	t.Parallel()
 
 	coverInj := &mockCoverInjector{}
@@ -1572,7 +1581,7 @@ func TestConvert_NilOptionalFieldsNotPassed(t *testing.T) {
 		withPDFConverter(&mockPDFConverter{}),
 	)
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1590,30 +1599,30 @@ func TestConvert_NilOptionalFieldsNotPassed(t *testing.T) {
 
 	// Injectors should be called but with nil data
 	if !coverInj.called {
-		t.Fatal("cover injector should be called")
+		t.Fatalf("coverInjector.called = false, want true")
 	}
 	if coverInj.inputData != nil {
-		t.Error("cover data should be nil when no cover provided")
+		t.Errorf("coverInjector.inputData = %v, want nil", coverInj.inputData)
 	}
 
 	if !tocInj.called {
-		t.Fatal("TOC injector should be called")
+		t.Fatalf("tocInjector.called = false, want true")
 	}
 	if tocInj.inputData != nil {
-		t.Error("TOC data should be nil when no TOC provided")
+		t.Errorf("tocInjector.inputData = %v, want nil", tocInj.inputData)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidPage - Page Settings Validation
+// TestService_validateInput_invalidPage - Page Settings Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidPage(t *testing.T) {
+func TestService_validateInput_invalidPage(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1623,22 +1632,22 @@ func TestValidateInput_InvalidPage(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "invalid size",
+			name:    "error case: invalid size",
 			page:    &PageSettings{Size: "invalid", Orientation: "portrait", Margin: 0.5},
 			wantErr: ErrInvalidPageSize,
 		},
 		{
-			name:    "invalid orientation",
+			name:    "error case: invalid orientation",
 			page:    &PageSettings{Size: "letter", Orientation: "diagonal", Margin: 0.5},
 			wantErr: ErrInvalidOrientation,
 		},
 		{
-			name:    "margin too small",
+			name:    "error case: margin too small",
 			page:    &PageSettings{Size: "letter", Orientation: "portrait", Margin: 0.1},
 			wantErr: ErrInvalidMargin,
 		},
 		{
-			name:    "margin too large",
+			name:    "error case: margin too large",
 			page:    &PageSettings{Size: "letter", Orientation: "portrait", Margin: 5.0},
 			wantErr: ErrInvalidMargin,
 		},
@@ -1651,22 +1660,22 @@ func TestValidateInput_InvalidPage(t *testing.T) {
 			input := Input{Markdown: "# Test", Page: tt.page}
 			err := service.validateInput(input)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("validateInput() error = %v, want %v", err, tt.wantErr)
+				t.Errorf("validateInput(%v) error = %v, want %v", input, err, tt.wantErr)
 			}
 		})
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidFooter - Footer Validation
+// TestService_validateInput_invalidFooter - Footer Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidFooter(t *testing.T) {
+func TestService_validateInput_invalidFooter(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1677,20 +1686,20 @@ func TestValidateInput_InvalidFooter(t *testing.T) {
 
 	err = service.validateInput(input)
 	if !errors.Is(err, ErrInvalidFooterPosition) {
-		t.Errorf("validateInput() error = %v, want ErrInvalidFooterPosition", err)
+		t.Errorf("validateInput(%v) error = %v, want ErrInvalidFooterPosition", input, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidWatermarkColor - Watermark Color Validation
+// TestService_validateInput_invalidWatermarkColor - Watermark Color Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidWatermarkColor(t *testing.T) {
+func TestService_validateInput_invalidWatermarkColor(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
@@ -1701,33 +1710,33 @@ func TestValidateInput_InvalidWatermarkColor(t *testing.T) {
 
 	err = service.validateInput(input)
 	if !errors.Is(err, ErrInvalidWatermarkColor) {
-		t.Errorf("validateInput() error = %v, want ErrInvalidWatermarkColor", err)
+		t.Errorf("validateInput(%v) error = %v, want ErrInvalidWatermarkColor", input, err)
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestValidateInput_InvalidSignature - Signature Validation
+// TestService_validateInput_invalidSignature - Signature Validation
 // ---------------------------------------------------------------------------
 
-func TestValidateInput_InvalidSignature(t *testing.T) {
+func TestService_validateInput_invalidSignature(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
 	if err != nil {
-		t.Fatalf("failed to create service: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 	defer service.Close()
 
-	t.Run("nil signature is valid", func(t *testing.T) {
+	t.Run("happy path: nil signature", func(t *testing.T) {
 		t.Parallel()
 		input := Input{Markdown: "# Hello", Signature: nil}
 		err := service.validateInput(input)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("validateInput(%v) unexpected error: %v", input, err)
 		}
 	})
 
-	t.Run("valid signature passes", func(t *testing.T) {
+	t.Run("happy path: valid signature", func(t *testing.T) {
 		t.Parallel()
 		input := Input{
 			Markdown:  "# Hello",
@@ -1735,11 +1744,11 @@ func TestValidateInput_InvalidSignature(t *testing.T) {
 		}
 		err := service.validateInput(input)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("validateInput(%v) unexpected error: %v", input, err)
 		}
 	})
 
-	t.Run("nonexistent image path fails", func(t *testing.T) {
+	t.Run("error case: nonexistent image path", func(t *testing.T) {
 		t.Parallel()
 		input := Input{
 			Markdown:  "# Hello",
@@ -1747,14 +1756,14 @@ func TestValidateInput_InvalidSignature(t *testing.T) {
 		}
 		err := service.validateInput(input)
 		if err == nil {
-			t.Fatal("expected error for nonexistent image path")
+			t.Fatalf("validateInput(%v) error = nil, want error", input)
 		}
 		if !errors.Is(err, ErrSignatureImageNotFound) {
-			t.Errorf("error = %v, want ErrSignatureImageNotFound", err)
+			t.Errorf("validateInput(%v) error = %v, want ErrSignatureImageNotFound", input, err)
 		}
 	})
 
-	t.Run("URL image path passes", func(t *testing.T) {
+	t.Run("happy path: URL image path", func(t *testing.T) {
 		t.Parallel()
 		input := Input{
 			Markdown:  "# Hello",
@@ -1762,16 +1771,16 @@ func TestValidateInput_InvalidSignature(t *testing.T) {
 		}
 		err := service.validateInput(input)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("validateInput(%v) unexpected error: %v", input, err)
 		}
 	})
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_ReturnsConvertResult - ConvertResult Structure
+// TestService_Convert_returnsConvertResult - ConvertResult Structure
 // ---------------------------------------------------------------------------
 
-func TestConvert_ReturnsConvertResult(t *testing.T) {
+func TestService_Convert_returnsConvertResult(t *testing.T) {
 	t.Parallel()
 
 	mockPDF := &mockPDFConverter{output: []byte("%PDF-1.4 test")}
@@ -1792,24 +1801,24 @@ func TestConvert_ReturnsConvertResult(t *testing.T) {
 
 	// Verify ConvertResult contains both HTML and PDF
 	if result == nil {
-		t.Fatal("Convert() returned nil result")
+		t.Fatalf("Convert(%v, %v) = nil, want non-nil", context.Background(), Input{Markdown: "# Test"})
 	}
 	if len(result.HTML) == 0 {
-		t.Error("Convert() result.HTML is empty")
+		t.Errorf("Convert(%v, %v).HTML is empty, want non-empty", context.Background(), Input{Markdown: "# Test"})
 	}
 	if len(result.PDF) == 0 {
-		t.Error("Convert() result.PDF is empty")
+		t.Errorf("Convert(%v, %v).PDF is empty, want non-empty", context.Background(), Input{Markdown: "# Test"})
 	}
 	if string(result.PDF) != "%PDF-1.4 test" {
-		t.Errorf("Convert() result.PDF = %q, want %q", result.PDF, "%PDF-1.4 test")
+		t.Errorf("Convert(%v, %v).PDF = %q, want %q", context.Background(), Input{Markdown: "# Test"}, result.PDF, "%PDF-1.4 test")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_HTMLOnlySkipsPDF - HTML Only Mode
+// TestService_Convert_htmlOnlySkipsPDF - HTML Only Mode
 // ---------------------------------------------------------------------------
 
-func TestConvert_HTMLOnlySkipsPDF(t *testing.T) {
+func TestService_Convert_htmlOnlySkipsPDF(t *testing.T) {
 	t.Parallel()
 
 	mockPDF := &mockPDFConverter{output: []byte("%PDF-1.4 test")}
@@ -1833,23 +1842,23 @@ func TestConvert_HTMLOnlySkipsPDF(t *testing.T) {
 
 	// Verify HTML is populated but PDF is empty
 	if len(result.HTML) == 0 {
-		t.Error("Convert() result.HTML should not be empty in HTMLOnly mode")
+		t.Errorf("Convert().HTML is empty in HTMLOnly mode, want non-empty")
 	}
 	if len(result.PDF) != 0 {
-		t.Errorf("Convert() result.PDF should be empty in HTMLOnly mode, got %d bytes", len(result.PDF))
+		t.Errorf("Convert().PDF = %d bytes in HTMLOnly mode, want 0 bytes", len(result.PDF))
 	}
 
 	// Verify PDF converter was NOT called
 	if mockPDF.called {
-		t.Error("PDF converter should not be called in HTMLOnly mode")
+		t.Errorf("pdfConverter.called = true in HTMLOnly mode, want false")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_HTMLOnlyStillProcessesInjections - HTML Only with Injections
+// TestService_Convert_htmlOnlyStillProcessesInjections - HTML Only with Injections
 // ---------------------------------------------------------------------------
 
-func TestConvert_HTMLOnlyStillProcessesInjections(t *testing.T) {
+func TestService_Convert_htmlOnlyStillProcessesInjections(t *testing.T) {
 	t.Parallel()
 
 	mockPDF := &mockPDFConverter{}
@@ -1876,12 +1885,12 @@ func TestConvert_HTMLOnlyStillProcessesInjections(t *testing.T) {
 
 	// Verify CSS injection was called
 	if !mockCSS.called {
-		t.Error("CSS injector should still be called in HTMLOnly mode")
+		t.Errorf("cssInjector.called = false in HTMLOnly mode, want true")
 	}
 
 	// Verify HTML contains injected CSS
 	if !strings.Contains(string(result.HTML), "css") {
-		t.Error("result.HTML should contain injected CSS")
+		t.Errorf("Convert().HTML should contain injected CSS, got %s", string(result.HTML))
 	}
 }
 
@@ -2037,7 +2046,7 @@ func TestWithAssetPath_LoadsFromFilesystem(t *testing.T) {
 func TestWithStyle(t *testing.T) {
 	t.Parallel()
 
-	t.Run("CSS content", func(t *testing.T) {
+	t.Run("happy path: CSS content", func(t *testing.T) {
 		t.Parallel()
 		customCSS := "body { font-family: monospace; }"
 
@@ -2053,7 +2062,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("style name", func(t *testing.T) {
+	t.Run("happy path: style name", func(t *testing.T) {
 		t.Parallel()
 		service, err := New(WithStyle("technical"))
 		if err != nil {
@@ -2071,7 +2080,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("file path", func(t *testing.T) {
+	t.Run("happy path: file path", func(t *testing.T) {
 		t.Parallel()
 		// Create a temp CSS file
 		tmpDir := t.TempDir()
@@ -2092,7 +2101,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("unknown style name", func(t *testing.T) {
+	t.Run("error case: unknown style name", func(t *testing.T) {
 		t.Parallel()
 		_, err := New(WithStyle("nonexistent"))
 		if err == nil {
@@ -2100,7 +2109,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("missing file", func(t *testing.T) {
+	t.Run("error case: missing file", func(t *testing.T) {
 		t.Parallel()
 		_, err := New(WithStyle("./nonexistent.css"))
 		if err == nil {
@@ -2108,7 +2117,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("empty string", func(t *testing.T) {
+	t.Run("edge case: empty string", func(t *testing.T) {
 		t.Parallel()
 		service, err := New(WithStyle(""))
 		if err != nil {
@@ -2122,7 +2131,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("CSS injected into HTML", func(t *testing.T) {
+	t.Run("happy path: CSS injected into HTML", func(t *testing.T) {
 		t.Parallel()
 		customCSS := "body { background-color: #ff0000; }"
 
@@ -2152,7 +2161,7 @@ func TestWithStyle(t *testing.T) {
 		}
 	})
 
-	t.Run("Input.CSS overrides service style", func(t *testing.T) {
+	t.Run("happy path: Input.CSS overrides service style", func(t *testing.T) {
 		t.Parallel()
 		serviceCSS := "body { color: blue; }"
 		inputCSS := "body { color: red; }"
@@ -2195,10 +2204,10 @@ func TestWithStyle(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_SourceDir - Relative Path Rewriting
+// TestService_Convert_sourceDir_rewritesRelativePaths - Relative Path Rewriting
 // ---------------------------------------------------------------------------
 
-func TestConvert_SourceDir_RewritesRelativePaths(t *testing.T) {
+func TestService_Convert_sourceDir_rewritesRelativePaths(t *testing.T) {
 	t.Parallel()
 
 	// Mock HTML converter that produces HTML with relative image
@@ -2238,7 +2247,7 @@ func TestConvert_SourceDir_RewritesRelativePaths(t *testing.T) {
 	}
 }
 
-func TestConvert_SourceDir_EmptySourceDirNoRewrite(t *testing.T) {
+func TestService_Convert_sourceDir_emptySourceDirNoRewrite(t *testing.T) {
 	t.Parallel()
 
 	mockHTML := &mockHTMLConverter{
@@ -2272,7 +2281,7 @@ func TestConvert_SourceDir_EmptySourceDirNoRewrite(t *testing.T) {
 	}
 }
 
-func TestConvert_SourceDir_AbsolutePathsUnchanged(t *testing.T) {
+func TestService_Convert_sourceDir_absolutePathsUnchanged(t *testing.T) {
 	t.Parallel()
 
 	mockHTML := &mockHTMLConverter{
@@ -2306,7 +2315,7 @@ func TestConvert_SourceDir_AbsolutePathsUnchanged(t *testing.T) {
 	}
 }
 
-func TestConvert_SourceDir_MultipleImages(t *testing.T) {
+func TestService_Convert_sourceDir_multipleImages(t *testing.T) {
 	t.Parallel()
 
 	mockHTML := &mockHTMLConverter{
@@ -2354,10 +2363,10 @@ func TestConvert_SourceDir_MultipleImages(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_FrontmatterStripped - YAML Frontmatter Removal
+// TestService_Convert_frontmatterStripped - YAML Frontmatter Removal
 // ---------------------------------------------------------------------------
 
-func TestConvert_FrontmatterStripped(t *testing.T) {
+func TestService_Convert_frontmatterStripped(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
@@ -2426,10 +2435,10 @@ The frontmatter above contains metadata.`
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_MalformedFrontmatterPreserved - Malformed Frontmatter Safety
+// TestService_Convert_malformedFrontmatterPreserved - Malformed Frontmatter Safety
 // ---------------------------------------------------------------------------
 
-func TestConvert_MalformedFrontmatterPreserved(t *testing.T) {
+func TestService_Convert_malformedFrontmatterPreserved(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()
@@ -2444,21 +2453,21 @@ func TestConvert_MalformedFrontmatterPreserved(t *testing.T) {
 		wantText string // Text that SHOULD appear (malformed frontmatter preserved)
 	}{
 		{
-			name: "missing closing delimiter",
+			name: "edge case: missing closing delimiter",
 			markdown: `---
 title: Test
 # Content`,
 			wantText: "title: Test",
 		},
 		{
-			name: "missing opening delimiter",
+			name: "edge case: missing opening delimiter",
 			markdown: `title: Test
 ---
 # Content`,
 			wantText: "title: Test",
 		},
 		{
-			name: "single delimiter only becomes horizontal rule",
+			name: "edge case: single delimiter only becomes horizontal rule",
 			markdown: `---
 # Content`,
 			wantText: "<hr", // Single --- becomes <hr /> (horizontal rule in markdown)
@@ -2488,10 +2497,10 @@ title: Test
 }
 
 // ---------------------------------------------------------------------------
-// TestConvert_FrontmatterWithCodeBlocks - Code Blocks Not Stripped
+// TestService_Convert_frontmatterWithCodeBlocks - Code Blocks Not Stripped
 // ---------------------------------------------------------------------------
 
-func TestConvert_FrontmatterWithCodeBlocks(t *testing.T) {
+func TestService_Convert_frontmatterWithCodeBlocks(t *testing.T) {
 	t.Parallel()
 
 	service, err := New()

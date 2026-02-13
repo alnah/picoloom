@@ -15,10 +15,10 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_SupportedShells - Shell completion script generation
+// TestGenerateCompletion - Shell completion script generation
 // ---------------------------------------------------------------------------
 
-func TestGenerateCompletion_SupportedShells(t *testing.T) {
+func TestGenerateCompletion(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -84,7 +84,7 @@ func TestGenerateCompletion_SupportedShells(t *testing.T) {
 			err := GenerateCompletion(&buf, tt.shell)
 
 			if err != nil {
-				t.Fatalf("GenerateCompletion(%q) returned error: %v", tt.shell, err)
+				t.Fatalf("GenerateCompletion(%q) unexpected error: %v", tt.shell, err)
 			}
 
 			output := buf.String()
@@ -108,7 +108,7 @@ func TestGenerateCompletion_SupportedShells(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_UnsupportedShell - Error handling for unknown shells
+// TestGenerateCompletion - Error handling for unknown shells
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_UnsupportedShell(t *testing.T) {
@@ -133,7 +133,7 @@ func TestGenerateCompletion_UnsupportedShell(t *testing.T) {
 			err := GenerateCompletion(&buf, tt.shell)
 
 			if err == nil {
-				t.Fatalf("GenerateCompletion(%q) expected error, got nil", tt.shell)
+				t.Fatalf("GenerateCompletion(%q) error = nil, want error", tt.shell)
 			}
 
 			if !errors.Is(err, ErrUnsupportedShell) {
@@ -148,7 +148,7 @@ func TestGenerateCompletion_UnsupportedShell(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestRunCompletion_NoArgs - Usage message when no shell specified
+// TestRunCompletion - Usage message when no shell specified
 // ---------------------------------------------------------------------------
 
 func TestRunCompletion_NoArgs(t *testing.T) {
@@ -163,7 +163,7 @@ func TestRunCompletion_NoArgs(t *testing.T) {
 	err := runCompletion([]string{}, env)
 
 	if err != nil {
-		t.Fatalf("runCompletion with no args returned error: %v", err)
+		t.Fatalf("runCompletion([]) unexpected error: %v", err)
 	}
 
 	output := stdout.String()
@@ -179,7 +179,7 @@ func TestRunCompletion_NoArgs(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestRunCompletion_ValidShell - Successful completion for supported shells
+// TestRunCompletion - Successful completion for supported shells
 // ---------------------------------------------------------------------------
 
 func TestRunCompletion_ValidShell(t *testing.T) {
@@ -209,7 +209,7 @@ func TestRunCompletion_ValidShell(t *testing.T) {
 			err := runCompletion([]string{tt.shell}, env)
 
 			if err != nil {
-				t.Fatalf("runCompletion(%q) returned error: %v", tt.shell, err)
+				t.Fatalf("runCompletion([%q]) unexpected error: %v", tt.shell, err)
 			}
 
 			if !strings.Contains(stdout.String(), tt.wantContains) {
@@ -220,7 +220,7 @@ func TestRunCompletion_ValidShell(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestRunCompletion_InvalidShell - Error handling for invalid shell
+// TestRunCompletion - Error handling for invalid shell
 // ---------------------------------------------------------------------------
 
 func TestRunCompletion_InvalidShell(t *testing.T) {
@@ -235,7 +235,7 @@ func TestRunCompletion_InvalidShell(t *testing.T) {
 	err := runCompletion([]string{"invalid"}, env)
 
 	if err == nil {
-		t.Fatal("runCompletion with invalid shell should return error")
+		t.Fatal("runCompletion([\"invalid\"]) error = nil, want error")
 	}
 
 	if !errors.Is(err, ErrUnsupportedShell) {
@@ -244,17 +244,17 @@ func TestRunCompletion_InvalidShell(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGetCommands_ReturnsExpectedCommands - Command definitions
+// TestGetCommands - Command definitions
 // ---------------------------------------------------------------------------
 
-func TestGetCommands_ReturnsExpectedCommands(t *testing.T) {
+func TestGetCommands(t *testing.T) {
 	t.Parallel()
 
 	commands := getCommands()
 
 	expectedCommands := []string{"convert", "version", "help", "completion"}
 	if len(commands) != len(expectedCommands) {
-		t.Fatalf("expected %d commands, got %d", len(expectedCommands), len(commands))
+		t.Fatalf("getCommands() = %d commands, want %d", len(commands), len(expectedCommands))
 	}
 
 	commandNames := make(map[string]bool)
@@ -270,7 +270,7 @@ func TestGetCommands_ReturnsExpectedCommands(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGetCommands_ConvertHasFlags - Convert command flag definitions
+// TestGetCommands - Convert command flag definitions
 // ---------------------------------------------------------------------------
 
 func TestGetCommands_ConvertHasFlags(t *testing.T) {
@@ -337,7 +337,7 @@ func TestGetCommands_ConvertHasFlags(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGetCommands_EnumFlagsHaveValues - Enum flag value definitions
+// TestGetCommands - Enum flag value definitions
 // ---------------------------------------------------------------------------
 
 func TestGetCommands_EnumFlagsHaveValues(t *testing.T) {
@@ -381,7 +381,7 @@ func TestGetCommands_EnumFlagsHaveValues(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGetCommands_FileFlagsHaveGlobs - File flag glob pattern definitions
+// TestGetCommands - File flag glob pattern definitions
 // ---------------------------------------------------------------------------
 
 func TestGetCommands_FileFlagsHaveGlobs(t *testing.T) {
@@ -421,7 +421,7 @@ func TestGetCommands_FileFlagsHaveGlobs(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGetCommands_DirFlagsAreMarked - Directory flag type definitions
+// TestGetCommands - Directory flag type definitions
 // ---------------------------------------------------------------------------
 
 func TestGetCommands_DirFlagsAreMarked(t *testing.T) {
@@ -455,7 +455,7 @@ func TestGetCommands_DirFlagsAreMarked(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_BashContainsAllCommands - Bash script completeness
+// TestGenerateCompletion - Bash script completeness
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_BashContainsAllCommands(t *testing.T) {
@@ -464,7 +464,7 @@ func TestGenerateCompletion_BashContainsAllCommands(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellBash)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellBash) unexpected error: %v", err)
 	}
 
 	output := buf.String()
@@ -477,7 +477,7 @@ func TestGenerateCompletion_BashContainsAllCommands(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_ZshContainsAllCommands - Zsh script completeness
+// TestGenerateCompletion - Zsh script completeness
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_ZshContainsAllCommands(t *testing.T) {
@@ -486,7 +486,7 @@ func TestGenerateCompletion_ZshContainsAllCommands(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellZsh)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellZsh) unexpected error: %v", err)
 	}
 
 	output := buf.String()
@@ -499,7 +499,7 @@ func TestGenerateCompletion_ZshContainsAllCommands(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_FishContainsAllCommands - Fish script completeness
+// TestGenerateCompletion - Fish script completeness
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_FishContainsAllCommands(t *testing.T) {
@@ -508,7 +508,7 @@ func TestGenerateCompletion_FishContainsAllCommands(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellFish)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellFish) unexpected error: %v", err)
 	}
 
 	output := buf.String()
@@ -521,7 +521,7 @@ func TestGenerateCompletion_FishContainsAllCommands(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_PowerShellContainsAllCommands - PowerShell completeness
+// TestGenerateCompletion - PowerShell completeness
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_PowerShellContainsAllCommands(t *testing.T) {
@@ -530,7 +530,7 @@ func TestGenerateCompletion_PowerShellContainsAllCommands(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellPowerShell)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellPowerShell) unexpected error: %v", err)
 	}
 
 	output := buf.String()
@@ -543,7 +543,7 @@ func TestGenerateCompletion_PowerShellContainsAllCommands(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_ZshEnumCompletion - Zsh enum value completion
+// TestGenerateCompletion - Zsh enum value completion
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_ZshEnumCompletion(t *testing.T) {
@@ -552,7 +552,7 @@ func TestGenerateCompletion_ZshEnumCompletion(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellZsh)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellZsh) unexpected error: %v", err)
 	}
 
 	output := buf.String()
@@ -567,7 +567,7 @@ func TestGenerateCompletion_ZshEnumCompletion(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestGenerateCompletion_BashEnumCompletion - Bash enum value completion
+// TestGenerateCompletion - Bash enum value completion
 // ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_BashEnumCompletion(t *testing.T) {
@@ -576,7 +576,7 @@ func TestGenerateCompletion_BashEnumCompletion(t *testing.T) {
 	var buf bytes.Buffer
 	err := GenerateCompletion(&buf, ShellBash)
 	if err != nil {
-		t.Fatalf("GenerateCompletion failed: %v", err)
+		t.Fatalf("GenerateCompletion(&buf, ShellBash) unexpected error: %v", err)
 	}
 
 	output := buf.String()

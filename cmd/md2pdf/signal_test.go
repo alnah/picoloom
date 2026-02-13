@@ -19,18 +19,18 @@ import (
 func TestNotifyContext(t *testing.T) {
 	t.Parallel()
 
-	t.Run("returns non-nil context", func(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, stop := notifyContext(context.Background())
 		defer stop()
 
 		if ctx == nil {
-			t.Fatal("expected non-nil context")
+			t.Fatal("notifyContext() returned nil context, want non-nil")
 		}
 	})
 
-	t.Run("context starts not cancelled", func(t *testing.T) {
+	t.Run("initial state: not cancelled", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, stop := notifyContext(context.Background())
@@ -38,13 +38,13 @@ func TestNotifyContext(t *testing.T) {
 
 		select {
 		case <-ctx.Done():
-			t.Fatal("context should not be cancelled initially")
+			t.Fatal("notifyContext() context cancelled initially, want not cancelled")
 		default:
 			// Expected: context is not cancelled
 		}
 	})
 
-	t.Run("stop function cancels context", func(t *testing.T) {
+	t.Run("stop cancels context", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, stop := notifyContext(context.Background())
@@ -54,11 +54,11 @@ func TestNotifyContext(t *testing.T) {
 		case <-ctx.Done():
 			// Expected: context is cancelled after stop()
 		default:
-			t.Fatal("context should be cancelled after stop()")
+			t.Fatal("notifyContext() context not cancelled after stop(), want cancelled")
 		}
 	})
 
-	t.Run("inherits parent cancellation", func(t *testing.T) {
+	t.Run("parent cancellation propagates", func(t *testing.T) {
 		t.Parallel()
 
 		parent, cancel := context.WithCancel(context.Background())
@@ -71,7 +71,7 @@ func TestNotifyContext(t *testing.T) {
 		case <-ctx.Done():
 			// Expected: child context is cancelled when parent is
 		default:
-			t.Fatal("context should be cancelled when parent is cancelled")
+			t.Fatal("notifyContext() context not cancelled when parent cancelled, want cancelled")
 		}
 	})
 }
