@@ -128,6 +128,7 @@ Root package interface:
 | Command      | Purpose                                | Location              |
 | ------------ | -------------------------------------- | --------------------- |
 | `convert`    | Markdown to PDF conversion             | `cmd/md2pdf/convert.go` |
+| `config`     | Config management (`init` wizard)      | `cmd/md2pdf/config_init.go` |
 | `doctor`     | System diagnostics (Chrome, container) | `cmd/md2pdf/doctor.go`  |
 | `completion` | Shell completion scripts               | `cmd/md2pdf/completion.go` |
 | `version`    | Show version information               | `cmd/md2pdf/main.go`  |
@@ -138,6 +139,13 @@ The `doctor` command performs system checks without starting a conversion:
 - Container detection (Docker, Podman, Kubernetes via multi-signal approach)
 - CI environment detection (GitHub Actions, GitLab CI, Jenkins, CircleCI)
 - Temp directory writability
+
+`config init` architecture:
+- **Input mode boundary** - interactive mode requires TTY; `--no-input` supports CI/scripts.
+- **Prompt pipeline** - prompt + validation + inline YAML help (`?`) per field, then summary/preview confirmation.
+- **Write safety** - destination lock file prevents concurrent writes to the same target.
+- **Overwrite safety** - `--force` uses backup/rollback semantics and restores interrupted writes on next run.
+- **Publish strategy** - temp file is validated via `config.LoadConfig` before atomic publish.
 
 ---
 

@@ -13,13 +13,16 @@ go-md2pdf/                      # package md2pdf (library)
 ├── cssbuilders.go              # Watermark/PageBreaks CSS (depend on public types)
 ├── example_test.go             # Runnable examples for godoc (Example*, ExampleConverterPool, etc.)
 │
-├── cmd/md2pdf/                 # CLI (md2pdf convert|doctor|version|help|completion)
+├── cmd/md2pdf/                 # CLI (md2pdf convert|config|doctor|version|help|completion)
 │   ├── main.go                 # Entry point, command dispatch
 │   ├── exit_codes.go           # Semantic exit codes (0-4) and exitCodeFor()
 │   ├── convert.go              # Convert command orchestration
 │   ├── convert_batch.go        # Batch processing, worker pool
 │   ├── convert_params.go       # Parameter builders (cover, signature, footer, etc.)
 │   ├── convert_discovery.go    # File discovery, output path resolution
+│   ├── config_init.go          # Config init wizard, prompts, and safe file publishing
+│   ├── config_init_test.go     # Unit + acceptance-style command behavior tests
+│   ├── config_init_integration_test.go # Integration tests for file lifecycle safety
 │   ├── doctor.go               # Doctor command (system diagnostics)
 │   ├── flags.go                # Flag definitions by category
 │   ├── help.go                 # Usage text

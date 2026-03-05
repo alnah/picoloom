@@ -20,6 +20,7 @@
 - [CLI Reference](#cli-reference)
 - [Environment Variables](#environment-variables)
 - [Configuration](#configuration)
+- [Config Init Wizard](#config-init-wizard)
 - [Library Usage](#library-usage)
 - [Troubleshooting](#troubleshooting)
 - [Known Limitations](#known-limitations)
@@ -61,6 +62,7 @@ Download pre-built binaries from [GitHub Releases](https://github.com/alnah/go-m
 md2pdf convert document.md                # Single file
 md2pdf convert ./docs/ -o ./output/       # Batch convert
 md2pdf convert -c work document.md        # With config
+md2pdf config init                        # Create config with wizard
 ```
 
 ### Library
@@ -120,6 +122,7 @@ md2pdf convert document.md                # Single file
 md2pdf convert ./docs/ -o ./output/       # Batch convert
 md2pdf convert -c work document.md        # With config
 md2pdf convert --style technical doc.md   # With style
+md2pdf config init                        # Interactive config wizard
 ```
 
 <details>
@@ -130,6 +133,7 @@ md2pdf <command> [flags] [args]
 
 Commands:
   convert      Convert markdown files to PDF
+  config       Manage configuration files
   doctor       Check system configuration
   completion   Generate shell completion script
   version      Show version information
@@ -220,6 +224,13 @@ Debug Output:
 Output Control:
   -q, --quiet               Only show errors
   -v, --verbose             Show detailed timing
+
+md2pdf config init [flags]
+
+Config Init:
+      --output <path>       Output path for generated config (default: ./md2pdf.yaml)
+      --force               Overwrite destination if it exists
+      --no-input            Use defaults without interactive prompts
 ```
 
 </details>
@@ -260,6 +271,12 @@ md2pdf convert --html-only document.md
 
 # Use custom assets directory
 md2pdf convert --asset-path ./my-assets document.md
+
+# Interactive config wizard
+md2pdf config init
+
+# Non-interactive config generation (CI/scripts)
+md2pdf config init --no-input --output ./configs/work.yaml --force
 ```
 
 </details>
@@ -443,6 +460,28 @@ Config files are searched in the current directory first, then in the user confi
 | Windows | `%APPDATA%\go-md2pdf\`                     |
 
 Supported formats: `.yaml`, `.yml`
+
+## Config Init Wizard
+
+Use the wizard to generate a valid config file without writing YAML manually:
+
+```bash
+# Interactive wizard (TTY required)
+md2pdf config init
+
+# Custom destination
+md2pdf config init --output ./configs/work.yaml
+
+# Non-interactive defaults (CI/scripts)
+md2pdf config init --no-input --output ./configs/work.yaml --force
+```
+
+Wizard behavior:
+- Prompts are in English and include available options plus an example value.
+- Type `?` at a prompt to display inline help and a YAML snippet.
+- Interactive mode collects style, author fields, page size, and optional signature/watermark/cover settings.
+- Interactive mode shows a summary and YAML preview before write confirmation.
+- Without `--force`, existing files are preserved; with `--force`, overwrite is explicit and safe.
 
 | Option                  | Type   | Default      | Description                              |
 | ----------------------- | ------ | ------------ | ---------------------------------------- |
