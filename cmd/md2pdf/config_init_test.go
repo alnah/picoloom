@@ -268,7 +268,12 @@ func TestPromptString_UsesDefaultAndShowsFormat(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("\n"))
 	var output bytes.Buffer
 
-	got, err := promptString(reader, &output, "Style", "technical", "technical", nil)
+	got, err := promptString(reader, &output, wizardPrompt{
+		title:        "Style",
+		options:      "default, technical",
+		example:      "technical",
+		defaultValue: "technical",
+	})
 	if err != nil {
 		t.Fatalf("promptString(...) unexpected error: %v", err)
 	}
@@ -277,11 +282,39 @@ func TestPromptString_UsesDefaultAndShowsFormat(t *testing.T) {
 	}
 
 	promptText := output.String()
+	if !strings.Contains(promptText, "Options: default, technical") {
+		t.Fatalf("prompt text = %q, missing options line", promptText)
+	}
 	if !strings.Contains(promptText, "[default: technical]") {
 		t.Fatalf("prompt text = %q, missing default annotation", promptText)
 	}
-	if !strings.Contains(promptText, "(example: technical)") {
+	if !strings.Contains(promptText, "(example: technical") {
 		t.Fatalf("prompt text = %q, missing example annotation", promptText)
+	}
+}
+
+func TestPromptString_HelpThenValue(t *testing.T) {
+	t.Parallel()
+
+	reader := bufio.NewReader(strings.NewReader("?\ntechnical\n"))
+	var output bytes.Buffer
+
+	got, err := promptString(reader, &output, wizardPrompt{
+		title:        "Style",
+		options:      "default, technical",
+		example:      "technical",
+		defaultValue: "technical",
+		helpYAML:     "style: technical",
+		validate:     validateWizardStyle,
+	})
+	if err != nil {
+		t.Fatalf("promptString(...) unexpected error: %v", err)
+	}
+	if got != "technical" {
+		t.Fatalf("promptString(...) = %q, want %q", got, "technical")
+	}
+	if !strings.Contains(output.String(), "Help:") {
+		t.Fatalf("prompt output = %q, want help section", output.String())
 	}
 }
 
@@ -291,7 +324,12 @@ func TestPromptBool_RepromptsInvalidThenParses(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("maybe\nyes\n"))
 	var output bytes.Buffer
 
-	got, err := promptBool(reader, &output, "Show page numbers in footer", "yes/no", true)
+	got, err := promptBool(reader, &output, wizardPrompt{
+		title:        "Enable cover page",
+		options:      "yes, no",
+		example:      "yes",
+		defaultValue: "yes",
+	})
 	if err != nil {
 		t.Fatalf("promptBool(...) unexpected error: %v", err)
 	}
@@ -300,6 +338,118 @@ func TestPromptBool_RepromptsInvalidThenParses(t *testing.T) {
 	}
 	if !strings.Contains(output.String(), "Invalid value") {
 		t.Fatalf("promptBool output = %q, want invalid-value guidance", output.String())
+	}
+}
+
+func TestValidateWizardStyle(t *testing.T) {
+	t.Parallel()
+
+	if err := validateWizardStyle("technical"); err != nil {
+		t.Fatalf("validateWizardStyle(\"technical\") unexpected error: %v", err)
+	}
+	if err := validateWizardStyle("unknown"); err == nil {
+		t.Fatal("validateWizardStyle(\"unknown\") error = nil, want error")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestBuildConfigInitConfig_* - interactive wizard materialization
+// ---------------------------------------------------------------------------
+
+func TestBuildConfigInitConfig_InteractiveFlow(t *testing.T) {
+	t.Parallel()
+
+	input := strings.Join([]string{
+		"technical",
+		"Alex Martin",
+		"Staff Engineer",
+		"alex@example.com",
+		"Acme Corp",
+		"a4",
+		"yes",
+		"./assets/signature.png",
+		"yes",
+		"CONFIDENTIAL",
+		"#888888",
+		"yes",
+		"./assets/logo.png",
+		"yes",
+	}, "\n") + "\n"
+
+	var output bytes.Buffer
+	env := &Environment{
+		Stdin:  strings.NewReader(input),
+		Stdout: &output,
+		Stderr: &bytes.Buffer{},
+	}
+
+	cfg, shouldWrite, err := buildConfigInitConfig(false, env)
+	if err != nil {
+		t.Fatalf("buildConfigInitConfig(false, env) unexpected error: %v", err)
+	}
+	if !shouldWrite {
+		t.Fatal("buildConfigInitConfig(false, env) shouldWrite = false, want true")
+	}
+	if cfg.Style != "technical" {
+		t.Fatalf("cfg.Style = %q, want %q", cfg.Style, "technical")
+	}
+	if cfg.Author.Name != "Alex Martin" {
+		t.Fatalf("cfg.Author.Name = %q, want %q", cfg.Author.Name, "Alex Martin")
+	}
+	if cfg.Page.Size != "a4" {
+		t.Fatalf("cfg.Page.Size = %q, want %q", cfg.Page.Size, "a4")
+	}
+	if !cfg.Signature.Enabled || cfg.Signature.ImagePath != "./assets/signature.png" {
+		t.Fatalf("signature config mismatch: %+v", cfg.Signature)
+	}
+	if !cfg.Watermark.Enabled {
+		t.Fatal("cfg.Watermark.Enabled = false, want true")
+	}
+	if cfg.Watermark.Text != "CONFIDENTIAL" || cfg.Watermark.Color != "#888888" {
+		t.Fatalf("watermark text/color mismatch: %+v", cfg.Watermark)
+	}
+	if cfg.Watermark.Opacity != md2pdf.DefaultWatermarkOpacity || cfg.Watermark.Angle != md2pdf.DefaultWatermarkAngle {
+		t.Fatalf("watermark default opacity/angle mismatch: %+v", cfg.Watermark)
+	}
+	if !cfg.Cover.Enabled || cfg.Cover.Logo != "./assets/logo.png" {
+		t.Fatalf("cover config mismatch: %+v", cfg.Cover)
+	}
+	if !strings.Contains(output.String(), "YAML preview:") {
+		t.Fatalf("stdout = %q, want YAML preview block", output.String())
+	}
+}
+
+func TestBuildConfigInitConfig_InteractiveCancel(t *testing.T) {
+	t.Parallel()
+
+	input := strings.Join([]string{
+		"technical",
+		"Alex Martin",
+		"",
+		"",
+		"",
+		"letter",
+		"no",
+		"no",
+		"no",
+		"no",
+	}, "\n") + "\n"
+
+	env := &Environment{
+		Stdin:  strings.NewReader(input),
+		Stdout: &bytes.Buffer{},
+		Stderr: &bytes.Buffer{},
+	}
+
+	cfg, shouldWrite, err := buildConfigInitConfig(false, env)
+	if err != nil {
+		t.Fatalf("buildConfigInitConfig(false, env) unexpected error: %v", err)
+	}
+	if cfg == nil {
+		t.Fatal("buildConfigInitConfig(false, env) cfg = nil, want config")
+	}
+	if shouldWrite {
+		t.Fatal("buildConfigInitConfig(false, env) shouldWrite = true, want false")
 	}
 }
 
