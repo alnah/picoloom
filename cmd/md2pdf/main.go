@@ -84,112 +84,40 @@ func looksLikeMarkdown(s string) bool {
 
 // runConvertCmd handles the convert command.
 func runConvertCmd(args []string, env *Environment) error {
-	// Parse flags first to get workers count and verbose
 	flags, positionalArgs, err := parseConvertFlags(args)
 	if err != nil {
 		return err
 	}
 
-	// Load environment variables (before config, for MD2PDF_CONFIG)
 	envCfg := loadEnvConfig()
 	warnUnknownEnvVars(env.Stderr)
 
-	// Validate worker count early (flag > env > default)
-	workers := flags.workers
-	if workers == 0 && envCfg.Workers > 0 {
-		workers = envCfg.Workers
-	}
-	if err := validateWorkers(workers); err != nil {
+	if err := resolveWorkers(flags, envCfg); err != nil {
 		return err
 	}
-	flags.workers = workers // Update for later use
+	configureMaxProcs(flags.common.verbose, env)
 
-	// Configure GOMAXPROCS with conditional logging
-	if flags.common.verbose {
-		_, _ = maxprocs.Set(maxprocs.Logger(func(format string, args ...interface{}) {
-			fmt.Fprintf(env.Stderr, format+"\n", args...)
-		}))
-	} else {
-		_, _ = maxprocs.Set(maxprocs.Logger(func(string, ...interface{}) {}))
+	if err := loadRuntimeConfig(flags, envCfg, env); err != nil {
+		return err
+	}
+	if err := configureAssetLoader(flags, env); err != nil {
+		return err
 	}
 
-	// Resolve config path: CLI flag > MD2PDF_CONFIG env > default search
-	configPath := flags.common.config
-	if configPath == "" && envCfg.ConfigPath != "" {
-		configPath = envCfg.ConfigPath
-	}
-
-	// Load config once into env (shared across pipeline)
-	if env.Config == nil {
-		env.Config = config.DefaultConfig()
-	}
-	if configPath != "" {
-		env.Config, err = config.LoadConfig(configPath)
-		if err != nil {
-			return fmt.Errorf("loading config: %w", err)
-		}
-	}
-
-	// Apply environment variable overrides to config
-	// Priority: CLI flags > config file > env vars > defaults
-	// Env vars fill missing config values here; CLI flags are merged later.
-	applyEnvConfig(envCfg, env.Config)
-
-	// Resolve asset path: CLI flag > config > embedded (default)
-	assetBasePath := env.Config.Assets.BasePath
-	if flags.assets.assetPath != "" {
-		assetBasePath = flags.assets.assetPath
-	}
-
-	// Configure asset loader from resolved path
-	if assetBasePath != "" {
-		loader, err := md2pdf.NewAssetLoader(assetBasePath)
-		if err != nil {
-			return fmt.Errorf("initializing assets: %w", err)
-		}
-		env.AssetLoader = loader
-		if flags.common.verbose {
-			fmt.Fprintf(env.Stderr, "Using custom assets from: %s\n", assetBasePath)
-		}
-	}
-
-	// Resolve template set: CLI flag > default
-	templateSet, err := resolveTemplateSet(flags.assets.template, env.AssetLoader)
+	templateSet, err := resolveTemplateSetForRun(flags, env)
 	if err != nil {
-		return fmt.Errorf("loading template set: %w", err)
-	}
-	if flags.common.verbose && flags.assets.template != "" {
-		fmt.Fprintf(env.Stderr, "Using template set: %s\n", templateSet.Name)
+		return err
 	}
 
-	// Resolve timeout: CLI flag > env var > config > library default
 	timeout, err := resolveTimeoutWithEnv(flags.timeout, envCfg.Timeout, env.Config.Timeout)
 	if err != nil {
 		return err
 	}
 
-	// Create pool with resolved size, asset loader, template set, and timeout
-	poolSize := md2pdf.ResolvePoolSize(flags.workers)
-	if flags.common.verbose {
-		fmt.Fprintf(env.Stderr, "Pool size: %d\n", poolSize)
-		if timeout > 0 {
-			fmt.Fprintf(env.Stderr, "Timeout: %v\n", timeout)
-		}
-	}
-	poolOpts := []md2pdf.Option{
-		md2pdf.WithAssetLoader(env.AssetLoader),
-		md2pdf.WithTemplateSet(templateSet),
-	}
-	if timeout > 0 {
-		poolOpts = append(poolOpts, md2pdf.WithTimeout(timeout))
-	}
-	converterPool := md2pdf.NewConverterPool(poolSize, poolOpts...)
+	converterPool := createConverterPool(flags, env, templateSet, timeout)
 	defer converterPool.Close()
 
-	// Wrap in adapter for local Pool interface
 	pool := &poolAdapter{pool: converterPool}
-
-	// Setup signal handling for graceful shutdown
 	ctx, stop := notifyContext(context.Background())
 	defer stop()
 
@@ -198,6 +126,113 @@ func runConvertCmd(args []string, env *Environment) error {
 	}
 
 	return runConvert(ctx, positionalArgs, flags, pool, env)
+}
+
+func resolveWorkers(flags *convertFlags, envCfg *envConfig) error {
+	workers := flags.workers
+	if workers == 0 && envCfg.Workers > 0 {
+		workers = envCfg.Workers
+	}
+	if err := validateWorkers(workers); err != nil {
+		return err
+	}
+	flags.workers = workers
+	return nil
+}
+
+func configureMaxProcs(verbose bool, env *Environment) {
+	if verbose {
+		_, _ = maxprocs.Set(maxprocs.Logger(func(format string, args ...interface{}) {
+			fmt.Fprintf(env.Stderr, format+"\n", args...)
+		}))
+		return
+	}
+	_, _ = maxprocs.Set(maxprocs.Logger(func(string, ...interface{}) {}))
+}
+
+func loadRuntimeConfig(flags *convertFlags, envCfg *envConfig, env *Environment) error {
+	configPath := resolveConfigPath(flags.common.config, envCfg.ConfigPath)
+
+	if env.Config == nil {
+		env.Config = config.DefaultConfig()
+	}
+	if configPath != "" {
+		loaded, err := config.LoadConfig(configPath)
+		if err != nil {
+			return fmt.Errorf("loading config: %w", err)
+		}
+		env.Config = loaded
+	}
+
+	// Priority: CLI flags > config file > env vars > defaults.
+	// Env vars only fill missing config values here.
+	applyEnvConfig(envCfg, env.Config)
+	return nil
+}
+
+func resolveConfigPath(flagPath, envPath string) string {
+	if flagPath != "" {
+		return flagPath
+	}
+	return envPath
+}
+
+func configureAssetLoader(flags *convertFlags, env *Environment) error {
+	assetBasePath := resolveAssetBasePath(flags, env.Config)
+	if assetBasePath == "" {
+		return nil
+	}
+
+	loader, err := md2pdf.NewAssetLoader(assetBasePath)
+	if err != nil {
+		return fmt.Errorf("initializing assets: %w", err)
+	}
+	env.AssetLoader = loader
+
+	if flags.common.verbose {
+		fmt.Fprintf(env.Stderr, "Using custom assets from: %s\n", assetBasePath)
+	}
+	return nil
+}
+
+func resolveAssetBasePath(flags *convertFlags, cfg *config.Config) string {
+	if flags.assets.assetPath != "" {
+		return flags.assets.assetPath
+	}
+	return cfg.Assets.BasePath
+}
+
+func resolveTemplateSetForRun(flags *convertFlags, env *Environment) (*md2pdf.TemplateSet, error) {
+	templateSet, err := resolveTemplateSet(flags.assets.template, env.AssetLoader)
+	if err != nil {
+		return nil, fmt.Errorf("loading template set: %w", err)
+	}
+	if flags.common.verbose && flags.assets.template != "" {
+		fmt.Fprintf(env.Stderr, "Using template set: %s\n", templateSet.Name)
+	}
+	return templateSet, nil
+}
+
+func createConverterPool(flags *convertFlags, env *Environment, templateSet *md2pdf.TemplateSet, timeout time.Duration) *md2pdf.ConverterPool {
+	poolSize := md2pdf.ResolvePoolSize(flags.workers)
+	if flags.common.verbose {
+		fmt.Fprintf(env.Stderr, "Pool size: %d\n", poolSize)
+		if timeout > 0 {
+			fmt.Fprintf(env.Stderr, "Timeout: %v\n", timeout)
+		}
+	}
+	return md2pdf.NewConverterPool(poolSize, buildPoolOptions(env.AssetLoader, templateSet, timeout)...)
+}
+
+func buildPoolOptions(loader md2pdf.AssetLoader, templateSet *md2pdf.TemplateSet, timeout time.Duration) []md2pdf.Option {
+	opts := []md2pdf.Option{
+		md2pdf.WithAssetLoader(loader),
+		md2pdf.WithTemplateSet(templateSet),
+	}
+	if timeout > 0 {
+		opts = append(opts, md2pdf.WithTimeout(timeout))
+	}
+	return opts
 }
 
 // poolAdapter adapts md2pdf.ConverterPool to the local Pool interface.
