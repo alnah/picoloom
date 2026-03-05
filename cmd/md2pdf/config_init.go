@@ -8,14 +8,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/alnah/go-md2pdf/internal/config"
 	"github.com/alnah/go-md2pdf/internal/yamlutil"
 	flag "github.com/spf13/pflag"
 )
 
-const defaultConfigInitOutputPath = "./md2pdf.yaml"
+const (
+	defaultConfigInitOutputPath = "./md2pdf.yaml"
+	configInitBackupSuffix      = ".md2pdf-config-init.bak"
+)
 
 var (
 	ErrConfigCommandUsage = errors.New("invalid config command usage")
@@ -292,6 +294,9 @@ func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops 
 	if err := ops.mkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating destination directory: %w", err)
 	}
+	if err := recoverConfigInitBackup(outputPath, ops); err != nil {
+		return err
+	}
 
 	tmpFile, err := ops.create(dir, ".md2pdf-config-init-*.yaml")
 	if err != nil {
@@ -325,6 +330,38 @@ func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops 
 	}
 
 	return publishConfigNoForce(tmpPath, outputPath, ops)
+}
+
+func configInitBackupPath(outputPath string) string {
+	return outputPath + configInitBackupSuffix
+}
+
+func recoverConfigInitBackup(outputPath string, ops configInitFileOps) error {
+	_, outputErr := ops.stat(outputPath)
+	if outputErr != nil && !os.IsNotExist(outputErr) {
+		return fmt.Errorf("checking destination config file: %w", outputErr)
+	}
+
+	backupPath := configInitBackupPath(outputPath)
+	_, backupErr := ops.stat(backupPath)
+	if backupErr != nil && !os.IsNotExist(backupErr) {
+		return fmt.Errorf("checking backup config file: %w", backupErr)
+	}
+	if os.IsNotExist(backupErr) {
+		return nil
+	}
+
+	if os.IsNotExist(outputErr) {
+		if err := ops.rename(backupPath, outputPath); err != nil {
+			return fmt.Errorf("restoring interrupted overwrite: %w", err)
+		}
+		return nil
+	}
+
+	if err := ops.remove(backupPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cleaning stale backup file: %w", err)
+	}
+	return nil
 }
 
 func publishConfigNoForce(tmpPath, outputPath string, ops configInitFileOps) error {
@@ -389,7 +426,10 @@ func publishConfigForce(tmpPath, outputPath string, ops configInitFileOps) error
 		return nil
 	}
 
-	backupPath := fmt.Sprintf("%s.bak.%d", outputPath, time.Now().UnixNano())
+	backupPath := configInitBackupPath(outputPath)
+	if err := ops.remove(backupPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cleaning stale backup file: %w", err)
+	}
 	if err := ops.rename(outputPath, backupPath); err != nil {
 		return fmt.Errorf("preparing safe overwrite: %w", err)
 	}
