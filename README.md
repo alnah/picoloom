@@ -378,7 +378,7 @@ docker run --rm -v $(pwd):/data ghcr.io/alnah/go-md2pdf convert ./docs/ -o ./pdf
 
 Environment variables provide CI/CD-friendly configuration without requiring YAML files.
 
-**Priority:** CLI flags > environment variables > config file > defaults
+**Priority:** CLI flags > config file > environment variables > defaults
 
 ### MD2PDF Variables
 

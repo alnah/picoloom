@@ -131,8 +131,8 @@ func runConvertCmd(args []string, env *Environment) error {
 	}
 
 	// Apply environment variable overrides to config
-	// Priority: CLI flags > env vars > config file > defaults
-	// Env vars are applied here; CLI flags are merged later in mergeFlags()
+	// Priority: CLI flags > config file > env vars > defaults
+	// Env vars fill missing config values here; CLI flags are merged later.
 	applyEnvConfig(envCfg, env.Config)
 
 	// Resolve asset path: CLI flag > config > embedded (default)

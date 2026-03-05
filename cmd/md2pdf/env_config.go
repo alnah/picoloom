@@ -114,8 +114,8 @@ func warnUnknownEnvVars(w io.Writer) {
 
 // applyEnvConfig applies environment variable values to config.
 // Only sets values if the env var is set AND the config value is empty/zero.
-// This ensures: CLI flags > env vars > config file > defaults
-// (CLI flags are applied later via mergeFlags)
+// This ensures: CLI flags > config file > env vars > defaults
+// (env fills only missing values from config; CLI flags are applied later)
 func applyEnvConfig(env *envConfig, cfg *config.Config) {
 	// Tier 1 - Style (timeout handled separately in resolveTimeout)
 	if env.Style != "" && cfg.Style == "" {
