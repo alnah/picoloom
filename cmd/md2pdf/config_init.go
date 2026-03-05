@@ -16,24 +16,34 @@ import (
 )
 
 const (
+	// defaultConfigInitOutputPath keeps the common local config convention,
+	// so generated examples and file discovery stay aligned.
 	defaultConfigInitOutputPath = "./md2pdf.yaml"
-	configInitBackupSuffix      = ".md2pdf-config-init.bak"
-	configInitLockSuffix        = ".md2pdf-config-init.lock"
+	// configInitBackupSuffix marks temporary backup files used for safe overwrite recovery.
+	configInitBackupSuffix = ".md2pdf-config-init.bak"
+	// configInitLockSuffix marks destination-scoped lock files to prevent concurrent writes.
+	configInitLockSuffix = ".md2pdf-config-init.lock"
 )
 
 var (
+	// ErrConfigCommandUsage groups user-facing command-shape errors under a stable sentinel.
 	ErrConfigCommandUsage = errors.New("invalid config command usage")
+	// ErrConfigInitNeedsTTY guards interactive prompts from blocking in non-interactive environments.
 	ErrConfigInitNeedsTTY = errors.New("interactive mode requires a TTY")
-	ErrConfigInitExists   = errors.New("config file already exists")
-	ErrConfigInitBusy     = errors.New("config init already in progress for destination")
+	// ErrConfigInitExists preserves existing files unless overwrite is explicit.
+	ErrConfigInitExists = errors.New("config file already exists")
+	// ErrConfigInitBusy rejects parallel writers targeting the same destination.
+	ErrConfigInitBusy = errors.New("config init already in progress for destination")
 )
 
+// configInitFlags keeps CLI intent explicit before any file operation begins.
 type configInitFlags struct {
 	output  string
 	force   bool
 	noInput bool
 }
 
+// configInitAnswers captures wizard decisions before materializing final config.
 type configInitAnswers struct {
 	style              string
 	authorName         string
@@ -50,6 +60,7 @@ type configInitAnswers struct {
 	coverLogo          string
 }
 
+// wizardPrompt defines one UX question so validation/help stay consistent.
 type wizardPrompt struct {
 	title        string
 	options      string
@@ -59,11 +70,13 @@ type wizardPrompt struct {
 	validate     func(string) error
 }
 
+// wizardStyle represents a named embedded style and why a user might choose it.
 type wizardStyle struct {
 	name        string
 	description string
 }
 
+// wizardStyles lists supported built-ins to keep prompts self-contained.
 var wizardStyles = []wizardStyle{
 	{name: "default", description: "minimal neutral baseline"},
 	{name: "technical", description: "clean system-ui with code-friendly defaults"},
@@ -76,11 +89,14 @@ var wizardStyles = []wizardStyle{
 }
 
 var (
+	// Precomputed style helpers keep repeated prompt validation fast and deterministic.
 	wizardStyleNames     = buildWizardStyleNames()
 	wizardStyleNamesText = strings.Join(wizardStyleNames, ", ")
 	wizardStyleNameSet   = buildWizardStyleNameSet(wizardStyleNames)
 )
 
+// runConfigCmd keeps "config" as a namespace so future subcommands can be added
+// without breaking CLI shape.
 func runConfigCmd(args []string, env *Environment) error {
 	if len(args) == 0 {
 		printConfigUsage(env.Stdout)
@@ -98,6 +114,8 @@ func runConfigCmd(args []string, env *Environment) error {
 	}
 }
 
+// parseConfigInitFlags centralizes config-init argument policy so help and
+// validation behavior are identical across execution paths.
 func parseConfigInitFlags(args []string, stderr io.Writer) (configInitFlags, error) {
 	f := configInitFlags{
 		output: defaultConfigInitOutputPath,
@@ -125,6 +143,8 @@ func parseConfigInitFlags(args []string, stderr io.Writer) (configInitFlags, err
 	return f, nil
 }
 
+// runConfigInitCmd enforces interaction policy, builds a valid config, and
+// persists it through safety-checked publishing.
 func runConfigInitCmd(args []string, env *Environment) error {
 	flags, err := parseConfigInitFlags(args, env.Stderr)
 	if err != nil {
@@ -163,6 +183,8 @@ func runConfigInitCmd(args []string, env *Environment) error {
 	return nil
 }
 
+// buildConfigInitConfig starts from conservative defaults so non-interactive
+// generation is immediately usable and interactive mode can be safely canceled.
 func buildConfigInitConfig(noInput bool, env *Environment) (*config.Config, bool, error) {
 	answers := configInitAnswers{
 		style:              "technical",
@@ -379,6 +401,8 @@ func buildConfigInitConfig(noInput bool, env *Environment) (*config.Config, bool
 	return cfg, true, nil
 }
 
+// promptString provides a uniform question loop so defaults, inline help, and
+// validation failures behave predictably for every wizard field.
 func promptString(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (string, error) {
 	for {
 		if prompt.options != "" {
@@ -415,6 +439,8 @@ func promptString(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (
 	}
 }
 
+// promptBool reuses promptString so yes/no questions inherit the same UX and
+// retry semantics as text prompts.
 func promptBool(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (bool, error) {
 	for {
 		value, err := promptString(reader, output, prompt)
@@ -430,6 +456,8 @@ func promptBool(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (bo
 	}
 }
 
+// confirmConfigInitWrite adds an explicit final acknowledgment to reduce
+// accidental writes after interactive data entry.
 func confirmConfigInitWrite(reader *bufio.Reader, output io.Writer, cfg *config.Config) (bool, error) {
 	data, err := yamlutil.Marshal(cfg)
 	if err != nil {
@@ -458,6 +486,8 @@ func confirmConfigInitWrite(reader *bufio.Reader, output io.Writer, cfg *config.
 	})
 }
 
+// printPromptHelp keeps field-level guidance in the wizard so users do not have
+// to leave the terminal to find valid examples.
 func printPromptHelp(output io.Writer, prompt wizardPrompt) {
 	fmt.Fprintln(output, "Help:")
 	if prompt.options != "" {
@@ -474,6 +504,8 @@ func printPromptHelp(output io.Writer, prompt wizardPrompt) {
 	}
 }
 
+// formatPromptDefault makes empty defaults explicit in prompts to avoid
+// ambiguity between "blank" and "missing".
 func formatPromptDefault(value string) string {
 	if strings.TrimSpace(value) == "" {
 		return "<empty>"
@@ -481,6 +513,7 @@ func formatPromptDefault(value string) string {
 	return value
 }
 
+// boolDefaultLabel keeps boolean defaults readable in a human prompt context.
 func boolDefaultLabel(value bool) string {
 	if value {
 		return "yes"
@@ -488,6 +521,8 @@ func boolDefaultLabel(value bool) string {
 	return "no"
 }
 
+// formatConfigInitYAML inserts spacing between top-level sections so generated
+// files are easier to review and edit manually.
 func formatConfigInitYAML(data []byte) []byte {
 	if len(data) == 0 {
 		return data
@@ -522,6 +557,8 @@ func formatConfigInitYAML(data []byte) []byte {
 	return []byte(builder.String())
 }
 
+// isTopLevelYAMLKeyLine scopes spacing rules to top-level keys only, preserving
+// nested YAML structure untouched.
 func isTopLevelYAMLKeyLine(line string) bool {
 	if strings.TrimSpace(line) == "" {
 		return false
@@ -536,6 +573,8 @@ func isTopLevelYAMLKeyLine(line string) bool {
 	return strings.Contains(line, ":")
 }
 
+// printWizardStyleChoices exposes style intent up front to reduce trial-and-error
+// during initial configuration.
 func printWizardStyleChoices(output io.Writer) {
 	fmt.Fprintln(output, "Available styles:")
 	for _, style := range wizardStyles {
@@ -543,10 +582,12 @@ func printWizardStyleChoices(output io.Writer) {
 	}
 }
 
+// wizardStyleOptions returns a stable, human-readable style list for prompts.
 func wizardStyleOptions() string {
 	return wizardStyleNamesText
 }
 
+// validateWizardStyle keeps generated config valid against known built-in styles.
 func validateWizardStyle(value string) error {
 	normalized := strings.ToLower(strings.TrimSpace(value))
 	if _, ok := wizardStyleNameSet[normalized]; !ok {
@@ -555,6 +596,8 @@ func validateWizardStyle(value string) error {
 	return nil
 }
 
+// buildWizardStyleNames precomputes ordered style names once to keep prompt
+// rendering deterministic.
 func buildWizardStyleNames() []string {
 	names := make([]string, 0, len(wizardStyles))
 	for _, style := range wizardStyles {
@@ -563,6 +606,7 @@ func buildWizardStyleNames() []string {
 	return names
 }
 
+// buildWizardStyleNameSet enables O(1) membership checks in prompt validation.
 func buildWizardStyleNameSet(names []string) map[string]struct{} {
 	set := make(map[string]struct{}, len(names))
 	for _, name := range names {
@@ -571,6 +615,8 @@ func buildWizardStyleNameSet(names []string) map[string]struct{} {
 	return set
 }
 
+// parseYesNo accepts common boolean aliases to make CLI interaction tolerant
+// without sacrificing explicit intent.
 func parseYesNo(value string) (bool, error) {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "y", "yes", "true", "1":
@@ -582,6 +628,7 @@ func parseYesNo(value string) (bool, error) {
 	}
 }
 
+// validatePageSize constrains output layout to supported rendering sizes.
 func validatePageSize(value string) error {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "letter", "a4", "legal":
@@ -591,6 +638,8 @@ func validatePageSize(value string) error {
 	}
 }
 
+// validateWatermarkColor delegates to core watermark validation so CLI and
+// library paths share the same acceptance rules.
 func validateWatermarkColor(value string) error {
 	test := &md2pdf.Watermark{
 		Color:   value,
@@ -603,6 +652,8 @@ func validateWatermarkColor(value string) error {
 	return nil
 }
 
+// configInitFileOps abstracts filesystem side effects so safety behavior can be
+// tested deterministically across platforms and failure modes.
 type configInitFileOps struct {
 	stat     func(string) (os.FileInfo, error)
 	mkdirAll func(string, os.FileMode) error
@@ -614,6 +665,7 @@ type configInitFileOps struct {
 	readFile func(string) ([]byte, error)
 }
 
+// defaultConfigInitFileOps binds file operations to the real OS implementation.
 func defaultConfigInitFileOps() configInitFileOps {
 	return configInitFileOps{
 		stat:     os.Stat,
@@ -627,10 +679,13 @@ func defaultConfigInitFileOps() configInitFileOps {
 	}
 }
 
+// writeConfigInitFile is the production entry point for safe config publishing.
 func writeConfigInitFile(outputPath string, data []byte, force bool) error {
 	return writeConfigInitFileWithOps(outputPath, data, force, defaultConfigInitFileOps())
 }
 
+// writeConfigInitFileWithOps enforces atomic-ish write invariants (lock, temp
+// file, validation, publish strategy) to prevent partial or conflicting writes.
 func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops configInitFileOps) (retErr error) {
 	if strings.TrimSpace(outputPath) == "" {
 		return fmt.Errorf("%w: output path cannot be empty", ErrConfigCommandUsage)
@@ -696,14 +751,18 @@ func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops 
 	return publishConfigNoForce(tmpPath, outputPath, ops)
 }
 
+// configInitBackupPath keeps backup naming deterministic for recovery logic.
 func configInitBackupPath(outputPath string) string {
 	return outputPath + configInitBackupSuffix
 }
 
+// configInitLockPath scopes lock files to destination path to serialize writers.
 func configInitLockPath(outputPath string) string {
 	return outputPath + configInitLockSuffix
 }
 
+// recoverConfigInitBackup repairs interrupted overwrite states before any new
+// write attempt, so destination semantics remain predictable.
 func recoverConfigInitBackup(outputPath string, ops configInitFileOps) error {
 	_, outputErr := ops.stat(outputPath)
 	if outputErr != nil && !os.IsNotExist(outputErr) {
@@ -732,6 +791,8 @@ func recoverConfigInitBackup(outputPath string, ops configInitFileOps) error {
 	return nil
 }
 
+// publishConfigNoForce guarantees no-clobber semantics unless user explicitly
+// opted into overwrite via --force.
 func publishConfigNoForce(tmpPath, outputPath string, ops configInitFileOps) error {
 	if err := ops.link(tmpPath, outputPath); err == nil {
 		if err := ops.remove(tmpPath); err != nil && !os.IsNotExist(err) {
@@ -745,6 +806,8 @@ func publishConfigNoForce(tmpPath, outputPath string, ops configInitFileOps) err
 	return copyTempToExclusiveFile(tmpPath, outputPath, ops)
 }
 
+// copyTempToExclusiveFile is the portability fallback when hard-link publish is
+// unavailable, while preserving exclusive-create guarantees.
 func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) (retErr error) {
 	out, err := ops.openFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
@@ -796,6 +859,8 @@ func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) 
 	return nil
 }
 
+// publishConfigForce implements explicit overwrite with rollback protection so
+// failures do not destroy the previous config.
 func publishConfigForce(tmpPath, outputPath string, ops configInitFileOps) error {
 	if _, err := ops.stat(outputPath); err != nil {
 		if !os.IsNotExist(err) {
@@ -830,6 +895,7 @@ func publishConfigForce(tmpPath, outputPath string, ops configInitFileOps) error
 	return nil
 }
 
+// stdinReader keeps input source injectable to support tests and scripted flows.
 func stdinReader(env *Environment) io.Reader {
 	if env.Stdin != nil {
 		return env.Stdin
@@ -837,6 +903,7 @@ func stdinReader(env *Environment) io.Reader {
 	return os.Stdin
 }
 
+// stdinIsTTY centralizes TTY detection so interaction policy is testable.
 func stdinIsTTY(env *Environment) bool {
 	if env.IsStdinTTY != nil {
 		return env.IsStdinTTY()
@@ -844,6 +911,8 @@ func stdinIsTTY(env *Environment) bool {
 	return isTerminal(os.Stdin)
 }
 
+// outputPathForExample normalizes default path rendering so success output stays
+// stable and copy-paste friendly.
 func outputPathForExample(path string) string {
 	if path == defaultConfigInitOutputPath || path == "md2pdf.yaml" {
 		return defaultConfigInitOutputPath
@@ -851,6 +920,7 @@ func outputPathForExample(path string) string {
 	return path
 }
 
+// printConfigUsage documents the config command namespace entry point.
 func printConfigUsage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: md2pdf config <subcommand> [flags]")
 	fmt.Fprintln(w)
@@ -862,6 +932,7 @@ func printConfigUsage(w io.Writer) {
 	fmt.Fprintln(w, "Run 'md2pdf help config init' for command details.")
 }
 
+// printConfigInitUsage documents config-init flags and canonical usage examples.
 func printConfigInitUsage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: md2pdf config init [flags]")
 	fmt.Fprintln(w)
