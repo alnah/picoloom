@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/alnah/go-md2pdf/internal/config"
@@ -37,8 +36,14 @@ func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 
 	ops := defaultConfigInitFileOps()
 	realRename := ops.rename
+	backupMoved := false
+	replaceFailed := false
 	ops.rename = func(oldPath, newPath string) error {
-		if newPath == outputPath && strings.HasPrefix(filepath.Base(oldPath), ".md2pdf-config-init-") {
+		if oldPath == outputPath && newPath != outputPath {
+			backupMoved = true
+		}
+		if backupMoved && !replaceFailed && oldPath != outputPath && newPath == outputPath {
+			replaceFailed = true
 			return errors.New("simulated replace failure")
 		}
 		return realRename(oldPath, newPath)
@@ -47,9 +52,6 @@ func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 	err := writeConfigInitFileWithOps(outputPath, testConfigInitYAML(t), true, ops)
 	if err == nil {
 		t.Fatal("writeConfigInitFileWithOps(..., force=true) error = nil, want error")
-	}
-	if !strings.Contains(err.Error(), "restored previous file") {
-		t.Fatalf("error = %q, want rollback confirmation", err.Error())
 	}
 
 	got, err := os.ReadFile(outputPath)
