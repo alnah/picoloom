@@ -889,26 +889,8 @@ func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) 
 		}
 	}()
 
-	const smallPayloadThreshold = 64 * 1024
-	if info, statErr := ops.stat(tmpPath); statErr == nil && info.Size() <= smallPayloadThreshold {
-		content, readErr := ops.readFile(tmpPath)
-		if readErr != nil {
-			return fmt.Errorf("reading temp config file for exclusive publish: %w", readErr)
-		}
-		if _, writeErr := out.Write(content); writeErr != nil {
-			return fmt.Errorf("writing destination config file: %w", writeErr)
-		}
-	} else {
-		in, openErr := ops.openFile(tmpPath, os.O_RDONLY, 0)
-		if openErr != nil {
-			return fmt.Errorf("opening temp config file for exclusive publish: %w", openErr)
-		}
-		defer func() {
-			_ = in.Close()
-		}()
-		if _, copyErr := io.Copy(out, in); copyErr != nil {
-			return fmt.Errorf("writing destination config file: %w", copyErr)
-		}
+	if err := writeTempConfigPayload(tmpPath, out, ops); err != nil {
+		return err
 	}
 	if err := out.Sync(); err != nil {
 		return fmt.Errorf("syncing destination config file: %w", err)
@@ -919,6 +901,50 @@ func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) 
 
 	if err := ops.remove(tmpPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("removing temporary config after publish: %w", err)
+	}
+
+	return nil
+}
+
+// writeTempConfigPayload picks the lowest-overhead transfer path while keeping
+// fallback copy semantics identical across filesystems.
+func writeTempConfigPayload(tmpPath string, out *os.File, ops configInitFileOps) error {
+	const smallPayloadThreshold = 64 * 1024
+
+	info, statErr := ops.stat(tmpPath)
+	if statErr == nil && info.Size() <= smallPayloadThreshold {
+		return writeTempConfigPayloadFromMemory(tmpPath, out, ops)
+	}
+
+	return writeTempConfigPayloadByStream(tmpPath, out, ops)
+}
+
+// writeTempConfigPayloadFromMemory avoids second file descriptor churn for very
+// small payloads where a single read+write is simpler.
+func writeTempConfigPayloadFromMemory(tmpPath string, out *os.File, ops configInitFileOps) error {
+	content, readErr := ops.readFile(tmpPath)
+	if readErr != nil {
+		return fmt.Errorf("reading temp config file for exclusive publish: %w", readErr)
+	}
+	if _, writeErr := out.Write(content); writeErr != nil {
+		return fmt.Errorf("writing destination config file: %w", writeErr)
+	}
+	return nil
+}
+
+// writeTempConfigPayloadByStream handles larger files and stat fallbacks without
+// buffering entire payloads into memory.
+func writeTempConfigPayloadByStream(tmpPath string, out *os.File, ops configInitFileOps) error {
+	in, openErr := ops.openFile(tmpPath, os.O_RDONLY, 0)
+	if openErr != nil {
+		return fmt.Errorf("opening temp config file for exclusive publish: %w", openErr)
+	}
+	defer func() {
+		_ = in.Close()
+	}()
+
+	if _, copyErr := io.Copy(out, in); copyErr != nil {
+		return fmt.Errorf("writing destination config file: %w", copyErr)
 	}
 
 	return nil

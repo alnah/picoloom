@@ -18,6 +18,8 @@ linters:
     - bodyclose
     - gocritic
     - revive
+    - dupl
+    - nestif
   settings:
     errcheck:
       exclude-functions:

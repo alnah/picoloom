@@ -17,6 +17,28 @@ import (
 	"github.com/alnah/go-md2pdf/internal/fileutil"
 )
 
+type stringBoolCase struct {
+	name  string
+	input string
+	want  bool
+}
+
+func runStringBoolPredicateTests(t *testing.T, fnName string, tests []stringBoolCase, predicate func(string) bool) {
+	t.Helper()
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := predicate(tt.input)
+			if got != tt.want {
+				t.Errorf("%s(%q) = %v, want %v", fnName, tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 // ---------------------------------------------------------------------------
 // TestValidateExtension - Extension validation
 // ---------------------------------------------------------------------------
@@ -429,11 +451,7 @@ func TestIsFilePath(t *testing.T) {
 func TestIsCSS(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name  string
-		input string
-		want  bool
-	}{
+	tests := []stringBoolCase{
 		{
 			name:  "style name returns false",
 			input: "technical",
@@ -471,16 +489,7 @@ func TestIsCSS(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got := fileutil.IsCSS(tt.input)
-			if got != tt.want {
-				t.Errorf("IsCSS(%q) = %v, want %v", tt.input, got, tt.want)
-			}
-		})
-	}
+	runStringBoolPredicateTests(t, "IsCSS", tests, fileutil.IsCSS)
 }
 
 // ---------------------------------------------------------------------------
@@ -490,11 +499,7 @@ func TestIsCSS(t *testing.T) {
 func TestIsURL(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name  string
-		input string
-		want  bool
-	}{
+	tests := []stringBoolCase{
 		{
 			name:  "http URL returns true",
 			input: "http://example.com",
@@ -532,14 +537,5 @@ func TestIsURL(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got := fileutil.IsURL(tt.input)
-			if got != tt.want {
-				t.Errorf("IsURL(%q) = %v, want %v", tt.input, got, tt.want)
-			}
-		})
-	}
+	runStringBoolPredicateTests(t, "IsURL", tests, fileutil.IsURL)
 }
