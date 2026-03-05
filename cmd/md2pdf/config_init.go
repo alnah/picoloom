@@ -151,6 +151,7 @@ func runConfigInitCmd(args []string, env *Environment) error {
 	if err != nil {
 		return fmt.Errorf("encoding generated config: %w", err)
 	}
+	data = formatConfigInitYAML(data)
 
 	if err := writeConfigInitFile(flags.output, data, flags.force); err != nil {
 		return err
@@ -434,6 +435,7 @@ func confirmConfigInitWrite(reader *bufio.Reader, output io.Writer, cfg *config.
 	if err != nil {
 		return false, fmt.Errorf("encoding preview config: %w", err)
 	}
+	data = formatConfigInitYAML(data)
 
 	fmt.Fprintln(output)
 	fmt.Fprintln(output, "Configuration summary:")
@@ -484,6 +486,54 @@ func boolDefaultLabel(value bool) string {
 		return "yes"
 	}
 	return "no"
+}
+
+func formatConfigInitYAML(data []byte) []byte {
+	if len(data) == 0 {
+		return data
+	}
+
+	content := string(data)
+	hasTrailingNewline := strings.HasSuffix(content, "\n")
+	lines := strings.Split(strings.TrimRight(content, "\n"), "\n")
+	if len(lines) == 0 {
+		return data
+	}
+
+	var builder strings.Builder
+	topLevelKeyCount := 0
+	for i, line := range lines {
+		if isTopLevelYAMLKeyLine(line) {
+			if topLevelKeyCount > 0 {
+				builder.WriteByte('\n')
+			}
+			topLevelKeyCount++
+		}
+
+		builder.WriteString(line)
+		if i < len(lines)-1 {
+			builder.WriteByte('\n')
+		}
+	}
+	if hasTrailingNewline {
+		builder.WriteByte('\n')
+	}
+
+	return []byte(builder.String())
+}
+
+func isTopLevelYAMLKeyLine(line string) bool {
+	if strings.TrimSpace(line) == "" {
+		return false
+	}
+	if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+		return false
+	}
+	trimmed := strings.TrimSpace(line)
+	if strings.HasPrefix(trimmed, "#") {
+		return false
+	}
+	return strings.Contains(line, ":")
 }
 
 func printWizardStyleChoices(output io.Writer) {

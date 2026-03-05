@@ -522,6 +522,33 @@ func TestOutputPathForExample(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// TestFormatConfigInitYAML - top-level YAML section spacing
+// ---------------------------------------------------------------------------
+
+func TestFormatConfigInitYAML_InsertsBlankLinesBetweenTopLevelKeys(t *testing.T) {
+	t.Parallel()
+
+	input := "author:\n  name: Alex\npage:\n  size: letter\nstyle: technical\n"
+	got := string(formatConfigInitYAML([]byte(input)))
+
+	want := "author:\n  name: Alex\n\npage:\n  size: letter\n\nstyle: technical\n"
+	if got != want {
+		t.Fatalf("formatConfigInitYAML(...) = %q, want %q", got, want)
+	}
+}
+
+func TestFormatConfigInitYAML_LeavesEmptyInputUntouched(t *testing.T) {
+	t.Parallel()
+
+	if got := formatConfigInitYAML(nil); got != nil {
+		t.Fatalf("formatConfigInitYAML(nil) = %v, want nil", got)
+	}
+	if got := formatConfigInitYAML([]byte("")); string(got) != "" {
+		t.Fatalf("formatConfigInitYAML(empty) = %q, want empty", string(got))
+	}
+}
+
+// ---------------------------------------------------------------------------
 // testConfigInitYAML - valid generated YAML fixture
 // ---------------------------------------------------------------------------
 
