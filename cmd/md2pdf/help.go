@@ -22,128 +22,134 @@ func printUsage(w io.Writer) {
 
 // printConvertUsage prints usage for the convert command.
 func printConvertUsage(w io.Writer) {
-	fmt.Fprintln(w, "Usage: md2pdf convert <input> [flags]")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Convert markdown files to PDF.")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "EXAMPLES")
-	fmt.Fprintln(w, "    # Convert a single file")
-	fmt.Fprintln(w, "    md2pdf convert document.md")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "    # Convert with custom output path")
-	fmt.Fprintln(w, "    md2pdf convert -o report.pdf document.md")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "    # Batch convert a directory")
-	fmt.Fprintln(w, "    md2pdf convert ./docs/ -o ./pdfs/")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "    # Use a config file")
-	fmt.Fprintln(w, "    md2pdf convert -c work document.md")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "    # Custom style and timeout")
-	fmt.Fprintln(w, "    md2pdf convert --style technical --timeout 2m large.md")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "    # A4 landscape with watermark")
-	fmt.Fprintln(w, "    md2pdf convert -p a4 --orientation landscape --wm-text DRAFT doc.md")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Arguments:")
-	fmt.Fprintln(w, "  input    Markdown file or directory (optional if config has input.defaultDir)")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Input/Output:")
-	fmt.Fprintln(w, "  -o, --output <path>       Output file or directory")
-	fmt.Fprintln(w, "  -c, --config <name>       Config file name or path")
-	fmt.Fprintln(w, "  -w, --workers <n>         Parallel workers (0 = auto)")
-	fmt.Fprintln(w, "  -t, --timeout <duration>  PDF generation timeout (default: 30s)")
-	fmt.Fprintln(w, "                            Examples: 30s, 2m, 1m30s")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Author:")
-	fmt.Fprintln(w, "      --author-name <s>     Author name")
-	fmt.Fprintln(w, "      --author-title <s>    Author professional title")
-	fmt.Fprintln(w, "      --author-email <s>    Author email")
-	fmt.Fprintln(w, "      --author-org <s>      Organization name")
-	fmt.Fprintln(w, "      --author-phone <s>    Author phone number")
-	fmt.Fprintln(w, "      --author-address <s>  Author postal address")
-	fmt.Fprintln(w, "      --author-dept <s>     Author department")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Document:")
-	fmt.Fprintln(w, "      --doc-title <s>       Document title (\"\" = auto from H1)")
-	fmt.Fprintln(w, "      --doc-subtitle <s>    Document subtitle")
-	fmt.Fprintln(w, "      --doc-version <s>     Version string")
-	fmt.Fprintln(w, "      --doc-date <s>        Date: \"auto\", \"auto:FORMAT\", or literal")
-	fmt.Fprintln(w, "                            Tokens: YYYY, YY, MMMM, MMM, MM, M, DD, D")
-	fmt.Fprintln(w, "                            Presets (case-insensitive): iso, european, us, long")
-	fmt.Fprintln(w, "                            Use [text] to escape literals: [Date]: YYYY")
-	fmt.Fprintln(w, "      --doc-client <s>      Client name")
-	fmt.Fprintln(w, "      --doc-project <s>     Project name")
-	fmt.Fprintln(w, "      --doc-type <s>        Document type")
-	fmt.Fprintln(w, "      --doc-id <s>          Document ID/reference")
-	fmt.Fprintln(w, "      --doc-desc <s>        Document description")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Page:")
-	fmt.Fprintln(w, "  -p, --page-size <s>       letter, a4, legal (default: letter)")
-	fmt.Fprintln(w, "      --orientation <s>     portrait, landscape (default: portrait)")
-	fmt.Fprintln(w, "      --margin <f>          Margin in inches (default: 0.5)")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Footer:")
-	fmt.Fprintln(w, "      --footer-position <s> left, center, right (default: right)")
-	fmt.Fprintln(w, "      --footer-text <s>     Custom footer text")
-	fmt.Fprintln(w, "      --footer-page-number  Show page numbers")
-	fmt.Fprintln(w, "      --footer-doc-id       Show document ID in footer")
-	fmt.Fprintln(w, "      --no-footer           Disable footer")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Cover:")
-	fmt.Fprintln(w, "      --cover-logo <path>   Logo path or URL")
-	fmt.Fprintln(w, "      --cover-dept          Show author department on cover")
-	fmt.Fprintln(w, "      --no-cover            Disable cover page")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Signature:")
-	fmt.Fprintln(w, "      --sig-image <path>    Signature image path")
-	fmt.Fprintln(w, "      --no-signature        Disable signature block")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Table of Contents:")
-	fmt.Fprintln(w, "      --toc-title <s>       TOC heading text")
-	fmt.Fprintln(w, "      --toc-min-depth <n>   Min heading depth (1-6, default: 2)")
-	fmt.Fprintln(w, "                            1=H1, 2=H2, etc. Use 2 to skip title")
-	fmt.Fprintln(w, "      --toc-max-depth <n>   Max heading depth (1-6, default: 3)")
-	fmt.Fprintln(w, "      --no-toc              Disable table of contents")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Watermark:")
-	fmt.Fprintln(w, "      --wm-text <s>         Watermark text")
-	fmt.Fprintln(w, "      --wm-color <s>        Color hex (default: #888888)")
-	fmt.Fprintln(w, "      --wm-opacity <f>      Opacity 0.0-1.0 (default: 0.1)")
-	fmt.Fprintln(w, "      --wm-angle <f>        Angle in degrees (default: -45)")
-	fmt.Fprintln(w, "      --no-watermark        Disable watermark")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Page Breaks:")
-	fmt.Fprintln(w, "      --break-before <s>    Break before headings: h1,h2,h3")
-	fmt.Fprintln(w, "      --orphans <n>         Min lines at page bottom (default: 2)")
-	fmt.Fprintln(w, "      --widows <n>          Min lines at page top (default: 2)")
-	fmt.Fprintln(w, "      --no-page-breaks      Disable page break features")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Assets & Styling:")
-	fmt.Fprintln(w, "      --style <name|path>   CSS style name or file path (default: default)")
-	fmt.Fprintln(w, "                            Name: uses embedded or custom asset")
-	fmt.Fprintln(w, "                            Path: reads file directly (contains / or \\)")
-	fmt.Fprintln(w, "      --template <name|path> Template set name or directory path")
-	fmt.Fprintln(w, "                            Name: uses embedded or custom asset")
-	fmt.Fprintln(w, "                            Path: loads from directory (contains / or \\)")
-	fmt.Fprintln(w, "      --asset-path <dir>    Custom asset directory (overrides config)")
-	fmt.Fprintln(w, "      --no-style            Disable CSS styling")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Debug Output:")
-	fmt.Fprintln(w, "      --html                Output HTML alongside PDF")
-	fmt.Fprintln(w, "      --html-only           Output HTML only, skip PDF generation")
-	fmt.Fprintln(w, "                            (if both specified, --html-only takes precedence)")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Output Control:")
-	fmt.Fprintln(w, "  -q, --quiet               Only show errors")
-	fmt.Fprintln(w, "  -v, --verbose             Show detailed timing")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Exit Codes:")
-	fmt.Fprintln(w, "  0  Success      Conversion completed")
-	fmt.Fprintln(w, "  1  General      Unexpected error")
-	fmt.Fprintln(w, "  2  Usage        Invalid flags, config, or validation")
-	fmt.Fprintln(w, "  3  I/O          File not found, permission denied")
-	fmt.Fprintln(w, "  4  Browser      Chrome not found, connection failed")
+	for _, line := range convertUsageLines {
+		fmt.Fprintln(w, line)
+	}
+}
+
+var convertUsageLines = []string{
+	"Usage: md2pdf convert <input> [flags]",
+	"",
+	"Convert markdown files to PDF.",
+	"",
+	"EXAMPLES",
+	"    # Convert a single file",
+	"    md2pdf convert document.md",
+	"",
+	"    # Convert with custom output path",
+	"    md2pdf convert -o report.pdf document.md",
+	"",
+	"    # Batch convert a directory",
+	"    md2pdf convert ./docs/ -o ./pdfs/",
+	"",
+	"    # Use a config file",
+	"    md2pdf convert -c work document.md",
+	"",
+	"    # Custom style and timeout",
+	"    md2pdf convert --style technical --timeout 2m large.md",
+	"",
+	"    # A4 landscape with watermark",
+	"    md2pdf convert -p a4 --orientation landscape --wm-text DRAFT doc.md",
+	"",
+	"Arguments:",
+	"  input    Markdown file or directory (optional if config has input.defaultDir)",
+	"",
+	"Input/Output:",
+	"  -o, --output <path>       Output file or directory",
+	"  -c, --config <name>       Config file name or path",
+	"  -w, --workers <n>         Parallel workers (0 = auto)",
+	"  -t, --timeout <duration>  PDF generation timeout (default: 30s)",
+	"                            Examples: 30s, 2m, 1m30s",
+	"",
+	"Author:",
+	"      --author-name <s>     Author name",
+	"      --author-title <s>    Author professional title",
+	"      --author-email <s>    Author email",
+	"      --author-org <s>      Organization name",
+	"      --author-phone <s>    Author phone number",
+	"      --author-address <s>  Author postal address",
+	"      --author-dept <s>     Author department",
+	"",
+	"Document:",
+	"      --doc-title <s>       Document title (\"\" = auto from H1)",
+	"      --doc-subtitle <s>    Document subtitle",
+	"      --doc-version <s>     Version string",
+	"      --doc-date <s>        Date: \"auto\", \"auto:FORMAT\", or literal",
+	"                            Tokens: YYYY, YY, MMMM, MMM, MM, M, DD, D",
+	"                            Presets (case-insensitive): iso, european, us, long",
+	"                            Use [text] to escape literals: [Date]: YYYY",
+	"      --doc-client <s>      Client name",
+	"      --doc-project <s>     Project name",
+	"      --doc-type <s>        Document type",
+	"      --doc-id <s>          Document ID/reference",
+	"      --doc-desc <s>        Document description",
+	"",
+	"Page:",
+	"  -p, --page-size <s>       letter, a4, legal (default: letter)",
+	"      --orientation <s>     portrait, landscape (default: portrait)",
+	"      --margin <f>          Margin in inches (default: 0.5)",
+	"",
+	"Footer:",
+	"      --footer-position <s> left, center, right (default: right)",
+	"      --footer-text <s>     Custom footer text",
+	"      --footer-page-number  Show page numbers",
+	"      --footer-doc-id       Show document ID in footer",
+	"      --no-footer           Disable footer",
+	"",
+	"Cover:",
+	"      --cover-logo <path>   Logo path or URL",
+	"      --cover-dept          Show author department on cover",
+	"      --no-cover            Disable cover page",
+	"",
+	"Signature:",
+	"      --sig-image <path>    Signature image path",
+	"      --no-signature        Disable signature block",
+	"",
+	"Table of Contents:",
+	"      --toc-title <s>       TOC heading text",
+	"      --toc-min-depth <n>   Min heading depth (1-6, default: 2)",
+	"                            1=H1, 2=H2, etc. Use 2 to skip title",
+	"      --toc-max-depth <n>   Max heading depth (1-6, default: 3)",
+	"      --no-toc              Disable table of contents",
+	"",
+	"Watermark:",
+	"      --wm-text <s>         Watermark text",
+	"      --wm-color <s>        Color hex (default: #888888)",
+	"      --wm-opacity <f>      Opacity 0.0-1.0 (default: 0.1)",
+	"      --wm-angle <f>        Angle in degrees (default: -45)",
+	"      --no-watermark        Disable watermark",
+	"",
+	"Page Breaks:",
+	"      --break-before <s>    Break before headings: h1,h2,h3",
+	"      --orphans <n>         Min lines at page bottom (default: 2)",
+	"      --widows <n>          Min lines at page top (default: 2)",
+	"      --no-page-breaks      Disable page break features",
+	"",
+	"Assets & Styling:",
+	"      --style <name|path>   CSS style name or file path (default: default)",
+	"                            Name: uses embedded or custom asset",
+	"                            Path: reads file directly (contains / or \\)",
+	"      --template <name|path> Template set name or directory path",
+	"                            Name: uses embedded or custom asset",
+	"                            Path: loads from directory (contains / or \\)",
+	"      --asset-path <dir>    Custom asset directory (overrides config)",
+	"      --no-style            Disable CSS styling",
+	"",
+	"Debug Output:",
+	"      --html                Output HTML alongside PDF",
+	"      --html-only           Output HTML only, skip PDF generation",
+	"                            (if both specified, --html-only takes precedence)",
+	"",
+	"Output Control:",
+	"  -q, --quiet               Only show errors",
+	"  -v, --verbose             Show detailed timing",
+	"",
+	"Exit Codes:",
+	"  0  Success      Conversion completed",
+	"  1  General      Unexpected error",
+	"  2  Usage        Invalid flags, config, or validation",
+	"  3  I/O          File not found, permission denied",
+	"  4  Browser      Chrome not found, connection failed",
 }
 
 // printDoctorUsage prints usage for the doctor command.
