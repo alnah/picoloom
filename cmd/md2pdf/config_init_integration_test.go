@@ -7,6 +7,7 @@ package main
 //   default behavior with a custom output path.
 // - overwrite policy: we test existing-file preservation without --force and
 //   replacement with --force.
+// - interrupted-overwrite recovery: we test backup restoration before writes.
 // - validation boundary: we verify generated output reloads with config.LoadConfig.
 // These are acceptable gaps: we test CLI/file invariants, not prompt internals.
 
@@ -97,5 +98,38 @@ func TestIntegration_ConfigInit_ForceReplacesExisting(t *testing.T) {
 	}
 	if _, err := config.LoadConfig("./md2pdf.yaml"); err != nil {
 		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./md2pdf.yaml", err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestIntegration_ConfigInit_RecoversInterruptedForceBackup - restore backup
+// ---------------------------------------------------------------------------
+
+func TestIntegration_ConfigInit_RecoversInterruptedForceBackup(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	env := DefaultEnv()
+	outputPath := filepath.Join(".", "md2pdf.yaml")
+	backupPath := configInitBackupPath(outputPath)
+	original := []byte("document:\n  title: recover-me\n")
+	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
+		t.Fatalf("os.WriteFile(%q) unexpected error: %v", backupPath, err)
+	}
+
+	code := runMain([]string{"md2pdf", "config", "init", "--no-input", "--output", outputPath}, env)
+	if code != ExitUsage {
+		t.Fatalf("runMain([config init --no-input with backup-only state]) = %d, want %d", code, ExitUsage)
+	}
+
+	got, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile(%q) unexpected error: %v", outputPath, err)
+	}
+	if string(got) != string(original) {
+		t.Fatalf("restored output content mismatch")
+	}
+
+	if _, err := os.Stat(backupPath); !os.IsNotExist(err) {
+		t.Fatalf("backup file should be consumed during recovery, got error: %v", err)
 	}
 }

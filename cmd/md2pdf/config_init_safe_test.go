@@ -6,6 +6,7 @@ package main
 //   previous content restoration and backup cleanup.
 // - no-force race safety: we simulate a concurrent writer and assert no overwrite.
 // - cross-platform replace semantics: we assert force replace yields valid config.
+// - backup recovery: we test interrupted force-overwrite backup restoration.
 // These are acceptable gaps: we assert safety invariants, not syscall order.
 
 import (
@@ -78,10 +79,8 @@ func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 		t.Fatalf("destination content changed despite rollback")
 	}
 
-	if backups, err := filepath.Glob(outputPath + ".bak.*"); err != nil {
-		t.Fatalf("filepath.Glob backup pattern unexpected error: %v", err)
-	} else if len(backups) != 0 {
-		t.Fatalf("backup files remain after rollback: %v", backups)
+	if _, err := os.Stat(configInitBackupPath(outputPath)); !os.IsNotExist(err) {
+		t.Fatalf("backup file remains after rollback, stat error: %v", err)
 	}
 }
 
@@ -145,5 +144,59 @@ func TestConfigInit_CrossPlatformReplaceSemantics(t *testing.T) {
 
 	if _, err := config.LoadConfig("./md2pdf.yaml"); err != nil {
 		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./md2pdf.yaml", err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestConfigInit_RecoverInterruptedBackup - restore backup-only state
+// ---------------------------------------------------------------------------
+
+func TestConfigInit_RecoverInterruptedBackup(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	outputPath := filepath.Join(".", "md2pdf.yaml")
+	backupPath := configInitBackupPath(outputPath)
+	original := []byte("document:\n  title: recover\n")
+	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
+		t.Fatalf("os.WriteFile(%q) unexpected error: %v", backupPath, err)
+	}
+
+	if err := recoverConfigInitBackup(outputPath, defaultConfigInitFileOps()); err != nil {
+		t.Fatalf("recoverConfigInitBackup(...) unexpected error: %v", err)
+	}
+
+	got, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile(%q) unexpected error: %v", outputPath, err)
+	}
+	if string(got) != string(original) {
+		t.Fatalf("recovered output content mismatch")
+	}
+	if _, err := os.Stat(backupPath); !os.IsNotExist(err) {
+		t.Fatalf("backup should not remain after recovery, stat error: %v", err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestConfigInit_CleanupStaleBackup - cleanup backup when output exists
+// ---------------------------------------------------------------------------
+
+func TestConfigInit_CleanupStaleBackup(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	outputPath := filepath.Join(".", "md2pdf.yaml")
+	backupPath := configInitBackupPath(outputPath)
+	if err := os.WriteFile(outputPath, []byte("document:\n  title: active\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
+	}
+	if err := os.WriteFile(backupPath, []byte("document:\n  title: stale\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile(%q) unexpected error: %v", backupPath, err)
+	}
+
+	if err := recoverConfigInitBackup(outputPath, defaultConfigInitFileOps()); err != nil {
+		t.Fatalf("recoverConfigInitBackup(...) unexpected error: %v", err)
+	}
+	if _, err := os.Stat(backupPath); !os.IsNotExist(err) {
+		t.Fatalf("stale backup should be removed, stat error: %v", err)
 	}
 }
