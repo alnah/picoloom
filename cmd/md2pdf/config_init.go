@@ -402,11 +402,6 @@ func publishConfigNoForce(tmpPath, outputPath string, ops configInitFileOps) err
 }
 
 func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) (retErr error) {
-	content, err := ops.readFile(tmpPath)
-	if err != nil {
-		return fmt.Errorf("reading temp config file for exclusive publish: %w", err)
-	}
-
 	out, err := ops.openFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		if os.IsExist(err) {
@@ -422,8 +417,26 @@ func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) 
 		}
 	}()
 
-	if _, err := out.Write(content); err != nil {
-		return fmt.Errorf("writing destination config file: %w", err)
+	const smallPayloadThreshold = 64 * 1024
+	if info, statErr := ops.stat(tmpPath); statErr == nil && info.Size() <= smallPayloadThreshold {
+		content, readErr := ops.readFile(tmpPath)
+		if readErr != nil {
+			return fmt.Errorf("reading temp config file for exclusive publish: %w", readErr)
+		}
+		if _, writeErr := out.Write(content); writeErr != nil {
+			return fmt.Errorf("writing destination config file: %w", writeErr)
+		}
+	} else {
+		in, openErr := ops.openFile(tmpPath, os.O_RDONLY, 0)
+		if openErr != nil {
+			return fmt.Errorf("opening temp config file for exclusive publish: %w", openErr)
+		}
+		defer func() {
+			_ = in.Close()
+		}()
+		if _, copyErr := io.Copy(out, in); copyErr != nil {
+			return fmt.Errorf("writing destination config file: %w", copyErr)
+		}
 	}
 	if err := out.Sync(); err != nil {
 		return fmt.Errorf("syncing destination config file: %w", err)
