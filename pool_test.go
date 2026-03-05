@@ -231,6 +231,51 @@ func TestServicePool_ClosePreventsFurtherRelease(t *testing.T) {
 	pool.Release(svc) // Should be safe (no-op)
 }
 
+func TestServicePool_ConcurrentCloseAndRelease_NoPanic(t *testing.T) {
+	t.Parallel()
+
+	const iterations = 500
+
+	for i := 0; i < iterations; i++ {
+		pool := NewServicePool(1)
+		svc := pool.Acquire()
+		if svc == nil {
+			t.Fatalf("Acquire() returned nil at iteration %d", i)
+		}
+
+		var wg sync.WaitGroup
+		panicCh := make(chan any, 2)
+
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					panicCh <- r
+				}
+			}()
+			pool.Release(svc)
+		}()
+
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					panicCh <- r
+				}
+			}()
+			_ = pool.Close()
+		}()
+
+		wg.Wait()
+		close(panicCh)
+
+		if p, ok := <-panicCh; ok {
+			t.Fatalf("unexpected panic in concurrent close/release at iteration %d: %v", i, p)
+		}
+	}
+}
+
 // ---------------------------------------------------------------------------
 // TestServicePool_DoubleClose - Double Close Idempotency
 // ---------------------------------------------------------------------------

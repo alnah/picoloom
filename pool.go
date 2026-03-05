@@ -136,7 +136,6 @@ func (p *ConverterPool) Close() error {
 		return nil
 	}
 	p.closed = true
-	close(p.sem)
 	converters := p.converters
 	p.mu.Unlock()
 
