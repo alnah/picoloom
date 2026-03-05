@@ -11,6 +11,7 @@ func printUsage(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Commands:")
 	fmt.Fprintln(w, "  convert      Convert markdown files to PDF")
+	fmt.Fprintln(w, "  config       Manage configuration files")
 	fmt.Fprintln(w, "  doctor       Check system configuration")
 	fmt.Fprintln(w, "  completion   Generate shell completion script")
 	fmt.Fprintln(w, "  version      Show version information")
@@ -179,6 +180,12 @@ func runHelp(args []string, env *Environment) {
 	switch args[0] {
 	case "convert":
 		printConvertUsage(env.Stdout)
+	case "config":
+		if len(args) > 1 && args[1] == "init" {
+			printConfigInitUsage(env.Stdout)
+			return
+		}
+		printConfigUsage(env.Stdout)
 	case "doctor":
 		printDoctorUsage(env.Stdout)
 	case "completion":

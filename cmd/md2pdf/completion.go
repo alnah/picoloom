@@ -165,6 +165,11 @@ func getCommands() []commandDef {
 			FilePattern: "*.md,*.markdown",
 		},
 		{
+			Name:  "config",
+			Desc:  "Manage configuration files",
+			Flags: nil,
+		},
+		{
 			Name:  "version",
 			Desc:  "Show version information",
 			Flags: nil,

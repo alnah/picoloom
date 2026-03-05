@@ -43,6 +43,11 @@ func runMain(args []string, env *Environment) int {
 			fmt.Fprintln(env.Stderr, err)
 			return exitCodeFor(err)
 		}
+	case "config":
+		if err := runConfigCmd(cmdArgs, env); err != nil {
+			fmt.Fprintln(env.Stderr, err)
+			return exitCodeFor(err)
+		}
 	case "doctor":
 		return runDoctorCmd(cmdArgs, env)
 	case "version":
@@ -66,7 +71,7 @@ func runMain(args []string, env *Environment) int {
 // isCommand checks if a string is a known command.
 func isCommand(s string) bool {
 	switch s {
-	case "convert", "doctor", "version", "help", "completion":
+	case "convert", "config", "doctor", "version", "help", "completion":
 		return true
 	}
 	return false

@@ -23,8 +23,10 @@ func newAcceptanceEnv(t *testing.T) (*Environment, *bytes.Buffer, *bytes.Buffer)
 	var stdout, stderr bytes.Buffer
 	env := &Environment{
 		Now:         func() time.Time { return time.Now() },
+		Stdin:       strings.NewReader(""),
 		Stdout:      &stdout,
 		Stderr:      &stderr,
+		IsStdinTTY:  func() bool { return false },
 		AssetLoader: loader,
 		Config:      config.DefaultConfig(),
 	}
@@ -81,7 +83,7 @@ func TestConfigInitAcceptance_NoInputWritesDefaultConfig(t *testing.T) {
 		t.Fatalf("runMain([md2pdf config init --no-input]) = %d, want %d\nstderr: %s", code, ExitSuccess, stderr.String())
 	}
 
-	configPath := filepath.Join(".", "md2pdf.yaml")
+	configPath := "./md2pdf.yaml"
 	if _, err := os.Stat(configPath); err != nil {
 		t.Fatalf("os.Stat(%q) unexpected error: %v", configPath, err)
 	}
