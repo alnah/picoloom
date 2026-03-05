@@ -28,16 +28,16 @@ func runConvert(ctx context.Context, positionalArgs []string, flags *convertFlag
 	if err != nil {
 		return fmt.Errorf("invalid date format: %w", err)
 	}
-	cfg.Document.Date = resolvedDate
+	cfgForRun := configWithResolvedDate(cfg, resolvedDate)
 
 	// Resolve input path
-	inputPath, err := resolveInputPath(positionalArgs, cfg)
+	inputPath, err := resolveInputPath(positionalArgs, cfgForRun)
 	if err != nil {
 		return err
 	}
 
 	// Resolve output directory
-	outputDir := resolveOutputDir(flags.output, cfg)
+	outputDir := resolveOutputDir(flags.output, cfgForRun)
 
 	// Discover files to convert
 	files, err := discoverFiles(inputPath, outputDir)
@@ -50,28 +50,28 @@ func runConvert(ctx context.Context, positionalArgs []string, flags *convertFlag
 	}
 
 	// Resolve CSS content using the asset loader
-	cssContent, err := resolveCSSContent(flags.assets.style, cfg, flags.assets.noStyle, env.AssetLoader)
+	cssContent, err := resolveCSSContent(flags.assets.style, cfgForRun, flags.assets.noStyle, env.AssetLoader)
 	if err != nil {
 		return err
 	}
 
 	// Build signature data (uses cfg.Author.*)
-	sigData := buildSignatureData(cfg, flags.signature.disabled)
+	sigData := buildSignatureData(cfgForRun, flags.signature.disabled)
 
 	// Build footer data (uses cfg.Document.Date, cfg.Document.Version)
-	footerData := buildFooterData(cfg, flags.footer.disabled)
+	footerData := buildFooterData(cfgForRun, flags.footer.disabled)
 
 	// Build page settings
-	pageData := buildPageSettings(cfg)
+	pageData := buildPageSettings(cfgForRun)
 
 	// Build watermark data
-	watermarkData := buildWatermarkData(cfg)
+	watermarkData := buildWatermarkData(cfgForRun)
 
 	// Build TOC data
-	tocData := buildTOCData(cfg, flags.toc)
+	tocData := buildTOCData(cfgForRun, flags.toc)
 
 	// Build page breaks data
-	pageBreaksData := buildPageBreaksData(cfg)
+	pageBreaksData := buildPageBreaksData(cfgForRun)
 
 	// Bundle conversion parameters
 	params := &conversionParams{
@@ -82,7 +82,7 @@ func runConvert(ctx context.Context, positionalArgs []string, flags *convertFlag
 		watermark:  watermarkData,
 		toc:        tocData,
 		pageBreaks: pageBreaksData,
-		cfg:        cfg,
+		cfg:        cfgForRun,
 		htmlOnly:   flags.outputMode.htmlOnly,
 		htmlOutput: flags.outputMode.html,
 	}
@@ -97,6 +97,15 @@ func runConvert(ctx context.Context, positionalArgs []string, flags *convertFlag
 	}
 
 	return nil
+}
+
+func configWithResolvedDate(cfg *config.Config, resolvedDate string) *config.Config {
+	if cfg == nil {
+		return nil
+	}
+	cloned := *cfg
+	cloned.Document.Date = resolvedDate
+	return &cloned
 }
 
 // parseBreakBefore parses "--break-before=h1,h2,h3" into individual bools.

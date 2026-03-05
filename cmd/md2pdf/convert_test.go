@@ -150,6 +150,47 @@ func TestResolveCSSContent(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// TestConfigWithResolvedDate - Date resolution should not mutate input config
+// ---------------------------------------------------------------------------
+
+func TestConfigWithResolvedDate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns nil for nil config", func(t *testing.T) {
+		t.Parallel()
+
+		if got := configWithResolvedDate(nil, "2026-03-05"); got != nil {
+			t.Errorf("configWithResolvedDate(nil, ...) = %v, want nil", got)
+		}
+	})
+
+	t.Run("clones config and only overrides document date", func(t *testing.T) {
+		t.Parallel()
+
+		cfg := config.DefaultConfig()
+		cfg.Document.Date = "auto"
+		cfg.Author.Name = "Alice"
+
+		got := configWithResolvedDate(cfg, "2026-03-05")
+		if got == nil {
+			t.Fatal("configWithResolvedDate(cfg, ...) = nil, want non-nil")
+		}
+		if got == cfg {
+			t.Error("configWithResolvedDate(cfg, ...) returned original pointer, want clone")
+		}
+		if got.Document.Date != "2026-03-05" {
+			t.Errorf("configWithResolvedDate(cfg, ...).Document.Date = %q, want %q", got.Document.Date, "2026-03-05")
+		}
+		if cfg.Document.Date != "auto" {
+			t.Errorf("original cfg.Document.Date mutated = %q, want %q", cfg.Document.Date, "auto")
+		}
+		if got.Author.Name != "Alice" {
+			t.Errorf("configWithResolvedDate(cfg, ...).Author.Name = %q, want %q", got.Author.Name, "Alice")
+		}
+	})
+}
+
+// ---------------------------------------------------------------------------
 // TestPrintResultsOutput - Conversion result counting
 // ---------------------------------------------------------------------------
 
