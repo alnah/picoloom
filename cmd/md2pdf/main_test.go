@@ -132,6 +132,7 @@ func TestIsCommand(t *testing.T) {
 		want  bool
 	}{
 		{"convert", true},
+		{"config", true},
 		{"doctor", true},
 		{"completion", true},
 		{"version", true},

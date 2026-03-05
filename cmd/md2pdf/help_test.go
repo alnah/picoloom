@@ -31,6 +31,7 @@ func TestPrintUsage(t *testing.T) {
 		"Usage: md2pdf",
 		"Commands:",
 		"convert",
+		"config",
 		"version",
 		"help",
 	}
@@ -223,6 +224,11 @@ func TestRunHelp(t *testing.T) {
 			name:         "convert shows convert help",
 			args:         []string{"convert"},
 			wantInStdout: []string{"Usage: md2pdf convert", "Author:", "Document:"},
+		},
+		{
+			name:         "config shows config help",
+			args:         []string{"config"},
+			wantInStdout: []string{"Usage: md2pdf config", "init"},
 		},
 		{
 			name:         "version shows version help",

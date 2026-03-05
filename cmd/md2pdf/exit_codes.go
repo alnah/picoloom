@@ -47,6 +47,9 @@ func exitCodeFor(err error) int {
 	if errors.Is(err, config.ErrConfigNotFound) ||
 		errors.Is(err, config.ErrConfigParse) ||
 		errors.Is(err, config.ErrFieldTooLong) ||
+		errors.Is(err, ErrConfigCommandUsage) ||
+		errors.Is(err, ErrConfigInitNeedsTTY) ||
+		errors.Is(err, ErrConfigInitExists) ||
 		errors.Is(err, md2pdf.ErrEmptyMarkdown) ||
 		errors.Is(err, md2pdf.ErrInvalidPageSize) ||
 		errors.Is(err, md2pdf.ErrInvalidOrientation) ||

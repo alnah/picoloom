@@ -13,8 +13,10 @@ import (
 // Includes I/O, time, configuration, and asset loading.
 type Environment struct {
 	Now         func() time.Time
+	Stdin       io.Reader
 	Stdout      io.Writer
 	Stderr      io.Writer
+	IsStdinTTY  func() bool
 	AssetLoader md2pdf.AssetLoader
 	Config      *config.Config // Loaded once, shared across pipeline
 }
@@ -29,9 +31,19 @@ func DefaultEnv() *Environment {
 	}
 	return &Environment{
 		Now:         time.Now,
+		Stdin:       os.Stdin,
 		Stdout:      os.Stdout,
 		Stderr:      os.Stderr,
+		IsStdinTTY:  func() bool { return isTerminal(os.Stdin) },
 		AssetLoader: loader,
 		Config:      config.DefaultConfig(),
 	}
+}
+
+func isTerminal(file *os.File) bool {
+	info, err := file.Stat()
+	if err != nil {
+		return false
+	}
+	return info.Mode()&os.ModeCharDevice != 0
 }

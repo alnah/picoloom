@@ -252,7 +252,7 @@ func TestGetCommands(t *testing.T) {
 
 	commands := getCommands()
 
-	expectedCommands := []string{"convert", "version", "help", "completion"}
+	expectedCommands := []string{"convert", "config", "version", "help", "completion"}
 	if len(commands) != len(expectedCommands) {
 		t.Fatalf("getCommands() = %d commands, want %d", len(commands), len(expectedCommands))
 	}
