@@ -1,5 +1,13 @@
 package main
 
+// Notes:
+// - testConfigInitYAML: we build a valid generated payload used by safety tests.
+// - force rollback: we inject a replace failure after backup move and verify
+//   previous content restoration and backup cleanup.
+// - no-force race safety: we simulate a concurrent writer and assert no overwrite.
+// - cross-platform replace semantics: we assert force replace yields valid config.
+// These are acceptable gaps: we assert safety invariants, not syscall order.
+
 import (
 	"errors"
 	"os"
@@ -9,6 +17,10 @@ import (
 	"github.com/alnah/go-md2pdf/internal/config"
 	"github.com/alnah/go-md2pdf/internal/yamlutil"
 )
+
+// ---------------------------------------------------------------------------
+// testConfigInitYAML - valid generated YAML fixture
+// ---------------------------------------------------------------------------
 
 func testConfigInitYAML(t *testing.T) []byte {
 	t.Helper()
@@ -24,6 +36,10 @@ func testConfigInitYAML(t *testing.T) []byte {
 	}
 	return data
 }
+
+// ---------------------------------------------------------------------------
+// TestConfigInit_ForceRollbackOnReplaceFailure - rollback safety on failure
+// ---------------------------------------------------------------------------
 
 func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 	t.Chdir(t.TempDir())
@@ -69,6 +85,10 @@ func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// TestConfigInit_NoForceRaceSafety - no-force TOCTOU protection
+// ---------------------------------------------------------------------------
+
 func TestConfigInit_NoForceRaceSafety(t *testing.T) {
 	t.Chdir(t.TempDir())
 
@@ -96,6 +116,10 @@ func TestConfigInit_NoForceRaceSafety(t *testing.T) {
 		t.Fatalf("destination content overwritten in race path")
 	}
 }
+
+// ---------------------------------------------------------------------------
+// TestConfigInit_CrossPlatformReplaceSemantics - replace guarantees
+// ---------------------------------------------------------------------------
 
 func TestConfigInit_CrossPlatformReplaceSemantics(t *testing.T) {
 	t.Chdir(t.TempDir())

@@ -1,5 +1,14 @@
 package main
 
+// Notes:
+// - parseConfigInitFlags: we test defaults, explicit options, usage errors,
+//   and help path behavior.
+// - promptString/promptBool: we test default acceptance, example/default
+//   rendering, and invalid-input retry behavior.
+// - parseYesNo: we test accepted aliases and invalid input handling.
+// - outputPathForExample: we test default-path normalization and passthrough.
+// These are acceptable gaps: we test observable behavior, not implementation details.
+
 import (
 	"bufio"
 	"bytes"
@@ -9,6 +18,10 @@ import (
 
 	flag "github.com/spf13/pflag"
 )
+
+// ---------------------------------------------------------------------------
+// TestParseConfigInitFlags_* - config init flag parsing
+// ---------------------------------------------------------------------------
 
 func TestParseConfigInitFlags_Defaults(t *testing.T) {
 	t.Parallel()
@@ -90,6 +103,10 @@ func TestParseConfigInitFlags_Help(t *testing.T) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// TestPrompt* - prompt rendering and parsing behavior
+// ---------------------------------------------------------------------------
+
 func TestPromptString_UsesDefaultAndShowsFormat(t *testing.T) {
 	t.Parallel()
 
@@ -131,6 +148,10 @@ func TestPromptBool_RepromptsInvalidThenParses(t *testing.T) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// TestParseYesNo - yes/no parser aliases and errors
+// ---------------------------------------------------------------------------
+
 func TestParseYesNo(t *testing.T) {
 	t.Parallel()
 
@@ -167,6 +188,10 @@ func TestParseYesNo(t *testing.T) {
 		})
 	}
 }
+
+// ---------------------------------------------------------------------------
+// TestOutputPathForExample - output example path normalization
+// ---------------------------------------------------------------------------
 
 func TestOutputPathForExample(t *testing.T) {
 	t.Parallel()
