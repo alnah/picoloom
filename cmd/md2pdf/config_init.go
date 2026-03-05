@@ -7,8 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
+	md2pdf "github.com/alnah/go-md2pdf"
 	"github.com/alnah/go-md2pdf/internal/config"
 	"github.com/alnah/go-md2pdf/internal/yamlutil"
 	flag "github.com/spf13/pflag"
@@ -34,10 +36,44 @@ type configInitFlags struct {
 }
 
 type configInitAnswers struct {
-	style          string
-	pageSize       string
-	documentDate   string
-	showPageNumber bool
+	style              string
+	authorName         string
+	authorTitle        string
+	authorEmail        string
+	authorOrganization string
+	pageSize           string
+	signatureEnabled   bool
+	signatureImagePath string
+	watermarkEnabled   bool
+	watermarkText      string
+	watermarkColor     string
+	coverEnabled       bool
+	coverLogo          string
+}
+
+type wizardPrompt struct {
+	title        string
+	options      string
+	example      string
+	defaultValue string
+	helpYAML     string
+	validate     func(string) error
+}
+
+type wizardStyle struct {
+	name        string
+	description string
+}
+
+var wizardStyles = []wizardStyle{
+	{name: "default", description: "minimal neutral baseline"},
+	{name: "technical", description: "clean system-ui with code-friendly defaults"},
+	{name: "creative", description: "more colorful headings and accents"},
+	{name: "academic", description: "serif typography with high readability"},
+	{name: "corporate", description: "professional business-like sans-serif"},
+	{name: "legal", description: "conservative legal-style formatting"},
+	{name: "invoice", description: "table-oriented business layout"},
+	{name: "manuscript", description: "monospace narrative style"},
 }
 
 func runConfigCmd(args []string, env *Environment) error {
@@ -97,9 +133,13 @@ func runConfigInitCmd(args []string, env *Environment) error {
 		return fmt.Errorf("%w: use --no-input for scripts or CI", ErrConfigInitNeedsTTY)
 	}
 
-	cfg, err := buildConfigInitConfig(flags.noInput, env)
+	cfg, shouldWrite, err := buildConfigInitConfig(flags.noInput, env)
 	if err != nil {
 		return err
+	}
+	if !shouldWrite {
+		fmt.Fprintln(env.Stdout, "Configuration generation canceled.")
+		return nil
 	}
 
 	data, err := yamlutil.Marshal(cfg)
@@ -117,90 +157,249 @@ func runConfigInitCmd(args []string, env *Environment) error {
 	return nil
 }
 
-func buildConfigInitConfig(noInput bool, env *Environment) (*config.Config, error) {
+func buildConfigInitConfig(noInput bool, env *Environment) (*config.Config, bool, error) {
 	answers := configInitAnswers{
-		style:          "technical",
-		pageSize:       "letter",
-		documentDate:   "auto",
-		showPageNumber: true,
+		style:              "technical",
+		authorName:         "Your Name",
+		authorTitle:        "",
+		authorEmail:        "",
+		authorOrganization: "",
+		pageSize:           "letter",
+		signatureEnabled:   false,
+		signatureImagePath: "",
+		watermarkEnabled:   false,
+		watermarkText:      "DRAFT",
+		watermarkColor:     md2pdf.DefaultWatermarkColor,
+		coverEnabled:       false,
+		coverLogo:          "",
 	}
 
+	var reader *bufio.Reader
 	if !noInput {
-		reader := bufio.NewReader(stdinReader(env))
-		style, err := promptString(reader, env.Stdout,
-			"Style",
-			"technical or ./assets/styles/corporate.css",
-			answers.style,
-			nil,
-		)
+		reader = bufio.NewReader(stdinReader(env))
+		printWizardStyleChoices(env.Stdout)
+
+		style, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Style",
+			options:      wizardStyleOptions(),
+			example:      "technical",
+			defaultValue: answers.style,
+			helpYAML:     "style: technical\n# Styles: default, technical, creative, academic,\n#         corporate, legal, invoice, manuscript",
+			validate:     validateWizardStyle,
+		})
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		pageSize, err := promptString(reader, env.Stdout,
-			"Page size",
-			"letter, a4, legal",
-			answers.pageSize,
-			validatePageSize,
-		)
+		authorName, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Author name",
+			options:      "free text",
+			example:      "Alex Martin",
+			defaultValue: answers.authorName,
+			helpYAML:     "author:\n  name: Alex Martin",
+		})
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		documentDate, err := promptString(reader, env.Stdout,
-			"Document date",
-			"auto or auto:DD/MM/YYYY",
-			answers.documentDate,
-			validateDocumentDate,
-		)
+		authorTitle, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Author title",
+			options:      "free text or empty",
+			example:      "Staff Engineer",
+			defaultValue: answers.authorTitle,
+			helpYAML:     "author:\n  title: Staff Engineer",
+		})
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		showPageNumber, err := promptBool(reader, env.Stdout,
-			"Show page numbers in footer",
-			"yes/no",
-			answers.showPageNumber,
-		)
+		authorEmail, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Author email",
+			options:      "email or empty",
+			example:      "alex@example.com",
+			defaultValue: answers.authorEmail,
+			helpYAML:     "author:\n  email: alex@example.com",
+		})
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		answers.style = style
-		answers.pageSize = pageSize
-		answers.documentDate = documentDate
-		answers.showPageNumber = showPageNumber
+		authorOrganization, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Author organization",
+			options:      "free text or empty",
+			example:      "Acme Corp",
+			defaultValue: answers.authorOrganization,
+			helpYAML:     "author:\n  organization: Acme Corp",
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		pageSize, err := promptString(reader, env.Stdout, wizardPrompt{
+			title:        "Page size",
+			options:      "letter, a4, legal",
+			example:      "a4",
+			defaultValue: answers.pageSize,
+			helpYAML:     "page:\n  size: letter",
+			validate:     validatePageSize,
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		signatureEnabled, err := promptBool(reader, env.Stdout, wizardPrompt{
+			title:        "Enable signature block",
+			options:      "yes, no",
+			example:      "yes",
+			defaultValue: boolDefaultLabel(answers.signatureEnabled),
+			helpYAML:     "signature:\n  enabled: true\n  imagePath: ./assets/signature.png",
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		signatureImagePath := answers.signatureImagePath
+		if signatureEnabled {
+			signatureImagePath, err = promptString(reader, env.Stdout, wizardPrompt{
+				title:        "Signature image path",
+				options:      "file path or URL",
+				example:      "./assets/signature.png",
+				defaultValue: signatureImagePath,
+				helpYAML:     "signature:\n  imagePath: ./assets/signature.png",
+			})
+			if err != nil {
+				return nil, false, err
+			}
+		}
+		watermarkEnabled, err := promptBool(reader, env.Stdout, wizardPrompt{
+			title:        "Enable watermark",
+			options:      "yes, no",
+			example:      "yes",
+			defaultValue: boolDefaultLabel(answers.watermarkEnabled),
+			helpYAML:     "watermark:\n  enabled: true\n  text: DRAFT\n  color: #888888\n  opacity: 0.1\n  angle: -45",
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		watermarkText := answers.watermarkText
+		watermarkColor := answers.watermarkColor
+		if watermarkEnabled {
+			watermarkText, err = promptString(reader, env.Stdout, wizardPrompt{
+				title:        "Watermark text",
+				options:      "free text (required when enabled)",
+				example:      "CONFIDENTIAL",
+				defaultValue: watermarkText,
+				helpYAML:     "watermark:\n  text: CONFIDENTIAL",
+			})
+			if err != nil {
+				return nil, false, err
+			}
+			watermarkColor, err = promptString(reader, env.Stdout, wizardPrompt{
+				title:        "Watermark color",
+				options:      "hex color (#RGB or #RRGGBB)",
+				example:      "#888888",
+				defaultValue: watermarkColor,
+				helpYAML:     "watermark:\n  color: #888888",
+				validate:     validateWatermarkColor,
+			})
+			if err != nil {
+				return nil, false, err
+			}
+		}
+		coverEnabled, err := promptBool(reader, env.Stdout, wizardPrompt{
+			title:        "Enable cover page",
+			options:      "yes, no",
+			example:      "yes",
+			defaultValue: boolDefaultLabel(answers.coverEnabled),
+			helpYAML:     "cover:\n  enabled: true\n  logo: ./assets/logo.png",
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		coverLogo := answers.coverLogo
+		if coverEnabled {
+			coverLogo, err = promptString(reader, env.Stdout, wizardPrompt{
+				title:        "Cover logo path",
+				options:      "file path or URL",
+				example:      "./assets/logo.png",
+				defaultValue: coverLogo,
+				helpYAML:     "cover:\n  logo: ./assets/logo.png",
+			})
+			if err != nil {
+				return nil, false, err
+			}
+		}
+
+		answers.style = strings.ToLower(style)
+		answers.authorName = authorName
+		answers.authorTitle = authorTitle
+		answers.authorEmail = authorEmail
+		answers.authorOrganization = authorOrganization
+		answers.pageSize = strings.ToLower(pageSize)
+		answers.signatureEnabled = signatureEnabled
+		answers.signatureImagePath = signatureImagePath
+		answers.watermarkEnabled = watermarkEnabled
+		answers.watermarkText = watermarkText
+		answers.watermarkColor = watermarkColor
+		answers.coverEnabled = coverEnabled
+		answers.coverLogo = coverLogo
 	}
 
 	cfg := config.DefaultConfig()
 	cfg.Style = answers.style
+	cfg.Author.Name = answers.authorName
+	cfg.Author.Title = answers.authorTitle
+	cfg.Author.Email = answers.authorEmail
+	cfg.Author.Organization = answers.authorOrganization
 	cfg.Page.Size = answers.pageSize
 	cfg.Page.Orientation = "portrait"
-	cfg.Document.Date = answers.documentDate
-	cfg.Footer.Enabled = answers.showPageNumber
-	cfg.Footer.Position = "right"
-	cfg.Footer.ShowPageNumber = answers.showPageNumber
+	cfg.Signature.Enabled = answers.signatureEnabled
+	cfg.Signature.ImagePath = answers.signatureImagePath
+	cfg.Watermark.Enabled = answers.watermarkEnabled
+	cfg.Watermark.Text = answers.watermarkText
+	cfg.Watermark.Color = answers.watermarkColor
+	cfg.Watermark.Opacity = md2pdf.DefaultWatermarkOpacity
+	cfg.Watermark.Angle = md2pdf.DefaultWatermarkAngle
+	cfg.Cover.Enabled = answers.coverEnabled
+	cfg.Cover.Logo = answers.coverLogo
 
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("validating generated config: %w", err)
+		return nil, false, fmt.Errorf("validating generated config: %w", err)
 	}
 
-	return cfg, nil
+	if !noInput {
+		ok, err := confirmConfigInitWrite(reader, env.Stdout, cfg)
+		if err != nil {
+			return nil, false, err
+		}
+		if !ok {
+			return cfg, false, nil
+		}
+	}
+
+	return cfg, true, nil
 }
 
-func promptString(reader *bufio.Reader, output io.Writer, title, example, defaultValue string, validate func(string) error) (string, error) {
+func promptString(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (string, error) {
 	for {
-		fmt.Fprintf(output, "%s [default: %s] (example: %s): ", title, defaultValue, example)
+		if prompt.options != "" {
+			fmt.Fprintf(output, "Options: %s\n", prompt.options)
+		}
+		fmt.Fprintf(output, "%s [default: %s] (example: %s, type ? for help): ", prompt.title, formatPromptDefault(prompt.defaultValue), prompt.example)
 
 		line, err := reader.ReadString('\n')
 		isEOF := errors.Is(err, io.EOF)
 		if err != nil && !isEOF {
-			return "", fmt.Errorf("reading %s answer: %w", strings.ToLower(title), err)
+			return "", fmt.Errorf("reading %s answer: %w", strings.ToLower(prompt.title), err)
 		}
 		value := strings.TrimSpace(line)
-		if value == "" {
-			value = defaultValue
+		if value == "?" {
+			printPromptHelp(output, prompt)
+			if isEOF {
+				return "", fmt.Errorf("invalid %s value: expected answer after help", strings.ToLower(prompt.title))
+			}
+			continue
 		}
-		if validate != nil {
-			if err := validate(value); err != nil {
+		if value == "" {
+			value = prompt.defaultValue
+		}
+		if prompt.validate != nil {
+			if err := prompt.validate(value); err != nil {
 				if isEOF {
-					return "", fmt.Errorf("invalid %s value: %w", strings.ToLower(title), err)
+					return "", fmt.Errorf("invalid %s value: %w", strings.ToLower(prompt.title), err)
 				}
 				fmt.Fprintf(output, "Invalid value: %v\n", err)
 				continue
@@ -210,14 +409,9 @@ func promptString(reader *bufio.Reader, output io.Writer, title, example, defaul
 	}
 }
 
-func promptBool(reader *bufio.Reader, output io.Writer, title, example string, defaultValue bool) (bool, error) {
-	defaultLabel := "no"
-	if defaultValue {
-		defaultLabel = "yes"
-	}
-
+func promptBool(reader *bufio.Reader, output io.Writer, prompt wizardPrompt) (bool, error) {
 	for {
-		value, err := promptString(reader, output, title, example, defaultLabel, nil)
+		value, err := promptString(reader, output, prompt)
 		if err != nil {
 			return false, err
 		}
@@ -228,6 +422,90 @@ func promptBool(reader *bufio.Reader, output io.Writer, title, example string, d
 		}
 		return parsed, nil
 	}
+}
+
+func confirmConfigInitWrite(reader *bufio.Reader, output io.Writer, cfg *config.Config) (bool, error) {
+	data, err := yamlutil.Marshal(cfg)
+	if err != nil {
+		return false, fmt.Errorf("encoding preview config: %w", err)
+	}
+
+	fmt.Fprintln(output)
+	fmt.Fprintln(output, "Configuration summary:")
+	fmt.Fprintf(output, "- style: %s\n", cfg.Style)
+	fmt.Fprintf(output, "- author: %s\n", cfg.Author.Name)
+	fmt.Fprintf(output, "- page.size: %s\n", cfg.Page.Size)
+	fmt.Fprintf(output, "- signature.enabled: %t\n", cfg.Signature.Enabled)
+	fmt.Fprintf(output, "- watermark.enabled: %t\n", cfg.Watermark.Enabled)
+	fmt.Fprintf(output, "- cover.enabled: %t\n", cfg.Cover.Enabled)
+	fmt.Fprintln(output)
+	fmt.Fprintln(output, "YAML preview:")
+	fmt.Fprintln(output, string(data))
+
+	return promptBool(reader, output, wizardPrompt{
+		title:        "Write configuration file",
+		options:      "yes, no",
+		example:      "yes",
+		defaultValue: "yes",
+		helpYAML:     "# Type yes to write the file",
+	})
+}
+
+func printPromptHelp(output io.Writer, prompt wizardPrompt) {
+	fmt.Fprintln(output, "Help:")
+	if prompt.options != "" {
+		fmt.Fprintf(output, "  Options: %s\n", prompt.options)
+	}
+	if prompt.example != "" {
+		fmt.Fprintf(output, "  Example value: %s\n", prompt.example)
+	}
+	if prompt.helpYAML != "" {
+		fmt.Fprintln(output, "  YAML example:")
+		for _, line := range strings.Split(prompt.helpYAML, "\n") {
+			fmt.Fprintf(output, "    %s\n", line)
+		}
+	}
+}
+
+func formatPromptDefault(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return "<empty>"
+	}
+	return value
+}
+
+func boolDefaultLabel(value bool) string {
+	if value {
+		return "yes"
+	}
+	return "no"
+}
+
+func printWizardStyleChoices(output io.Writer) {
+	fmt.Fprintln(output, "Available styles:")
+	for _, style := range wizardStyles {
+		fmt.Fprintf(output, "  - %s: %s\n", style.name, style.description)
+	}
+}
+
+func wizardStyleOptions() string {
+	parts := make([]string, 0, len(wizardStyles))
+	for _, style := range wizardStyles {
+		parts = append(parts, style.name)
+	}
+	return strings.Join(parts, ", ")
+}
+
+func validateWizardStyle(value string) error {
+	normalized := strings.ToLower(strings.TrimSpace(value))
+	names := make([]string, 0, len(wizardStyles))
+	for _, style := range wizardStyles {
+		names = append(names, style.name)
+	}
+	if !slices.Contains(names, normalized) {
+		return fmt.Errorf("must be one of: %s", strings.Join(names, ", "))
+	}
+	return nil
 }
 
 func parseYesNo(value string) (bool, error) {
@@ -250,10 +528,13 @@ func validatePageSize(value string) error {
 	}
 }
 
-func validateDocumentDate(value string) error {
-	test := config.DefaultConfig()
-	test.Document.Date = value
-	if err := test.Document.Validate(); err != nil {
+func validateWatermarkColor(value string) error {
+	test := &md2pdf.Watermark{
+		Color:   value,
+		Opacity: md2pdf.DefaultWatermarkOpacity,
+		Angle:   md2pdf.DefaultWatermarkAngle,
+	}
+	if err := test.Validate(); err != nil {
 		return err
 	}
 	return nil
