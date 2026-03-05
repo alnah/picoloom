@@ -243,7 +243,7 @@ func TestRodRenderer_EnsureBrowser_CI(t *testing.T) {
 	renderer := newRodRenderer(testTimeout)
 	defer renderer.Close()
 
-	err := renderer.ensureBrowser()
+	err := renderer.ensureBrowser(context.Background())
 	if err != nil {
 		t.Fatalf("ensureBrowser() unexpected error: %v", err)
 	}

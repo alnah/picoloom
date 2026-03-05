@@ -84,15 +84,18 @@ func newRodRenderer(timeout time.Duration) *rodRenderer {
 // Uses rod's managed Chromium (~/.cache/rod/browser/) for complete isolation
 // from the user's Chrome installation. This prevents corruption of Chrome.app
 // state that would require a system restart to fix.
-func (r *rodRenderer) ensureBrowser() error {
+func (r *rodRenderer) ensureBrowser(ctx context.Context) error {
 	if r.browser != nil {
 		return nil
+	}
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
 	// Configure launcher
 	// Leakless(false) prevents hanging on macOS - see github.com/go-rod/rod/issues/210
 	// We compensate by explicitly calling Kill() and Cleanup() in Close().
-	l := launcher.New().Headless(true).Leakless(false).Set("disable-gpu")
+	l := launcher.New().Context(ctx).Headless(true).Leakless(false).Set("disable-gpu")
 
 	// Allow disabling sandbox for CI/Docker environments that lack kernel support.
 	if os.Getenv("ROD_NO_SANDBOX") == "1" {
@@ -107,20 +110,28 @@ func (r *rodRenderer) ensureBrowser() error {
 
 	u, err := l.Launch()
 	if err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return ctxErr
+		}
 		return fmt.Errorf("%w: %v%s", ErrBrowserConnect, err, hints.ForBrowserConnect())
 	}
 
 	// Store launcher reference for cleanup in Close()
 	r.launcher = l
 
-	r.browser = rod.New().ControlURL(u)
-	if err := r.browser.Connect(); err != nil {
+	browser := rod.New().ControlURL(u).Context(ctx)
+	if err := browser.Connect(); err != nil {
 		r.launcher.Kill()
 		r.launcher.Cleanup()
 		r.browser = nil
 		r.launcher = nil
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return ctxErr
+		}
 		return fmt.Errorf("%w: %v%s", ErrBrowserConnect, err, hints.ForBrowserConnect())
 	}
+	// Keep a neutral context on the shared browser handle; operations use per-call contexts.
+	r.browser = browser.Context(context.Background())
 	return nil
 }
 
@@ -182,7 +193,7 @@ func (r *rodRenderer) RenderFromFile(ctx context.Context, filePath string, opts 
 		return nil, err
 	}
 
-	if err := r.ensureBrowser(); err != nil {
+	if err := r.ensureBrowser(ctx); err != nil {
 		return nil, err
 	}
 
@@ -192,16 +203,17 @@ func (r *rodRenderer) RenderFromFile(ctx context.Context, filePath string, opts 
 	}
 	defer page.Close()
 
-	// Wait for page to load with timeout from context or default
-	timeout := r.timeout
-	if deadline, ok := ctx.Deadline(); ok {
-		timeout = time.Until(deadline)
-		if timeout <= 0 {
-			return nil, context.DeadlineExceeded
-		}
+	renderCtx, cancel, err := renderOperationContext(ctx, r.timeout)
+	if err != nil {
+		return nil, err
 	}
+	defer cancel()
+	pageWithCtx := page.Context(renderCtx)
 
-	if err := page.Timeout(timeout).WaitLoad(); err != nil {
+	if err := pageWithCtx.WaitLoad(); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
+		}
 		return nil, fmt.Errorf("%w: %v%s", ErrPageLoad, err, hints.ForTimeout())
 	}
 
@@ -214,17 +226,37 @@ func (r *rodRenderer) RenderFromFile(ctx context.Context, filePath string, opts 
 	pdfOpts := r.buildPDFOptions(opts)
 
 	// Generate PDF
-	reader, err := page.PDF(pdfOpts)
+	reader, err := pageWithCtx.PDF(pdfOpts)
 	if err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
+		}
 		return nil, fmt.Errorf("%w: %v", ErrPDFGeneration, err)
 	}
+	defer reader.Close()
 
 	pdfBuf, err := io.ReadAll(reader)
 	if err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
+		}
 		return nil, fmt.Errorf("%w: reading PDF stream: %v", ErrPDFGeneration, err)
 	}
 
 	return pdfBuf, nil
+}
+
+// renderOperationContext keeps browser operations tied to caller cancellation
+// so Ctrl+C can stop long-running page work instead of waiting for fallback timeouts.
+func renderOperationContext(ctx context.Context, fallbackTimeout time.Duration) (context.Context, context.CancelFunc, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, nil, err
+	}
+	if _, hasDeadline := ctx.Deadline(); hasDeadline || fallbackTimeout <= 0 {
+		return ctx, func() {}, nil
+	}
+	opCtx, cancel := context.WithTimeout(ctx, fallbackTimeout)
+	return opCtx, cancel, nil
 }
 
 // resolvePageDimensions returns width, height, margin, and bottom margin.

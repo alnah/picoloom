@@ -11,6 +11,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/alnah/go-md2pdf/internal/fileutil"
 	"github.com/alnah/go-md2pdf/internal/pipeline"
@@ -176,6 +177,94 @@ func TestNewRodConverter(t *testing.T) {
 
 	if converter.renderer.timeout != defaultTimeout {
 		t.Errorf("newRodConverter(%v).renderer.timeout = %v, want %v", defaultTimeout, converter.renderer.timeout, defaultTimeout)
+	}
+}
+
+func TestRenderOperationContext(t *testing.T) {
+	t.Parallel()
+
+	t.Run("uses caller context when it already has deadline", func(t *testing.T) {
+		t.Parallel()
+
+		parent, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		gotCtx, gotCancel, err := renderOperationContext(parent, 30*time.Second)
+		defer gotCancel()
+
+		if err != nil {
+			t.Fatalf("renderOperationContext(parent, 30s) unexpected error: %v", err)
+		}
+
+		parentDeadline, parentOK := parent.Deadline()
+		gotDeadline, gotOK := gotCtx.Deadline()
+		if !parentOK || !gotOK {
+			t.Fatalf("expected deadline on both contexts")
+		}
+		if !parentDeadline.Equal(gotDeadline) {
+			t.Errorf("renderOperationContext(parent, 30s) deadline = %v, want %v", gotDeadline, parentDeadline)
+		}
+	})
+
+	t.Run("adds fallback timeout when caller has no deadline", func(t *testing.T) {
+		t.Parallel()
+
+		start := time.Now()
+		gotCtx, gotCancel, err := renderOperationContext(context.Background(), 500*time.Millisecond)
+		defer gotCancel()
+
+		if err != nil {
+			t.Fatalf("renderOperationContext(background, 500ms) unexpected error: %v", err)
+		}
+
+		gotDeadline, ok := gotCtx.Deadline()
+		if !ok {
+			t.Fatal("renderOperationContext(background, 500ms) missing deadline")
+		}
+		remaining := time.Until(gotDeadline)
+		if remaining > 500*time.Millisecond || remaining < 300*time.Millisecond {
+			t.Errorf("renderOperationContext(background, 500ms) remaining timeout = %v, want around 500ms", remaining)
+		}
+		if time.Since(start) > 250*time.Millisecond {
+			t.Fatalf("test setup took too long; timeout assertion would be unreliable")
+		}
+	})
+
+	t.Run("returns cancellation error when caller is already canceled", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		gotCtx, gotCancel, err := renderOperationContext(ctx, time.Second)
+		if err == nil {
+			t.Fatal("renderOperationContext(canceled, 1s) error = nil, want error")
+		}
+		if !errors.Is(err, context.Canceled) {
+			t.Errorf("renderOperationContext(canceled, 1s) error = %v, want context.Canceled", err)
+		}
+		if gotCtx != nil {
+			t.Errorf("renderOperationContext(canceled, 1s) context = %v, want nil", gotCtx)
+		}
+		if gotCancel != nil {
+			t.Errorf("renderOperationContext(canceled, 1s) cancel = %v, want nil", gotCancel)
+		}
+	})
+}
+
+func TestRodRenderer_EnsureBrowser_ContextCanceled(t *testing.T) {
+	t.Parallel()
+
+	renderer := newRodRenderer(defaultTimeout)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := renderer.ensureBrowser(ctx)
+	if err == nil {
+		t.Fatal("ensureBrowser(canceledCtx) error = nil, want context.Canceled")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("ensureBrowser(canceledCtx) error = %v, want context.Canceled", err)
 	}
 }
 
