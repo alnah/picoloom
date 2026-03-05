@@ -26,6 +26,7 @@ type ConverterPool struct {
 	opts       []Option
 	converters []*Converter
 	sem        chan *Converter
+	closedCh   chan struct{}
 	mu         sync.Mutex
 	created    int
 	closed     bool
@@ -50,6 +51,7 @@ func NewConverterPool(n int, opts ...Option) *ConverterPool {
 		opts:       opts,
 		converters: make([]*Converter, 0, n),
 		sem:        make(chan *Converter, n),
+		closedCh:   make(chan struct{}),
 	}
 }
 
@@ -74,6 +76,10 @@ func (p *ConverterPool) Acquire() *Converter {
 
 	// Check if we can create a new converter
 	p.mu.Lock()
+	if p.closed {
+		p.mu.Unlock()
+		return nil
+	}
 	if p.initErr != nil {
 		p.mu.Unlock()
 		return nil
@@ -102,8 +108,14 @@ func (p *ConverterPool) Acquire() *Converter {
 	}
 	p.mu.Unlock()
 
-	// All converters created, wait for one to be released
-	return <-p.sem
+	// All converters created, wait for one to be released.
+	// Return nil if the pool is closed while waiting.
+	select {
+	case conv := <-p.sem:
+		return conv
+	case <-p.closedCh:
+		return nil
+	}
 }
 
 // InitError returns the first error encountered during converter creation.
@@ -117,6 +129,10 @@ func (p *ConverterPool) InitError() error {
 // Release returns a converter to the pool.
 // The lock is released before sending to avoid deadlock when channel is full.
 func (p *ConverterPool) Release(conv *Converter) {
+	if conv == nil {
+		return
+	}
+
 	p.mu.Lock()
 	if p.closed {
 		p.mu.Unlock()
@@ -124,7 +140,10 @@ func (p *ConverterPool) Release(conv *Converter) {
 	}
 	p.mu.Unlock()
 
-	p.sem <- conv
+	select {
+	case p.sem <- conv:
+	case <-p.closedCh:
+	}
 }
 
 // Close releases all browser resources.
@@ -136,6 +155,7 @@ func (p *ConverterPool) Close() error {
 		return nil
 	}
 	p.closed = true
+	close(p.closedCh)
 	converters := p.converters
 	p.mu.Unlock()
 

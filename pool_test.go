@@ -303,20 +303,47 @@ func TestServicePool_AcquireAfterClose(t *testing.T) {
 
 	pool := NewServicePool(2)
 
-	// Acquire one service
-	svc := pool.Acquire()
-	if svc == nil {
-		t.Fatalf("Acquire() returned nil")
+	if err := pool.Close(); err != nil {
+		t.Fatalf("Close() unexpected error: %v", err)
 	}
 
-	// Close the pool
-	pool.Close()
+	if svc := pool.Acquire(); svc != nil {
+		t.Fatalf("Acquire() after Close() = %#v, want nil", svc)
+	}
+}
 
-	// Release should not panic after close
+func TestServicePool_AcquireUnblocksWhenClosed(t *testing.T) {
+	t.Parallel()
+
+	pool := NewServicePool(1)
+	svc := pool.Acquire()
+	if svc == nil {
+		t.Fatal("Acquire() returned nil")
+	}
+
+	resultCh := make(chan *Service, 1)
+	go func() {
+		resultCh <- pool.Acquire()
+	}()
+
+	// Give goroutine a chance to block in Acquire.
+	time.Sleep(10 * time.Millisecond)
+
+	if err := pool.Close(); err != nil {
+		t.Fatalf("Close() unexpected error: %v", err)
+	}
+
+	select {
+	case got := <-resultCh:
+		if got != nil {
+			t.Fatalf("blocked Acquire() result = %#v, want nil", got)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("blocked Acquire() did not unblock after Close()")
+	}
+
+	// Release after close is a no-op.
 	pool.Release(svc)
-
-	// Note: Acquire after close will block forever on empty channel,
-	// so we don't test that directly - it's documented behavior.
 }
 
 // ---------------------------------------------------------------------------
@@ -333,9 +360,8 @@ func TestServicePool_ReleaseNilService(t *testing.T) {
 	svc := pool.Acquire()
 	pool.Release(svc)
 
-	// Release nil should cause panic (channel send on nil),
-	// but this is expected behavior - callers should not release nil.
-	// This test documents that behavior.
+	// Releasing nil should not panic.
+	pool.Release(nil)
 }
 
 // ---------------------------------------------------------------------------
