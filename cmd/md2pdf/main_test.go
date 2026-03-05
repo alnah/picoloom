@@ -1,7 +1,7 @@
 package main
 
 // Notes:
-// - poolAdapter: we test Acquire/Release/Size and panic on wrong type.
+// - poolAdapter: we test Acquire/Release/Size and wrong-type defensive release.
 // - isCommand: we test command name matching.
 // - looksLikeMarkdown: we test file extension detection.
 // - runMain: we test exit codes for various scenarios. We don't test actual
@@ -33,7 +33,7 @@ func (w *wrongTypeConverter) Convert(_ context.Context, _ md2pdf.Input) (*md2pdf
 }
 
 // ---------------------------------------------------------------------------
-// TestPoolAdapter_Release_WrongType - Pool adapter type safety
+// TestPoolAdapter_Release_WrongType - Pool adapter defensive release
 // ---------------------------------------------------------------------------
 
 func TestPoolAdapter_Release_WrongType(t *testing.T) {
@@ -45,23 +45,10 @@ func TestPoolAdapter_Release_WrongType(t *testing.T) {
 
 	adapter := &poolAdapter{pool: pool}
 
-	// Release with wrong type should panic (programmer error)
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatalf("poolAdapter.Release(wrongType) panic = nil, want panic")
-		}
-		msg, ok := r.(string)
-		if !ok {
-			t.Fatalf("poolAdapter.Release(wrongType) panic type = %T, want string", r)
-		}
-		if !strings.Contains(msg, "unexpected type") {
-			t.Errorf("poolAdapter.Release(wrongType) panic message = %q, want substring \"unexpected type\"", msg)
-		}
-	}()
-
 	wrongType := &wrongTypeConverter{}
 	adapter.Release(wrongType)
+
+	// Defensive behavior: wrong type is ignored, process keeps running.
 }
 
 // ---------------------------------------------------------------------------

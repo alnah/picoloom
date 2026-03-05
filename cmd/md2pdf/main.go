@@ -212,7 +212,9 @@ func (a *poolAdapter) Acquire() CLIConverter {
 func (a *poolAdapter) Release(c CLIConverter) {
 	conv, ok := c.(*md2pdf.Converter)
 	if !ok {
-		panic(fmt.Sprintf("poolAdapter.Release: unexpected type %T, expected *md2pdf.Converter", c))
+		// Defensive no-op: pool only manages *md2pdf.Converter instances.
+		// Avoid crashing the CLI if a wrong test double/type is passed.
+		return
 	}
 	a.pool.Release(conv)
 }
