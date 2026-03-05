@@ -8,9 +8,13 @@ import "github.com/alnah/go-md2pdf/internal/fileutil"
 type Source int
 
 const (
+	// SourceNone indicates that no explicit style input or default was provided.
 	SourceNone Source = iota
+	// SourceFile indicates a style file path.
 	SourceFile
+	// SourceRawCSS indicates inline CSS content.
 	SourceRawCSS
+	// SourceName indicates a named built-in style.
 	SourceName
 )
 

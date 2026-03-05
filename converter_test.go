@@ -28,7 +28,7 @@ type mockPreprocessor struct {
 	output string
 }
 
-func (m *mockPreprocessor) PreprocessMarkdown(ctx context.Context, content string) string {
+func (m *mockPreprocessor) PreprocessMarkdown(_ context.Context, content string) string {
 	m.called = true
 	m.input = content
 	if m.output != "" {
@@ -44,7 +44,7 @@ type mockHTMLConverter struct {
 	err    error
 }
 
-func (m *mockHTMLConverter) ToHTML(ctx context.Context, content string) (string, error) {
+func (m *mockHTMLConverter) ToHTML(_ context.Context, content string) (string, error) {
 	m.called = true
 	m.input = content
 	if m.err != nil {
@@ -63,7 +63,7 @@ type mockCSSInjector struct {
 	output    string
 }
 
-func (m *mockCSSInjector) InjectCSS(ctx context.Context, htmlContent, cssContent string) string {
+func (m *mockCSSInjector) InjectCSS(_ context.Context, htmlContent, cssContent string) string {
 	m.called = true
 	m.inputHTML = htmlContent
 	m.inputCSS = cssContent
@@ -81,7 +81,7 @@ type mockPDFConverter struct {
 	err       error
 }
 
-func (m *mockPDFConverter) ToPDF(ctx context.Context, htmlContent string, opts *pdfOptions) ([]byte, error) {
+func (m *mockPDFConverter) ToPDF(_ context.Context, htmlContent string, opts *pdfOptions) ([]byte, error) {
 	m.called = true
 	m.inputHTML = htmlContent
 	m.inputOpts = opts
@@ -106,7 +106,7 @@ type mockSignatureInjector struct {
 	err       error
 }
 
-func (m *mockSignatureInjector) InjectSignature(ctx context.Context, htmlContent string, data *pipeline.SignatureData) (string, error) {
+func (m *mockSignatureInjector) InjectSignature(_ context.Context, htmlContent string, data *pipeline.SignatureData) (string, error) {
 	m.called = true
 	m.inputHTML = htmlContent
 	m.inputData = data
@@ -127,7 +127,7 @@ type mockCoverInjector struct {
 	err       error
 }
 
-func (m *mockCoverInjector) InjectCover(ctx context.Context, htmlContent string, data *pipeline.CoverData) (string, error) {
+func (m *mockCoverInjector) InjectCover(_ context.Context, htmlContent string, data *pipeline.CoverData) (string, error) {
 	m.called = true
 	m.inputHTML = htmlContent
 	m.inputData = data
@@ -148,7 +148,7 @@ type mockTOCInjector struct {
 	err       error
 }
 
-func (m *mockTOCInjector) InjectTOC(ctx context.Context, htmlContent string, data *pipeline.TOCData) (string, error) {
+func (m *mockTOCInjector) InjectTOC(_ context.Context, htmlContent string, data *pipeline.TOCData) (string, error) {
 	m.called = true
 	m.inputHTML = htmlContent
 	m.inputData = data
@@ -163,7 +163,7 @@ func (m *mockTOCInjector) InjectTOC(ctx context.Context, htmlContent string, dat
 
 type panicPreprocessor struct{}
 
-func (p *panicPreprocessor) PreprocessMarkdown(ctx context.Context, content string) string {
+func (p *panicPreprocessor) PreprocessMarkdown(_ context.Context, _ string) string {
 	panic("simulated panic in preprocessor")
 }
 
@@ -174,7 +174,7 @@ type mockAssetLoader struct {
 	templateSetErr error
 }
 
-func (m *mockAssetLoader) LoadStyle(name string) (string, error) {
+func (m *mockAssetLoader) LoadStyle(_ string) (string, error) {
 	if m.styleErr != nil {
 		return "", m.styleErr
 	}

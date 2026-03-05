@@ -17,6 +17,7 @@ linters:
     - errorlint
     - bodyclose
     - gocritic
+    - revive
   settings:
     errcheck:
       exclude-functions:

@@ -13,9 +13,12 @@ import (
 var MaxInputSize = 1 << 20
 
 var (
-	ErrNilData        = errors.New("yamlutil: nil or empty data")
+	// ErrNilData indicates an empty or missing input payload.
+	ErrNilData = errors.New("yamlutil: nil or empty data")
+	// ErrNilDestination indicates a nil destination pointer passed to decode.
 	ErrNilDestination = errors.New("yamlutil: nil destination pointer")
-	ErrInputTooLarge  = errors.New("yamlutil: input exceeds maximum size")
+	// ErrInputTooLarge indicates the payload exceeds MaxInputSize.
+	ErrInputTooLarge = errors.New("yamlutil: input exceeds maximum size")
 )
 
 func validateInput(data []byte, v any) error {
@@ -31,6 +34,7 @@ func validateInput(data []byte, v any) error {
 	return nil
 }
 
+// Unmarshal decodes YAML content into v after input validation.
 func Unmarshal(data []byte, v any) error {
 	if err := validateInput(data, v); err != nil {
 		return err
@@ -41,6 +45,7 @@ func Unmarshal(data []byte, v any) error {
 	return nil
 }
 
+// Marshal encodes v as YAML.
 func Marshal(v any) ([]byte, error) {
 	result, err := yaml.Marshal(v)
 	if err != nil {

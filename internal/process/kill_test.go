@@ -16,7 +16,7 @@ import "testing"
 func TestKillProcessGroup(t *testing.T) {
 	t.Parallel()
 
-	t.Run("invalid PID", func(t *testing.T) {
+	t.Run("invalid PID", func(_ *testing.T) {
 		// Verify function handles non-existent PID without panicking.
 		// Actual kill behavior is tested via browser cleanup integration tests.
 		//

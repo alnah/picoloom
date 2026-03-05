@@ -73,7 +73,7 @@ func TestUnmarshal(t *testing.T) {
 			name:    "error case: invalid YAML syntax",
 			data:    []byte("name: [unclosed"),
 			dest:    &testConfig{},
-			wantErr: errors.New("yamlutil:"), // partial match
+			wantErr: errors.New("yamlutil"), // partial match
 		},
 		{
 			name: "edge case: unicode content",
@@ -147,7 +147,7 @@ func TestUnmarshalStrict(t *testing.T) {
 			name:    "error case: unknown field",
 			data:    []byte("name: test\nunknown_field: value"),
 			dest:    &testConfig{},
-			wantErr: errors.New("yamlutil:"), // should error on unknown field
+			wantErr: errors.New("yamlutil"), // should error on unknown field
 		},
 		{
 			name:    "error case: nil data",

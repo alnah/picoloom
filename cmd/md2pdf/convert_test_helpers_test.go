@@ -102,7 +102,7 @@ type mockTemplateLoader struct {
 	err          error
 }
 
-func (m *mockTemplateLoader) LoadStyle(name string) (string, error) {
+func (m *mockTemplateLoader) LoadStyle(_ string) (string, error) {
 	return "", nil
 }
 

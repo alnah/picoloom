@@ -63,7 +63,7 @@ func (r *AssetResolver) LoadTemplateSet(name string) (*TemplateSet, error) {
 }
 
 // loadWithFallback implements the custom-first, fallback-to-embedded logic.
-func (r *AssetResolver) loadWithFallback(name string, loadFn func(AssetLoader) (string, error)) (string, error) {
+func (r *AssetResolver) loadWithFallback(_ string, loadFn func(AssetLoader) (string, error)) (string, error) {
 	// If no custom loader, use embedded directly
 	if r.custom == nil {
 		return loadFn(r.embedded)

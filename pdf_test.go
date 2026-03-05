@@ -37,7 +37,7 @@ type mockRenderer struct {
 	CalledOpts *pdfOptions
 }
 
-func (m *mockRenderer) RenderFromFile(ctx context.Context, filePath string, opts *pdfOptions) ([]byte, error) {
+func (m *mockRenderer) RenderFromFile(_ context.Context, filePath string, opts *pdfOptions) ([]byte, error) {
 	m.CalledWith = filePath
 	m.CalledOpts = opts
 	return m.Result, m.Err
