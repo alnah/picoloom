@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/alnah/go-md2pdf/internal/config"
 	"github.com/alnah/go-md2pdf/internal/yamlutil"
@@ -254,21 +255,45 @@ func validateDocumentDate(value string) error {
 	return nil
 }
 
-func writeConfigInitFile(outputPath string, data []byte, force bool) (retErr error) {
-	if !force {
-		if _, err := os.Stat(outputPath); err == nil {
-			return fmt.Errorf("%w: %s (use --force)", ErrConfigInitExists, outputPath)
-		} else if err != nil && !os.IsNotExist(err) {
-			return fmt.Errorf("checking destination %s: %w", outputPath, err)
-		}
+type configInitFileOps struct {
+	stat     func(string) (os.FileInfo, error)
+	mkdirAll func(string, os.FileMode) error
+	create   func(string, string) (*os.File, error)
+	rename   func(string, string) error
+	remove   func(string) error
+	link     func(string, string) error
+	openFile func(string, int, os.FileMode) (*os.File, error)
+	readFile func(string) ([]byte, error)
+}
+
+func defaultConfigInitFileOps() configInitFileOps {
+	return configInitFileOps{
+		stat:     os.Stat,
+		mkdirAll: os.MkdirAll,
+		create:   os.CreateTemp,
+		rename:   os.Rename,
+		remove:   os.Remove,
+		link:     os.Link,
+		openFile: os.OpenFile,
+		readFile: os.ReadFile,
+	}
+}
+
+func writeConfigInitFile(outputPath string, data []byte, force bool) error {
+	return writeConfigInitFileWithOps(outputPath, data, force, defaultConfigInitFileOps())
+}
+
+func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops configInitFileOps) (retErr error) {
+	if strings.TrimSpace(outputPath) == "" {
+		return fmt.Errorf("%w: output path cannot be empty", ErrConfigCommandUsage)
 	}
 
 	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := ops.mkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating destination directory: %w", err)
 	}
 
-	tmpFile, err := os.CreateTemp(dir, ".md2pdf-config-init-*.yaml")
+	tmpFile, err := ops.create(dir, ".md2pdf-config-init-*.yaml")
 	if err != nil {
 		return fmt.Errorf("creating temp config file: %w", err)
 	}
@@ -277,7 +302,7 @@ func writeConfigInitFile(outputPath string, data []byte, force bool) (retErr err
 	defer func() {
 		_ = tmpFile.Close()
 		if retErr != nil {
-			_ = os.Remove(tmpPath)
+			_ = ops.remove(tmpPath)
 		}
 	}()
 
@@ -296,13 +321,89 @@ func writeConfigInitFile(outputPath string, data []byte, force bool) (retErr err
 	}
 
 	if force {
-		if err := os.Remove(outputPath); err != nil && !os.IsNotExist(err) {
-			return fmt.Errorf("removing existing config file: %w", err)
-		}
+		return publishConfigForce(tmpPath, outputPath, ops)
 	}
 
-	if err := os.Rename(tmpPath, outputPath); err != nil {
-		return fmt.Errorf("moving generated config into place: %w", err)
+	return publishConfigNoForce(tmpPath, outputPath, ops)
+}
+
+func publishConfigNoForce(tmpPath, outputPath string, ops configInitFileOps) error {
+	if err := ops.link(tmpPath, outputPath); err == nil {
+		if err := ops.remove(tmpPath); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("removing temporary config after publish: %w", err)
+		}
+		return nil
+	} else if os.IsExist(err) {
+		return fmt.Errorf("%w: %s (use --force)", ErrConfigInitExists, outputPath)
+	}
+
+	return copyTempToExclusiveFile(tmpPath, outputPath, ops)
+}
+
+func copyTempToExclusiveFile(tmpPath, outputPath string, ops configInitFileOps) (retErr error) {
+	content, err := ops.readFile(tmpPath)
+	if err != nil {
+		return fmt.Errorf("reading temp config file for exclusive publish: %w", err)
+	}
+
+	out, err := ops.openFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		if os.IsExist(err) {
+			return fmt.Errorf("%w: %s (use --force)", ErrConfigInitExists, outputPath)
+		}
+		return fmt.Errorf("creating destination config file: %w", err)
+	}
+
+	defer func() {
+		_ = out.Close()
+		if retErr != nil {
+			_ = ops.remove(outputPath)
+		}
+	}()
+
+	if _, err := out.Write(content); err != nil {
+		return fmt.Errorf("writing destination config file: %w", err)
+	}
+	if err := out.Sync(); err != nil {
+		return fmt.Errorf("syncing destination config file: %w", err)
+	}
+	if err := out.Close(); err != nil {
+		return fmt.Errorf("closing destination config file: %w", err)
+	}
+
+	if err := ops.remove(tmpPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("removing temporary config after publish: %w", err)
+	}
+
+	return nil
+}
+
+func publishConfigForce(tmpPath, outputPath string, ops configInitFileOps) error {
+	if _, err := ops.stat(outputPath); err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("checking destination config file: %w", err)
+		}
+		if err := ops.rename(tmpPath, outputPath); err != nil {
+			return fmt.Errorf("moving generated config into place: %w", err)
+		}
+		return nil
+	}
+
+	backupPath := fmt.Sprintf("%s.bak.%d", outputPath, time.Now().UnixNano())
+	if err := ops.rename(outputPath, backupPath); err != nil {
+		return fmt.Errorf("preparing safe overwrite: %w", err)
+	}
+
+	if err := ops.rename(tmpPath, outputPath); err != nil {
+		restoreErr := ops.rename(backupPath, outputPath)
+		if restoreErr != nil {
+			return fmt.Errorf("overwriting config failed: %w; rollback failed: %v", err, restoreErr)
+		}
+		return fmt.Errorf("overwriting config failed, restored previous file: %w", err)
+	}
+
+	if err := ops.remove(backupPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cleaning backup file: %w", err)
 	}
 
 	return nil
