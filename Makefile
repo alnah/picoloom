@@ -7,9 +7,10 @@ BINARY := md2pdf
 help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-tools: ## Install development tools (staticcheck, gosec)
+tools: ## Install development tools (staticcheck, gosec; golangci-lint separately)
 	go get -tool honnef.co/go/tools/cmd/staticcheck
 	go get -tool github.com/securego/gosec/v2/cmd/gosec
+	@echo "Install golangci-lint separately: https://golangci-lint.run/welcome/install/"
 
 deps: ## Download dependencies from go.mod
 	go mod download
@@ -61,8 +62,8 @@ fmt: ## Format source code
 vet: ## Run go vet for static analysis
 	go vet ./...
 
-lint: ## Run staticcheck linter
-	go tool staticcheck ./...
+lint: ## Run golangci-lint
+	golangci-lint run
 
 sec: ## Run gosec security scanner
 	go tool gosec ./...
