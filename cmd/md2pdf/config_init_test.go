@@ -106,7 +106,7 @@ func TestConfigInitAcceptance_NoInputWritesDefaultConfig(t *testing.T) {
 		t.Fatalf("runMain([md2pdf config init --no-input]) = %d, want %d\nstderr: %s", code, ExitSuccess, stderr.String())
 	}
 
-	configPath := "./md2pdf.yaml"
+	configPath := "./picoloom.yaml"
 	if _, err := os.Stat(configPath); err != nil {
 		t.Fatalf("os.Stat(%q) unexpected error: %v", configPath, err)
 	}
@@ -115,7 +115,7 @@ func TestConfigInitAcceptance_NoInputWritesDefaultConfig(t *testing.T) {
 		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", configPath, err)
 	}
 
-	if !strings.Contains(stdout.String(), "md2pdf convert -c ./md2pdf.yaml") {
+	if !strings.Contains(stdout.String(), "md2pdf convert -c ./picoloom.yaml") {
 		t.Fatalf("stdout = %q, want usage example for convert with generated config", stdout.String())
 	}
 	if strings.Contains(strings.ToLower(stdout.String()), "preset") {
@@ -507,6 +507,7 @@ func TestOutputPathForExample(t *testing.T) {
 		want  string
 	}{
 		{input: defaultConfigInitOutputPath, want: defaultConfigInitOutputPath},
+		{input: "picoloom.yaml", want: defaultConfigInitOutputPath},
 		{input: "md2pdf.yaml", want: defaultConfigInitOutputPath},
 		{input: "./configs/work.yaml", want: "./configs/work.yaml"},
 	}
@@ -575,7 +576,7 @@ func testConfigInitYAML(t *testing.T) []byte {
 func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	original := []byte("document:\n  title: keep-me\n")
 	if err := os.WriteFile(outputPath, original, 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
@@ -617,7 +618,7 @@ func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 func TestConfigInit_NoForceRaceSafety(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	concurrent := []byte("document:\n  title: concurrent-writer\n")
 
 	ops := defaultConfigInitFileOps()
@@ -645,7 +646,7 @@ func TestConfigInit_NoForceRaceSafety(t *testing.T) {
 func TestConfigInit_CrossPlatformReplaceSemantics(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	original := []byte("document:\n  title: old-content\n")
 	if err := os.WriteFile(outputPath, original, 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
@@ -664,15 +665,15 @@ func TestConfigInit_CrossPlatformReplaceSemantics(t *testing.T) {
 		t.Fatalf("destination content not replaced")
 	}
 
-	if _, err := config.LoadConfig("./md2pdf.yaml"); err != nil {
-		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./md2pdf.yaml", err)
+	if _, err := config.LoadConfig("./picoloom.yaml"); err != nil {
+		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./picoloom.yaml", err)
 	}
 }
 
 func TestConfigInit_RecoverInterruptedBackup(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	backupPath := configInitBackupPath(outputPath)
 	original := []byte("document:\n  title: recover\n")
 	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
@@ -698,7 +699,7 @@ func TestConfigInit_RecoverInterruptedBackup(t *testing.T) {
 func TestConfigInit_CleanupStaleBackup(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	backupPath := configInitBackupPath(outputPath)
 	if err := os.WriteFile(outputPath, []byte("document:\n  title: active\n"), 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
@@ -718,7 +719,7 @@ func TestConfigInit_CleanupStaleBackup(t *testing.T) {
 func TestConfigInit_LockPreventsConcurrentWrite(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	lockPath := configInitLockPath(outputPath)
 	if err := os.WriteFile(lockPath, []byte("locked"), 0o600); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", lockPath, err)
@@ -733,7 +734,7 @@ func TestConfigInit_LockPreventsConcurrentWrite(t *testing.T) {
 func TestConfigInit_LockRemovedAfterWriteFailure(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	if err := os.WriteFile(outputPath, []byte("document:\n  title: keep\n"), 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
 	}
@@ -782,7 +783,7 @@ func TestConfigInit_InterruptSafety(t *testing.T) {
 
 	t.Chdir(t.TempDir())
 
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	original := []byte("document:\n  title: before-interrupt\n")
 	if err := os.WriteFile(outputPath, original, 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)

@@ -385,13 +385,13 @@ unknownField: "should fail"
 		}
 	})
 
-	t.Run("config name resolves from user config directory", func(t *testing.T) {
+	t.Run("config name resolves from canonical user config directory", func(t *testing.T) {
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
 			t.Skip("cannot get user config dir")
 		}
 
-		appConfigDir := filepath.Join(userConfigDir, "go-md2pdf")
+		appConfigDir := filepath.Join(userConfigDir, "picoloom")
 		configPath := filepath.Join(appConfigDir, "testconfig.yaml")
 
 		if err := os.MkdirAll(appConfigDir, 0755); err != nil {
@@ -419,6 +419,45 @@ unknownField: "should fail"
 		}
 		if cfg.Style != "userdir" {
 			t.Errorf("LoadConfig(\"testconfig\").Style = %q, want %q", cfg.Style, "userdir")
+		}
+	})
+
+	t.Run("config name falls back to legacy user config directory", func(t *testing.T) {
+		userConfigDir, err := os.UserConfigDir()
+		if err != nil {
+			t.Skip("cannot get user config dir")
+		}
+
+		canonicalDir := filepath.Join(userConfigDir, "picoloom")
+		legacyDir := filepath.Join(userConfigDir, "go-md2pdf")
+		legacyPath := filepath.Join(legacyDir, "legacyconfig.yaml")
+		canonicalPath := filepath.Join(canonicalDir, "legacyconfig.yaml")
+
+		_ = os.Remove(canonicalPath)
+		if err := os.MkdirAll(legacyDir, 0755); err != nil {
+			t.Fatalf("setup mkdir legacy: %v", err)
+		}
+		if err := os.WriteFile(legacyPath, []byte("style: legacydir\n"), 0600); err != nil {
+			t.Fatalf("setup write legacy: %v", err)
+		}
+		defer os.Remove(legacyPath)
+
+		dir := t.TempDir()
+		originalWd, err := os.Getwd()
+		if err != nil {
+			t.Fatalf("failed to get working directory: %v", err)
+		}
+		defer os.Chdir(originalWd)
+		if err := os.Chdir(dir); err != nil {
+			t.Fatalf("chdir: %v", err)
+		}
+
+		cfg, err := LoadConfig("legacyconfig")
+		if err != nil {
+			t.Fatalf("LoadConfig(\"legacyconfig\") unexpected error: %v", err)
+		}
+		if cfg.Style != "legacydir" {
+			t.Errorf("LoadConfig(\"legacyconfig\").Style = %q, want %q", cfg.Style, "legacydir")
 		}
 	})
 

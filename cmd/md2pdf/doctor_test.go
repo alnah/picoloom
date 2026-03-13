@@ -118,6 +118,13 @@ func TestRunDoctorCmd_ContainerDetection(t *testing.T) {
 		wantHint      string
 	}{
 		{
+			name:          "PICOLOOM_CONTAINER override",
+			envVar:        "PICOLOOM_CONTAINER",
+			envVal:        "1",
+			wantContainer: true,
+			wantHint:      "PICOLOOM_CONTAINER=1",
+		},
+		{
 			name:          "MD2PDF_CONTAINER override",
 			envVar:        "MD2PDF_CONTAINER",
 			envVal:        "1",
@@ -174,10 +181,10 @@ func TestRunDoctorCmd_ContainerPriority(t *testing.T) {
 	cleanContainerEnv()
 
 	// Set multiple container signals
-	os.Setenv("MD2PDF_CONTAINER", "1")
+	os.Setenv("PICOLOOM_CONTAINER", "1")
 	os.Setenv("KUBERNETES_SERVICE_HOST", "10.0.0.1")
 	defer func() {
-		os.Unsetenv("MD2PDF_CONTAINER")
+		os.Unsetenv("PICOLOOM_CONTAINER")
 		os.Unsetenv("KUBERNETES_SERVICE_HOST")
 	}()
 
@@ -191,9 +198,9 @@ func TestRunDoctorCmd_ContainerPriority(t *testing.T) {
 		t.Fatalf("runDoctorCmd([]string{\"--json\"}) unexpected JSON unmarshal error: %v", err)
 	}
 
-	// MD2PDF_CONTAINER should have highest priority
-	if result.Env.ContainerHint != "MD2PDF_CONTAINER=1" {
-		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.ContainerHint = %q, want %q (MD2PDF_CONTAINER should have priority)", result.Env.ContainerHint, "MD2PDF_CONTAINER=1")
+	// PICOLOOM_CONTAINER should have highest priority
+	if result.Env.ContainerHint != "PICOLOOM_CONTAINER=1" {
+		t.Errorf("runDoctorCmd([]string{\"--json\"}) result.Env.ContainerHint = %q, want %q (PICOLOOM_CONTAINER should have priority)", result.Env.ContainerHint, "PICOLOOM_CONTAINER=1")
 	}
 }
 
@@ -426,9 +433,9 @@ func TestRunDoctorCmd_HumanOutput_ShowsContainerInfo(t *testing.T) {
 	cleanContainerEnv()
 	defer saveAndRestoreNoSandbox(t)()
 
-	os.Setenv("MD2PDF_CONTAINER", "1")
+	os.Setenv("PICOLOOM_CONTAINER", "1")
 	os.Setenv("ROD_NO_SANDBOX", "1") // Avoid warning
-	defer os.Unsetenv("MD2PDF_CONTAINER")
+	defer os.Unsetenv("PICOLOOM_CONTAINER")
 
 	var stdout bytes.Buffer
 	env := &Environment{Stdout: &stdout, Stderr: &bytes.Buffer{}}
@@ -440,8 +447,8 @@ func TestRunDoctorCmd_HumanOutput_ShowsContainerInfo(t *testing.T) {
 	if !strings.Contains(output, "Container: detected") {
 		t.Error("runDoctorCmd([]string{}) output missing \"Container: detected\"")
 	}
-	if !strings.Contains(output, "MD2PDF_CONTAINER=1") {
-		t.Error("runDoctorCmd([]string{}) output missing \"MD2PDF_CONTAINER=1\"")
+	if !strings.Contains(output, "PICOLOOM_CONTAINER=1") {
+		t.Error("runDoctorCmd([]string{}) output missing \"PICOLOOM_CONTAINER=1\"")
 	}
 }
 
@@ -529,6 +536,7 @@ func TestRunDoctorCmd_HumanOutput_StatusLine(t *testing.T) {
 
 // cleanContainerEnv removes all container detection environment variables.
 func cleanContainerEnv() {
+	os.Unsetenv("PICOLOOM_CONTAINER")
 	os.Unsetenv("MD2PDF_CONTAINER")
 	os.Unsetenv("KUBERNETES_SERVICE_HOST")
 	os.Unsetenv("container")

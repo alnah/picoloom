@@ -15,82 +15,102 @@ import (
 // Provides CI/CD-friendly overrides without requiring YAML files.
 type envConfig struct {
 	// Tier 1 - Essential
-	ConfigPath string        // MD2PDF_CONFIG: config file path
-	Style      string        // MD2PDF_STYLE: CSS style name or path
-	Timeout    time.Duration // MD2PDF_TIMEOUT: PDF generation timeout
+	ConfigPath string        // PICOLOOM_CONFIG / MD2PDF_CONFIG: config file path
+	Style      string        // PICOLOOM_STYLE / MD2PDF_STYLE: CSS style name or path
+	Timeout    time.Duration // PICOLOOM_TIMEOUT / MD2PDF_TIMEOUT: PDF generation timeout
 
 	// Tier 2 - I/O and identity
-	InputDir    string // MD2PDF_INPUT_DIR: default input directory
-	OutputDir   string // MD2PDF_OUTPUT_DIR: default output directory
-	AuthorName  string // MD2PDF_AUTHOR_NAME: author name
-	AuthorOrg   string // MD2PDF_AUTHOR_ORG: organization
-	AuthorEmail string // MD2PDF_AUTHOR_EMAIL: author email
+	InputDir    string // PICOLOOM_INPUT_DIR / MD2PDF_INPUT_DIR: default input directory
+	OutputDir   string // PICOLOOM_OUTPUT_DIR / MD2PDF_OUTPUT_DIR: default output directory
+	AuthorName  string // PICOLOOM_AUTHOR_NAME / MD2PDF_AUTHOR_NAME: author name
+	AuthorOrg   string // PICOLOOM_AUTHOR_ORG / MD2PDF_AUTHOR_ORG: organization
+	AuthorEmail string // PICOLOOM_AUTHOR_EMAIL / MD2PDF_AUTHOR_EMAIL: author email
 
 	// Tier 3 - Extended
-	PageSize      string // MD2PDF_PAGE_SIZE: a4, letter, legal
-	WatermarkText string // MD2PDF_WATERMARK_TEXT: watermark text
-	CoverLogo     string // MD2PDF_COVER_LOGO: cover logo path/URL
-	DocVersion    string // MD2PDF_DOC_VERSION: document version
-	DocDate       string // MD2PDF_DOC_DATE: document date
-	DocID         string // MD2PDF_DOC_ID: document ID
-	Workers       int    // MD2PDF_WORKERS: parallel workers
+	PageSize      string // PICOLOOM_PAGE_SIZE / MD2PDF_PAGE_SIZE: a4, letter, legal
+	WatermarkText string // PICOLOOM_WATERMARK_TEXT / MD2PDF_WATERMARK_TEXT: watermark text
+	CoverLogo     string // PICOLOOM_COVER_LOGO / MD2PDF_COVER_LOGO: cover logo path/URL
+	DocVersion    string // PICOLOOM_DOC_VERSION / MD2PDF_DOC_VERSION: document version
+	DocDate       string // PICOLOOM_DOC_DATE / MD2PDF_DOC_DATE: document date
+	DocID         string // PICOLOOM_DOC_ID / MD2PDF_DOC_ID: document ID
+	Workers       int    // PICOLOOM_WORKERS / MD2PDF_WORKERS: parallel workers
 }
 
-// knownEnvVars lists valid MD2PDF_* environment variables.
+const (
+	canonicalEnvPrefix = "PICOLOOM_"
+	legacyEnvPrefix    = "MD2PDF_"
+)
+
+var envVarSuffixes = []string{
+	"CONFIG",
+	"STYLE",
+	"TIMEOUT",
+	"INPUT_DIR",
+	"OUTPUT_DIR",
+	"AUTHOR_NAME",
+	"AUTHOR_ORG",
+	"AUTHOR_EMAIL",
+	"PAGE_SIZE",
+	"WATERMARK_TEXT",
+	"COVER_LOGO",
+	"DOC_VERSION",
+	"DOC_DATE",
+	"DOC_ID",
+	"WORKERS",
+	"CONTAINER",
+}
+
+// knownEnvVars lists valid PICOLOOM_* and MD2PDF_* environment variables.
 // Used to detect typos and warn users about unknown variables.
-var knownEnvVars = map[string]bool{
-	// Tier 1 - Essential
-	"MD2PDF_CONFIG":  true,
-	"MD2PDF_STYLE":   true,
-	"MD2PDF_TIMEOUT": true,
-	// Tier 2 - I/O and identity
-	"MD2PDF_INPUT_DIR":    true,
-	"MD2PDF_OUTPUT_DIR":   true,
-	"MD2PDF_AUTHOR_NAME":  true,
-	"MD2PDF_AUTHOR_ORG":   true,
-	"MD2PDF_AUTHOR_EMAIL": true,
-	// Tier 3 - Extended
-	"MD2PDF_PAGE_SIZE":      true,
-	"MD2PDF_WATERMARK_TEXT": true,
-	"MD2PDF_COVER_LOGO":     true,
-	"MD2PDF_DOC_VERSION":    true,
-	"MD2PDF_DOC_DATE":       true,
-	"MD2PDF_DOC_ID":         true,
-	"MD2PDF_WORKERS":        true,
-	"MD2PDF_CONTAINER":      true,
+var knownEnvVars = buildKnownEnvVars()
+
+func buildKnownEnvVars() map[string]bool {
+	known := make(map[string]bool, len(envVarSuffixes)*2)
+	for _, suffix := range envVarSuffixes {
+		known[canonicalEnvPrefix+suffix] = true
+		known[legacyEnvPrefix+suffix] = true
+	}
+	return known
+}
+
+func lookupEnv(suffix string) string {
+	if value := os.Getenv(canonicalEnvPrefix + suffix); value != "" {
+		return value
+	}
+	return os.Getenv(legacyEnvPrefix + suffix)
 }
 
 // loadEnvConfig reads configuration from environment variables.
-// Returns a struct with all recognized MD2PDF_* values.
+// Returns a struct with all recognized PICOLOOM_* values and legacy MD2PDF_* fallbacks.
 func loadEnvConfig() *envConfig {
 	cfg := &envConfig{
 		// Tier 1
-		ConfigPath: os.Getenv("MD2PDF_CONFIG"),
-		Style:      os.Getenv("MD2PDF_STYLE"),
+		ConfigPath: lookupEnv("CONFIG"),
+		Style:      lookupEnv("STYLE"),
 		// Tier 2
-		InputDir:    os.Getenv("MD2PDF_INPUT_DIR"),
-		OutputDir:   os.Getenv("MD2PDF_OUTPUT_DIR"),
-		AuthorName:  os.Getenv("MD2PDF_AUTHOR_NAME"),
-		AuthorOrg:   os.Getenv("MD2PDF_AUTHOR_ORG"),
-		AuthorEmail: os.Getenv("MD2PDF_AUTHOR_EMAIL"),
+		InputDir:    lookupEnv("INPUT_DIR"),
+		OutputDir:   lookupEnv("OUTPUT_DIR"),
+		AuthorName:  lookupEnv("AUTHOR_NAME"),
+		AuthorOrg:   lookupEnv("AUTHOR_ORG"),
+		AuthorEmail: lookupEnv("AUTHOR_EMAIL"),
 		// Tier 3
-		PageSize:      os.Getenv("MD2PDF_PAGE_SIZE"),
-		WatermarkText: os.Getenv("MD2PDF_WATERMARK_TEXT"),
-		CoverLogo:     os.Getenv("MD2PDF_COVER_LOGO"),
-		DocVersion:    os.Getenv("MD2PDF_DOC_VERSION"),
-		DocDate:       os.Getenv("MD2PDF_DOC_DATE"),
-		DocID:         os.Getenv("MD2PDF_DOC_ID"),
+		PageSize:      lookupEnv("PAGE_SIZE"),
+		WatermarkText: lookupEnv("WATERMARK_TEXT"),
+		CoverLogo:     lookupEnv("COVER_LOGO"),
+		DocVersion:    lookupEnv("DOC_VERSION"),
+		DocDate:       lookupEnv("DOC_DATE"),
+		DocID:         lookupEnv("DOC_ID"),
 	}
 
 	// Parse duration for timeout
-	if timeout := os.Getenv("MD2PDF_TIMEOUT"); timeout != "" {
+	if timeout := lookupEnv("TIMEOUT"); timeout != "" {
 		if d, err := time.ParseDuration(timeout); err == nil && d > 0 {
 			cfg.Timeout = d
 		}
 	}
 
 	// Parse int for workers
-	if workers := os.Getenv("MD2PDF_WORKERS"); workers != "" {
+	if workers := lookupEnv("WORKERS"); workers != "" {
 		if w, err := strconv.Atoi(workers); err == nil && w > 0 {
 			cfg.Workers = w
 		}
@@ -99,11 +119,11 @@ func loadEnvConfig() *envConfig {
 	return cfg
 }
 
-// warnUnknownEnvVars logs warnings for unrecognized MD2PDF_* variables.
-// Helps catch typos like MD2PDF_AHTOR_NAME instead of MD2PDF_AUTHOR_NAME.
+// warnUnknownEnvVars logs warnings for unrecognized PICOLOOM_* and MD2PDF_* variables.
+// Helps catch typos like PICOLOOM_AHTOR_NAME or MD2PDF_AHTOR_NAME.
 func warnUnknownEnvVars(w io.Writer) {
 	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "MD2PDF_") {
+		if strings.HasPrefix(env, canonicalEnvPrefix) || strings.HasPrefix(env, legacyEnvPrefix) {
 			name := strings.SplitN(env, "=", 2)[0]
 			if !knownEnvVars[name] {
 				fmt.Fprintf(w, "warning: unknown environment variable %s (typo?)\n", name)

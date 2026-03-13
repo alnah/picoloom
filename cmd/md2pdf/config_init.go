@@ -18,11 +18,11 @@ import (
 const (
 	// defaultConfigInitOutputPath keeps the common local config convention,
 	// so generated examples and file discovery stay aligned.
-	defaultConfigInitOutputPath = "./md2pdf.yaml"
+	defaultConfigInitOutputPath = "./picoloom.yaml"
 	// configInitBackupSuffix marks temporary backup files used for safe overwrite recovery.
-	configInitBackupSuffix = ".md2pdf-config-init.bak"
+	configInitBackupSuffix = ".picoloom-config-init.bak"
 	// configInitLockSuffix marks destination-scoped lock files to prevent concurrent writes.
-	configInitLockSuffix = ".md2pdf-config-init.lock"
+	configInitLockSuffix = ".picoloom-config-init.lock"
 )
 
 var (
@@ -782,7 +782,7 @@ func writeConfigInitFileWithOps(outputPath string, data []byte, force bool, ops 
 		return err
 	}
 
-	tmpFile, err := ops.create(dir, ".md2pdf-config-init-*.yaml")
+	tmpFile, err := ops.create(dir, ".picoloom-config-init-*.yaml")
 	if err != nil {
 		return fmt.Errorf("creating temp config file: %w", err)
 	}
@@ -1005,7 +1005,7 @@ func stdinIsTTY(env *Environment) bool {
 // outputPathForExample normalizes default path rendering so success output stays
 // stable and copy-paste friendly.
 func outputPathForExample(path string) string {
-	if path == defaultConfigInitOutputPath || path == "md2pdf.yaml" {
+	if path == defaultConfigInitOutputPath || path == "picoloom.yaml" || path == "md2pdf.yaml" {
 		return defaultConfigInitOutputPath
 	}
 	return path
@@ -1038,7 +1038,7 @@ func printConfigInitUsageFor(w io.Writer, cliName string) {
 	fmt.Fprintf(w, "Create a new %s configuration file.\n", cliName)
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Flags:")
-	fmt.Fprintln(w, "      --output <path>   Output path for generated config (default: ./md2pdf.yaml)")
+	fmt.Fprintln(w, "      --output <path>   Output path for generated config (default: ./picoloom.yaml)")
 	fmt.Fprintln(w, "      --force           Overwrite destination if it exists")
 	fmt.Fprintln(w, "      --no-input        Use defaults without interactive prompts")
 	fmt.Fprintln(w)

@@ -538,10 +538,10 @@ func isFilePath(s string) bool {
 
 // resolveConfigPath searches for a config file by name in standard locations.
 // Tries extensions in order: .yaml, .yml
-// Tries locations in order: current directory, ~/.config/go-md2pdf/
+// Tries locations in order: current directory, ~/.config/picoloom/, legacy dirs.
 func resolveConfigPath(name string) (string, error) {
 	extensions := []string{".yaml", ".yml"}
-	triedPaths := make([]string, 0, len(extensions)*2) // 2 locations
+	triedPaths := make([]string, 0, len(extensions)*3)
 
 	// Try current directory first (both extensions)
 	for _, ext := range extensions {
@@ -556,11 +556,13 @@ func resolveConfigPath(name string) (string, error) {
 	userConfigDir, err := os.UserConfigDir()
 	if err == nil {
 		for _, ext := range extensions {
-			userPath := filepath.Join(userConfigDir, "go-md2pdf", name+ext)
-			if fileExists(userPath) {
-				return userPath, nil
+			for _, configDirName := range []string{"picoloom", "go-md2pdf"} {
+				userPath := filepath.Join(userConfigDir, configDirName, name+ext)
+				if fileExists(userPath) {
+					return userPath, nil
+				}
+				triedPaths = append(triedPaths, userPath)
 			}
-			triedPaths = append(triedPaths, userPath)
 		}
 	}
 

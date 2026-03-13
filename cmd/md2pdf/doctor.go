@@ -168,6 +168,9 @@ func checkEnvironment(result *doctorResult) {
 // Returns (isContainer, hint) where hint indicates which signal was detected.
 func isContainer() (bool, string) {
 	// Explicit override (highest priority)
+	if os.Getenv("PICOLOOM_CONTAINER") == "1" {
+		return true, "PICOLOOM_CONTAINER=1"
+	}
 	if os.Getenv("MD2PDF_CONTAINER") == "1" {
 		return true, "MD2PDF_CONTAINER=1"
 	}
@@ -190,7 +193,7 @@ func isContainer() (bool, string) {
 func checkSystem(result *doctorResult) {
 	// Check temp directory is writable
 	tmpDir := os.TempDir()
-	testFile := filepath.Join(tmpDir, "md2pdf-doctor-test")
+	testFile := filepath.Join(tmpDir, "picoloom-doctor-test")
 	if err := os.WriteFile(testFile, []byte("test"), 0600); err != nil {
 		result.Errors = append(result.Errors,
 			fmt.Sprintf("Temp directory not writable: %s", tmpDir))

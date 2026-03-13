@@ -24,9 +24,9 @@ import (
 
 func TestLoadEnvConfig(t *testing.T) {
 	t.Run("tier 1 essential variables", func(t *testing.T) {
-		t.Setenv("MD2PDF_CONFIG", "/path/to/config.yaml")
-		t.Setenv("MD2PDF_STYLE", "technical")
-		t.Setenv("MD2PDF_TIMEOUT", "2m")
+		t.Setenv("PICOLOOM_CONFIG", "/path/to/config.yaml")
+		t.Setenv("PICOLOOM_STYLE", "technical")
+		t.Setenv("PICOLOOM_TIMEOUT", "2m")
 
 		cfg := loadEnvConfig()
 
@@ -42,11 +42,11 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("tier 2 I/O and identity variables", func(t *testing.T) {
-		t.Setenv("MD2PDF_INPUT_DIR", "/input")
-		t.Setenv("MD2PDF_OUTPUT_DIR", "/output")
-		t.Setenv("MD2PDF_AUTHOR_NAME", "John Doe")
-		t.Setenv("MD2PDF_AUTHOR_ORG", "Acme Corp")
-		t.Setenv("MD2PDF_AUTHOR_EMAIL", "john@acme.com")
+		t.Setenv("PICOLOOM_INPUT_DIR", "/input")
+		t.Setenv("PICOLOOM_OUTPUT_DIR", "/output")
+		t.Setenv("PICOLOOM_AUTHOR_NAME", "John Doe")
+		t.Setenv("PICOLOOM_AUTHOR_ORG", "Acme Corp")
+		t.Setenv("PICOLOOM_AUTHOR_EMAIL", "john@acme.com")
 
 		cfg := loadEnvConfig()
 
@@ -68,13 +68,13 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("tier 3 extended variables", func(t *testing.T) {
-		t.Setenv("MD2PDF_PAGE_SIZE", "a4")
-		t.Setenv("MD2PDF_WATERMARK_TEXT", "DRAFT")
-		t.Setenv("MD2PDF_COVER_LOGO", "https://example.com/logo.png")
-		t.Setenv("MD2PDF_DOC_VERSION", "1.0.0")
-		t.Setenv("MD2PDF_DOC_DATE", "2024-01-15")
-		t.Setenv("MD2PDF_DOC_ID", "DOC-2024-001")
-		t.Setenv("MD2PDF_WORKERS", "4")
+		t.Setenv("PICOLOOM_PAGE_SIZE", "a4")
+		t.Setenv("PICOLOOM_WATERMARK_TEXT", "DRAFT")
+		t.Setenv("PICOLOOM_COVER_LOGO", "https://example.com/logo.png")
+		t.Setenv("PICOLOOM_DOC_VERSION", "1.0.0")
+		t.Setenv("PICOLOOM_DOC_DATE", "2024-01-15")
+		t.Setenv("PICOLOOM_DOC_ID", "DOC-2024-001")
+		t.Setenv("PICOLOOM_WORKERS", "4")
 
 		cfg := loadEnvConfig()
 
@@ -102,7 +102,7 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("error case: invalid timeout ignored", func(t *testing.T) {
-		t.Setenv("MD2PDF_TIMEOUT", "invalid")
+		t.Setenv("PICOLOOM_TIMEOUT", "invalid")
 
 		cfg := loadEnvConfig()
 
@@ -112,7 +112,7 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("error case: negative timeout ignored", func(t *testing.T) {
-		t.Setenv("MD2PDF_TIMEOUT", "-5s")
+		t.Setenv("PICOLOOM_TIMEOUT", "-5s")
 
 		cfg := loadEnvConfig()
 
@@ -122,7 +122,7 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("error case: invalid workers ignored", func(t *testing.T) {
-		t.Setenv("MD2PDF_WORKERS", "abc")
+		t.Setenv("PICOLOOM_WORKERS", "abc")
 
 		cfg := loadEnvConfig()
 
@@ -132,7 +132,7 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 
 	t.Run("error case: negative workers ignored", func(t *testing.T) {
-		t.Setenv("MD2PDF_WORKERS", "-2")
+		t.Setenv("PICOLOOM_WORKERS", "-2")
 
 		cfg := loadEnvConfig()
 
@@ -156,6 +156,31 @@ func TestLoadEnvConfig(t *testing.T) {
 			t.Errorf("loadEnvConfig() Timeout = %v, want 0", cfg.Timeout)
 		}
 	})
+
+	t.Run("legacy fallback: reads MD2PDF variables", func(t *testing.T) {
+		t.Setenv("MD2PDF_STYLE", "legacy-style")
+		t.Setenv("MD2PDF_TIMEOUT", "90s")
+
+		cfg := loadEnvConfig()
+
+		if cfg.Style != "legacy-style" {
+			t.Errorf("loadEnvConfig() Style = %q, want legacy-style", cfg.Style)
+		}
+		if cfg.Timeout != 90*time.Second {
+			t.Errorf("loadEnvConfig() Timeout = %v, want 90s", cfg.Timeout)
+		}
+	})
+
+	t.Run("priority: PICOLOOM variables override MD2PDF variables", func(t *testing.T) {
+		t.Setenv("PICOLOOM_STYLE", "new-style")
+		t.Setenv("MD2PDF_STYLE", "legacy-style")
+
+		cfg := loadEnvConfig()
+
+		if cfg.Style != "new-style" {
+			t.Errorf("loadEnvConfig() Style = %q, want new-style", cfg.Style)
+		}
+	})
 }
 
 // ---------------------------------------------------------------------------
@@ -163,16 +188,16 @@ func TestLoadEnvConfig(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestWarnUnknownEnvVars(t *testing.T) {
-	t.Run("warns on unknown MD2PDF variables", func(t *testing.T) {
-		t.Setenv("MD2PDF_TYPO", "value")
+	t.Run("warns on unknown PICOLOOM and MD2PDF variables", func(t *testing.T) {
+		t.Setenv("PICOLOOM_TYPO", "value")
 		t.Setenv("MD2PDF_AHTOR_NAME", "typo")
 
 		var buf bytes.Buffer
 		warnUnknownEnvVars(&buf)
 
 		output := buf.String()
-		if !bytes.Contains(buf.Bytes(), []byte("MD2PDF_TYPO")) {
-			t.Errorf("warnUnknownEnvVars() should warn about MD2PDF_TYPO, got: %s", output)
+		if !bytes.Contains(buf.Bytes(), []byte("PICOLOOM_TYPO")) {
+			t.Errorf("warnUnknownEnvVars() should warn about PICOLOOM_TYPO, got: %s", output)
 		}
 		if !bytes.Contains(buf.Bytes(), []byte("MD2PDF_AHTOR_NAME")) {
 			t.Errorf("warnUnknownEnvVars() should warn about MD2PDF_AHTOR_NAME, got: %s", output)
@@ -183,21 +208,21 @@ func TestWarnUnknownEnvVars(t *testing.T) {
 	})
 
 	t.Run("happy path: no warning for known variables", func(t *testing.T) {
-		t.Setenv("MD2PDF_CONFIG", "/path")
-		t.Setenv("MD2PDF_STYLE", "technical")
-		t.Setenv("MD2PDF_TIMEOUT", "2m")
-		t.Setenv("MD2PDF_INPUT_DIR", "/input")
-		t.Setenv("MD2PDF_OUTPUT_DIR", "/output")
-		t.Setenv("MD2PDF_AUTHOR_NAME", "John")
-		t.Setenv("MD2PDF_AUTHOR_ORG", "Acme")
-		t.Setenv("MD2PDF_AUTHOR_EMAIL", "john@acme.com")
-		t.Setenv("MD2PDF_PAGE_SIZE", "a4")
-		t.Setenv("MD2PDF_WATERMARK_TEXT", "DRAFT")
-		t.Setenv("MD2PDF_COVER_LOGO", "/logo.png")
-		t.Setenv("MD2PDF_DOC_VERSION", "1.0")
-		t.Setenv("MD2PDF_DOC_DATE", "auto")
-		t.Setenv("MD2PDF_DOC_ID", "DOC-001")
-		t.Setenv("MD2PDF_WORKERS", "4")
+		t.Setenv("PICOLOOM_CONFIG", "/path")
+		t.Setenv("PICOLOOM_STYLE", "technical")
+		t.Setenv("PICOLOOM_TIMEOUT", "2m")
+		t.Setenv("PICOLOOM_INPUT_DIR", "/input")
+		t.Setenv("PICOLOOM_OUTPUT_DIR", "/output")
+		t.Setenv("PICOLOOM_AUTHOR_NAME", "John")
+		t.Setenv("PICOLOOM_AUTHOR_ORG", "Acme")
+		t.Setenv("PICOLOOM_AUTHOR_EMAIL", "john@acme.com")
+		t.Setenv("PICOLOOM_PAGE_SIZE", "a4")
+		t.Setenv("PICOLOOM_WATERMARK_TEXT", "DRAFT")
+		t.Setenv("PICOLOOM_COVER_LOGO", "/logo.png")
+		t.Setenv("PICOLOOM_DOC_VERSION", "1.0")
+		t.Setenv("PICOLOOM_DOC_DATE", "auto")
+		t.Setenv("PICOLOOM_DOC_ID", "DOC-001")
+		t.Setenv("PICOLOOM_WORKERS", "4")
 
 		var buf bytes.Buffer
 		warnUnknownEnvVars(&buf)
@@ -207,7 +232,7 @@ func TestWarnUnknownEnvVars(t *testing.T) {
 		}
 	})
 
-	t.Run("edge case: ignores non-MD2PDF variables", func(t *testing.T) {
+	t.Run("edge case: ignores non PICOLOOM and non MD2PDF variables", func(t *testing.T) {
 		t.Setenv("PATH", "/usr/bin")
 		t.Setenv("HOME", "/home/user")
 		t.Setenv("SOME_OTHER_VAR", "value")
@@ -418,6 +443,22 @@ func TestApplyEnvConfig(t *testing.T) {
 
 func TestKnownEnvVars(t *testing.T) {
 	expected := []string{
+		"PICOLOOM_CONFIG",
+		"PICOLOOM_STYLE",
+		"PICOLOOM_TIMEOUT",
+		"PICOLOOM_INPUT_DIR",
+		"PICOLOOM_OUTPUT_DIR",
+		"PICOLOOM_AUTHOR_NAME",
+		"PICOLOOM_AUTHOR_ORG",
+		"PICOLOOM_AUTHOR_EMAIL",
+		"PICOLOOM_PAGE_SIZE",
+		"PICOLOOM_WATERMARK_TEXT",
+		"PICOLOOM_COVER_LOGO",
+		"PICOLOOM_DOC_VERSION",
+		"PICOLOOM_DOC_DATE",
+		"PICOLOOM_DOC_ID",
+		"PICOLOOM_WORKERS",
+		"PICOLOOM_CONTAINER",
 		"MD2PDF_CONFIG",
 		"MD2PDF_STYLE",
 		"MD2PDF_TIMEOUT",

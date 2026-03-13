@@ -50,7 +50,7 @@ func TestIntegration_ConfigInit_NoForceKeepsExisting(t *testing.T) {
 	t.Chdir(t.TempDir())
 
 	env := DefaultEnv()
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	original := []byte("document:\n  title: keep\n")
 	if err := os.WriteFile(outputPath, original, 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
@@ -78,7 +78,7 @@ func TestIntegration_ConfigInit_ForceReplacesExisting(t *testing.T) {
 	t.Chdir(t.TempDir())
 
 	env := DefaultEnv()
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	original := []byte("document:\n  title: old\n")
 	if err := os.WriteFile(outputPath, original, 0o644); err != nil {
 		t.Fatalf("os.WriteFile(%q) unexpected error: %v", outputPath, err)
@@ -96,8 +96,8 @@ func TestIntegration_ConfigInit_ForceReplacesExisting(t *testing.T) {
 	if string(got) == string(original) {
 		t.Fatalf("existing file was not replaced with --force")
 	}
-	if _, err := config.LoadConfig("./md2pdf.yaml"); err != nil {
-		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./md2pdf.yaml", err)
+	if _, err := config.LoadConfig("./picoloom.yaml"); err != nil {
+		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./picoloom.yaml", err)
 	}
 }
 
@@ -109,7 +109,7 @@ func TestIntegration_ConfigInit_RecoversInterruptedForceBackup(t *testing.T) {
 	t.Chdir(t.TempDir())
 
 	env := DefaultEnv()
-	outputPath := filepath.Join(".", "md2pdf.yaml")
+	outputPath := filepath.Join(".", "picoloom.yaml")
 	backupPath := configInitBackupPath(outputPath)
 	original := []byte("document:\n  title: recover-me\n")
 	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
