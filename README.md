@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/codecov/c/github/alnah/picoloom)](https://codecov.io/gh/alnah/picoloom)
 [![License](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](LICENSE)
 
-> This is a small, and opinionated Go library and CLI for Markdown to PDF I made to share my teaching materials for my French students. It handles cover pages, table of contents, watermarks, signatures, and more! You can use CSS themes, and custom assets. It works with parallel batch processing. The engine behind is Chrome. It doesn't rely on LaTeX. I hope it will be useful for your as well.
+> If you need something between the complexity of Pandoc and the speed of Markdown-to-PDF converters with limited styling options, Picoloom might be a good fit. It is a small, opinionated Go library and CLI for converting Markdown to PDF that I created to share teaching materials with my French students. I designed it to be easy enough, fast enough, and polished enough for that purpose. It supports cover pages, tables of contents, watermarks, signatures, and more. You can also use CSS themes and custom assets. It supports parallel batch processing. Under the hood, it uses Chrome, and it does not rely on LaTeX. I hope it will be useful to you as well.
 
 [See example outputs](examples/)
 
