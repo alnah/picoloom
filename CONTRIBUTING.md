@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome! Picoloom aims to be one of the best Markdown-to-PDF tools.
+Contributions are welcome! Picoloom aims to be one of the best Markdown-to-PDF tools in the Go ecosystem.
 
 ## What I'm Looking For
 
@@ -45,8 +45,8 @@ This avoids intermittent crashes when the linter binary is older than the active
 
 Before reporting a bug, please check:
 
-- [Known Limitations](README.md#known-limitations) - your issue may be documented
-- Existing issues - someone may have reported it already
+- [Known Limitations](README.md#known-limitations): your issue may be documented
+- Existing issues: someone may have reported it already
 
 If the issue is not documented, please open an issue with:
 
@@ -60,11 +60,13 @@ Open an issue to discuss before implementing. This ensures alignment and avoids 
 
 ### Pull Requests
 
-1. Reference an existing issue (small fixes like typos are exempt)
+1. Reference an existing issue
 2. Follow existing code patterns
 3. Add tests for new functionality
 4. Run `make check-all` before submitting
 5. Enable "Allow edits from maintainers" when creating your PR - this lets me make small fixes directly instead of requesting changes, speeding up the review process
+
+Contributions done with coding agents are welcome if you know what you are doing. If you used a coding agent, please be especially careful to explain in your PR how you worked with it. Thank you. I also used coding agents to create Picoloom, but I did not just ask stuff to my coding agent to build it for me.
 
 ### Contributing Styles
 
@@ -99,15 +101,15 @@ All themes must define these core variables in `:root`:
 ```css
 :root {
   /* Colors - Semantic */
-  --color-fg-default: #...;      /* Main text */
-  --color-fg-muted: #...;        /* Secondary text */
-  --color-fg-subtle: #...;       /* Tertiary text */
-  --color-fg-on-emphasis: #...;  /* Text on colored backgrounds */
-  --color-canvas-default: #...;  /* Page background */
-  --color-canvas-subtle: #...;   /* Code blocks, subtle backgrounds */
-  --color-border-default: #...;  /* Primary borders */
-  --color-border-muted: #...;    /* Subtle borders */
-  --color-accent-fg: #...;       /* Links, accents */
+  --color-fg-default: #...; /* Main text */
+  --color-fg-muted: #...; /* Secondary text */
+  --color-fg-subtle: #...; /* Tertiary text */
+  --color-fg-on-emphasis: #...; /* Text on colored backgrounds */
+  --color-canvas-default: #...; /* Page background */
+  --color-canvas-subtle: #...; /* Code blocks, subtle backgrounds */
+  --color-border-default: #...; /* Primary borders */
+  --color-border-muted: #...; /* Subtle borders */
+  --color-accent-fg: #...; /* Links, accents */
   --color-accent-emphasis: #...; /* Strong accents */
 
   /* Colors - Status */
@@ -124,7 +126,7 @@ All themes must define these core variables in `:root`:
   --color-syntax-variable: #...;
 
   /* Highlight */
-  --color-mark-bg: #...;  /* <mark> background */
+  --color-mark-bg: #...; /* <mark> background */
 
   /* Spacing */
   --spacing-xs: 0.25em;
@@ -143,7 +145,7 @@ All themes must define these core variables in `:root`:
   --checkbox-offset-top: -2px;
   --checkbox-offset-left: 2px;
   --signature-margin-top: 30px;
-  --signature-image-radius: 4px;  /* or 50% for circular */
+  --signature-image-radius: 4px; /* or 50% for circular */
   --cover-logo-radius: 0;
 }
 ```
@@ -152,49 +154,30 @@ Themes may add additional variables for unique features (e.g., `creative.css` de
 
 ## Issue Labels
 
-When you open an issue, maintainers will add appropriate labels to help with triage.
+When you open an issue, I will add appropriate labels to help with triage.
+So far, I am the only maintainer who can apply labels. Contributors are welcome to suggest appropriate labels in issue comments. New maintainers are welcome.
 
-### Area (blue) - Which part of the codebase
+### Area
 
-- `area/cli` - CLI commands and flags
-- `area/pdf` - PDF generation and rendering
-- `area/markdown` - Markdown parsing
-- `area/css` - Styles and CSS themes
-- `area/config` - Configuration files
+- `area/cli`: CLI commands and flags
+- `area/pdf`: PDF generation and rendering
+- `area/markdown`: Markdown parsing
+- `area/css`: Styles and CSS themes
+- `area/config`: Configuration files
 
-### Platform (yellow/orange) - Where the issue occurs
+### Platform
 
-- `os/linux`, `os/macos`, `os/windows` - OS-specific
-- `env/docker`, `env/ci` - Environment-specific
+- `os/linux`, `os/macos`, `os/windows`: OS-specific
+- `env/docker`, `env/ci`: Environment-specific
 
-### Priority (red) - How urgent
+### Priority
 
-- `priority/critical` - Blocks core functionality
-- `priority/high` - Important issue
+- `priority/critical`: Blocks core functionality
+- `priority/high`: Important issue
+- `wontfix`: Won't be addressed
 
 Looking to contribute? Filter by `good first issue` or `help wanted`.
 
-## Label Policy
-
-### Why no priority/low?
-
-We intentionally don't use `priority/low`. Issues are either:
-
-- `priority/critical` - blocks core functionality
-- `priority/high` - important, address soon
-- No priority label - normal backlog, addressed as time permits
-- `wontfix` - won't be addressed
-
-This prevents an ever-growing backlog of "someday" issues.
-
-### Who can apply labels?
-
-Only maintainers can apply labels. Contributors are welcome to suggest appropriate labels in issue comments.
-
 ## Code of Conduct
 
-Be respectful. Technical disagreements are fine; personal attacks are not.
-
-## Questions?
-
-Open a discussion or issue. Happy to help newcomers get started.
+Be respectful. Technical disagreements are fine. Personal attacks are not.
