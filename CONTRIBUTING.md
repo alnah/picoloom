@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome! Picoloom aims to be one of the best Markdown-to-PDF tools for professional documents.
+Contributions are welcome! Picoloom aims to be one of the best Markdown-to-PDF tools.
 
 ## What I'm Looking For
 

@@ -6,13 +6,11 @@
 [![Coverage](https://img.shields.io/codecov/c/github/alnah/picoloom)](https://codecov.io/gh/alnah/picoloom)
 [![License](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](LICENSE)
 
-> Go library and CLI for Markdown to PDF conversion using headless Chrome. Auto-downloads Chromium on first run. Features cover pages, automatic table of contents, footers with page numbers, signatures, watermarks, and 8 built-in CSS themes with custom template support. Supports parallel batch processing.
-
-> Rebrand note: this project is now **Picoloom**. Legacy `md2pdf` names stay supported during the transition.
+> This is a small, and opinionated Go library and CLI for Markdown to PDF I made to share my teaching materials for my French students. It handles cover pages, table of contents, watermarks, signatures, and more! You can use CSS themes, and custom assets. It works with parallel batch processing. The engine behind is Chrome. It doesn't rely on LaTeX. I hope it will be useful for your as well.
 
 [See example outputs](examples/)
 
-![Example PDF outputs](examples/illustration.png)
+![Example PDF outputs](examples/illustration.gif)
 
 ## Table of Contents
 
