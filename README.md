@@ -29,10 +29,18 @@
 ## Installation
 
 ```bash
-go install github.com/alnah/picoloom/v2/cmd/picoloom@latest
+go install github.com/alnah/picoloom/v2/cmd/picoloom@v2
 ```
 
 The current Go module path is `github.com/alnah/picoloom/v2`.
+
+For reproducible CI or pinned installs, use an exact version:
+
+```bash
+go install github.com/alnah/picoloom/v2/cmd/picoloom@v2.1.2
+```
+
+Using `@v2` avoids the extra legacy v1 module lookup/downloading noise that can happen with `@latest` on versioned Go modules.
 
 <details>
 <summary>Other installation methods</summary>
