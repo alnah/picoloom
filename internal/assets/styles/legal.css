@@ -402,13 +402,22 @@ img {
 }
 
 /* Profile image - centered as grid item replacing the divider */
-.signature-block img {
+.signature-block .sig-photo {
   grid-column: 2;
   grid-row: 1;
-  width: 65px !important;
-  height: 65px !important;
+  width: 65px;
+  height: 65px;
   border-radius: var(--signature-image-radius);
   border: none;
+  overflow: hidden;
+}
+
+.signature-block .sig-photo img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  margin: 0;
+  border-radius: 0;
   object-fit: cover;
 }
 

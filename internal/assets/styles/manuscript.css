@@ -393,7 +393,7 @@ img {
   font-size: 0.95em;
 }
 
-.signature-block img {
+.signature-block .sig-photo {
   display: none;
 }
 

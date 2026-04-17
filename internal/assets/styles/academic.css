@@ -397,14 +397,23 @@ img {
   font-size: 0.9em;
 }
 
-.signature-block img {
-  width: 45px !important;
-  height: 45px !important;
+.signature-block .sig-photo {
+  width: 45px;
+  height: 45px;
   border-radius: var(--signature-image-radius);
   border: 1px solid var(--color-border-default);
-  object-fit: cover;
+  overflow: hidden;
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+.signature-block .sig-photo img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
 }
 
 .sig-person {
