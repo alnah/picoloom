@@ -24,6 +24,7 @@
 - [Library Usage](#library-usage)
 - [Troubleshooting](#troubleshooting)
 - [Known Limitations](#known-limitations)
+- [Sponsors](#sponsors)
 - [Contributing](#contributing)
 
 ## Installation
@@ -1111,6 +1112,10 @@ Inherited from the browser's print-to-PDF:
 | Long code lines overflow | Keep lines under ~80 chars |
 | Fonts differ across systems | Use Docker for consistency |
 | Docker/CI fails | Set `ROD_NO_SANDBOX=1` (see [Troubleshooting](#troubleshooting)) |
+
+## Sponsors
+
+Special thanks to [@petervdpas](https://github.com/petervdpas), Picoloom's first sponsor.
 
 ## Contributing
 
