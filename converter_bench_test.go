@@ -31,8 +31,13 @@ func (m *benchPDFConverter) Close() error {
 }
 
 // newBenchService creates a Service with mock PDF converter for benchmarking.
-func newBenchService() *Service {
-	s := New()
+func newBenchService(tb testing.TB) *Service {
+	tb.Helper()
+
+	s, err := NewConverter()
+	if err != nil {
+		tb.Fatalf("NewConverter() error = %v", err)
+	}
 	s.pdfConverter = &benchPDFConverter{}
 	return s
 }
@@ -42,7 +47,7 @@ func newBenchService() *Service {
 // ---------------------------------------------------------------------------
 
 func BenchmarkService_Convert(b *testing.B) {
-	service := newBenchService()
+	service := newBenchService(b)
 	defer service.Close()
 
 	ctx := context.Background()
@@ -200,7 +205,7 @@ func BenchmarkService_Convert(b *testing.B) {
 // ---------------------------------------------------------------------------
 
 func BenchmarkService_ConvertBySize(b *testing.B) {
-	service := newBenchService()
+	service := newBenchService(b)
 	defer service.Close()
 
 	ctx := context.Background()
@@ -253,7 +258,7 @@ func sizeName(size int) string {
 // ---------------------------------------------------------------------------
 
 func BenchmarkService_ConvertParallel(b *testing.B) {
-	service := newBenchService()
+	service := newBenchService(b)
 	defer service.Close()
 
 	ctx := context.Background()
@@ -288,7 +293,7 @@ func BenchmarkService_ConvertParallel(b *testing.B) {
 // ---------------------------------------------------------------------------
 
 func BenchmarkValidateInput(b *testing.B) {
-	service := newBenchService()
+	service := newBenchService(b)
 	defer service.Close()
 
 	inputs := []struct {
