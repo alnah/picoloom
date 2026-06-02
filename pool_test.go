@@ -40,6 +40,20 @@ func (m *slowClosePDFConverter) Close() error {
 	return m.err
 }
 
+type closeSignalPDFConverter struct {
+	once   sync.Once
+	closed chan struct{}
+}
+
+func (m *closeSignalPDFConverter) ToPDF(_ context.Context, _ string, _ *pdfOptions) ([]byte, error) {
+	return []byte("%PDF-1.4 mock"), nil
+}
+
+func (m *closeSignalPDFConverter) Close() error {
+	m.once.Do(func() { close(m.closed) })
+	return nil
+}
+
 // ---------------------------------------------------------------------------
 // TestResolvePoolSize - Pool Size Calculation
 // ---------------------------------------------------------------------------
@@ -245,6 +259,68 @@ func TestServicePool_ClosePreventsFurtherRelease(t *testing.T) {
 
 	// Release after close should not panic
 	pool.Release(svc) // Should be safe (no-op)
+}
+
+func TestServicePool_AcquireAfterCloseWithIdleConverterReturnsNil(t *testing.T) {
+	t.Parallel()
+
+	pool := NewServicePool(1)
+	svc := pool.Acquire()
+	if svc == nil {
+		t.Fatal("Acquire() returned nil")
+	}
+	pool.Release(svc)
+
+	if err := pool.Close(); err != nil {
+		t.Fatalf("Close() unexpected error: %v", err)
+	}
+
+	if got := pool.Acquire(); got != nil {
+		t.Fatalf("Acquire() after Close() with idle converter = %#v, want nil", got)
+	}
+}
+
+func TestServicePool_AcquireDuringCloseReturnsNilAndClosesLateConverter(t *testing.T) {
+	enteredCreate := make(chan struct{})
+	releaseCreate := make(chan struct{})
+	closedLateConverter := make(chan struct{})
+
+	pool := NewServicePool(1, func(c *Converter) {
+		close(enteredCreate)
+		<-releaseCreate
+		c.pdfConverter = &closeSignalPDFConverter{closed: closedLateConverter}
+	})
+
+	acquired := make(chan *Service, 1)
+	go func() {
+		acquired <- pool.Acquire()
+	}()
+
+	select {
+	case <-enteredCreate:
+	case <-time.After(2 * time.Second):
+		t.Fatal("Acquire() did not start converter creation")
+	}
+
+	if err := pool.Close(); err != nil {
+		t.Fatalf("Close() unexpected error: %v", err)
+	}
+	close(releaseCreate)
+
+	select {
+	case got := <-acquired:
+		if got != nil {
+			t.Fatalf("Acquire() during Close() = %#v, want nil", got)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Acquire() did not return after Close()")
+	}
+
+	select {
+	case <-closedLateConverter:
+	case <-time.After(2 * time.Second):
+		t.Fatal("late converter was not closed")
+	}
 }
 
 func TestServicePool_CloseClosesConvertersConcurrently(t *testing.T) {

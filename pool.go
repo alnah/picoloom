@@ -67,10 +67,23 @@ func NewServicePool(n int, opts ...Option) *ConverterPool {
 // Returns nil and sets internal error if converter creation fails.
 // Use InitError() to check for initialization failures.
 func (p *ConverterPool) Acquire() *Converter {
+	// Prefer closedCh before taking an idle converter. After Close(), callers
+	// must not receive converters that are being closed by the pool.
+	select {
+	case <-p.closedCh:
+		return nil
+	default:
+	}
+
 	// Try to get an existing converter (non-blocking)
 	select {
 	case conv := <-p.sem:
-		return conv
+		select {
+		case <-p.closedCh:
+			return nil
+		default:
+			return conv
+		}
 	default:
 	}
 
@@ -101,6 +114,12 @@ func (p *ConverterPool) Acquire() *Converter {
 		}
 
 		p.mu.Lock()
+		if p.closed {
+			p.created--
+			p.mu.Unlock()
+			_ = conv.Close()
+			return nil
+		}
 		p.converters = append(p.converters, conv)
 		p.mu.Unlock()
 
@@ -111,8 +130,18 @@ func (p *ConverterPool) Acquire() *Converter {
 	// All converters created, wait for one to be released.
 	// Return nil if the pool is closed while waiting.
 	select {
+	case <-p.closedCh:
+		return nil
+	default:
+	}
+	select {
 	case conv := <-p.sem:
-		return conv
+		select {
+		case <-p.closedCh:
+			return nil
+		default:
+			return conv
+		}
 	case <-p.closedCh:
 		return nil
 	}
