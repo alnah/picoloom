@@ -1012,7 +1012,9 @@ func main() {
 }
 ```
 
-Use `picoloom.ResolvePoolSize(0)` to auto-calculate optimal pool size based on CPU cores.
+Use `picoloom.ResolvePoolSize(0)` to auto-calculate a conservative pool size based on CPU cores. The automatic size is clamped to `picoloom.MaxPoolSize` because each `Converter` owns a browser process and may use significant memory.
+
+Explicit library pool sizes are not clamped. For example, `picoloom.NewConverterPool(16)` and `picoloom.ResolvePoolSize(16)` request 16 converters. Use explicit values above `picoloom.MaxPoolSize` only when your environment has enough memory and process capacity. The CLI is stricter: `--workers` is capped at `picoloom.MaxPoolSize`.
 
 </details>
 

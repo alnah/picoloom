@@ -106,7 +106,10 @@ Root package interface:
 ```
 
 - Each `Converter` owns one Chrome browser instance (~200MB RAM)
-- `ConverterPool` manages N converters (1-8, based on CPU cores)
+- `ConverterPool` manages N converters
+- `ResolvePoolSize(0)` auto-selects 1-8 converters based on CPU cores
+- Explicit library pool sizes are not capped; callers own memory/process risk
+- The CLI caps `--workers` at `MaxPoolSize` for safer default operation
 - Converters created **lazily** on first `Acquire()` - no startup delay
 - `Acquire()` blocks when all converters are in use
 - `Release()` returns converter to pool for reuse

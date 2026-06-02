@@ -41,6 +41,10 @@ type ServicePool = ConverterPool
 // NewConverterPool creates a pool with capacity for n Converter instances.
 // Converters are created lazily when acquired, not at pool creation.
 // Options are applied to each converter when created.
+//
+// Each converter owns a browser process. Explicit sizes are not capped by the
+// library; callers are responsible for choosing a size their environment can
+// support. Use ResolvePoolSize(0) for the built-in conservative auto size.
 func NewConverterPool(n int, opts ...Option) *ConverterPool {
 	if n < 1 {
 		n = 1
@@ -218,9 +222,13 @@ func (p *ConverterPool) Size() int {
 	return p.size
 }
 
-// ResolvePoolSize determines the optimal pool size.
+// ResolvePoolSize determines the recommended pool size.
 // Priority: explicit workers > GOMAXPROCS-based calculation.
-// Exported for use by servers and CLIs.
+//
+// Explicit worker counts are returned unchanged, even above MaxPoolSize, so
+// library callers can opt into larger pools when they have enough memory and
+// process capacity. The automatic path clamps to MaxPoolSize because each
+// converter owns a browser process.
 func ResolvePoolSize(workers int) int {
 	// Explicit value takes priority
 	if workers > 0 {

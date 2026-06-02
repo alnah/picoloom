@@ -80,6 +80,11 @@
 //	defer pool.Release(conv)
 //	result, err := conv.Convert(ctx, input)
 //
+// Each converter owns a browser process. ResolvePoolSize(0) returns a
+// conservative automatic size clamped to MaxPoolSize. Explicit library pool
+// sizes are not capped, so only request values above MaxPoolSize when the
+// environment has enough memory and process capacity.
+//
 // # Custom Assets
 //
 // Override built-in styles and templates using AssetLoader:
