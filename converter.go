@@ -304,6 +304,9 @@ func (c *Converter) validateInput(input Input) error {
 	if input.Markdown == "" {
 		return ErrEmptyMarkdown
 	}
+	if c.cfg.maxMarkdownBytes > 0 && len(input.Markdown) > c.cfg.maxMarkdownBytes {
+		return fmt.Errorf("%w: %d bytes exceeds limit %d", ErrMarkdownTooLarge, len(input.Markdown), c.cfg.maxMarkdownBytes)
+	}
 	if err := input.Page.Validate(); err != nil {
 		return err
 	}

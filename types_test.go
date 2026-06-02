@@ -406,6 +406,31 @@ func TestWithTimeout_panic(t *testing.T) {
 	})
 }
 
+func TestWithMaxMarkdownBytes_panic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("WithMaxMarkdownBytes(-1) did not panic, want panic")
+		}
+	}()
+	WithMaxMarkdownBytes(-1)
+}
+
+func TestWithMaxMarkdownBytes_allowsZeroToDisableLimit(t *testing.T) {
+	t.Parallel()
+
+	service, err := NewConverter(WithMaxMarkdownBytes(0))
+	if err != nil {
+		t.Fatalf("NewConverter(WithMaxMarkdownBytes(0)) error = %v", err)
+	}
+	defer service.Close()
+
+	if service.cfg.maxMarkdownBytes != 0 {
+		t.Errorf("maxMarkdownBytes = %d, want 0", service.cfg.maxMarkdownBytes)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // TestIsValidHexColor - Hex Color Validation
 // ---------------------------------------------------------------------------

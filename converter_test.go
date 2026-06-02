@@ -289,6 +289,102 @@ func TestService_validateInput(t *testing.T) {
 	}
 }
 
+func TestService_validateInput_MaxMarkdownBytes(t *testing.T) {
+	t.Parallel()
+
+	service, err := New(WithMaxMarkdownBytes(5))
+	if err != nil {
+		t.Fatalf("New(WithMaxMarkdownBytes()) unexpected error: %v", err)
+	}
+	defer service.Close()
+
+	tests := []struct {
+		name    string
+		input   Input
+		wantErr error
+	}{
+		{
+			name:    "below limit accepted",
+			input:   Input{Markdown: "1234"},
+			wantErr: nil,
+		},
+		{
+			name:    "exact limit accepted",
+			input:   Input{Markdown: "12345"},
+			wantErr: nil,
+		},
+		{
+			name:    "over limit rejected",
+			input:   Input{Markdown: "123456"},
+			wantErr: ErrMarkdownTooLarge,
+		},
+		{
+			name:    "counts bytes not runes",
+			input:   Input{Markdown: "ééé"},
+			wantErr: ErrMarkdownTooLarge,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := service.validateInput(tt.input)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("validateInput(%v) error = %v, want %v", tt.input, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestService_validateInput_MaxMarkdownBytesDisabledByDefault(t *testing.T) {
+	t.Parallel()
+
+	service, err := New()
+	if err != nil {
+		t.Fatalf("New() unexpected error: %v", err)
+	}
+	defer service.Close()
+
+	input := Input{Markdown: strings.Repeat("# Large\n\n", 1_000)}
+	if err := service.validateInput(input); err != nil {
+		t.Fatalf("validateInput(%d byte Markdown) error = %v, want nil", len(input.Markdown), err)
+	}
+}
+
+func TestService_Convert_MaxMarkdownBytesRejectsBeforePipeline(t *testing.T) {
+	t.Parallel()
+
+	preprocessor := &mockPreprocessor{output: "preprocessed"}
+	htmlConv := &mockHTMLConverter{output: "<html>converted</html>"}
+	pdfConv := &mockPDFConverter{output: []byte("%PDF-1.4 test")}
+
+	service, err := New(
+		WithMaxMarkdownBytes(5),
+		withPreprocessor(preprocessor),
+		withHTMLConverter(htmlConv),
+		withPDFConverter(pdfConv),
+	)
+	if err != nil {
+		t.Fatalf("New() unexpected error: %v", err)
+	}
+	defer service.Close()
+
+	_, err = service.Convert(context.Background(), Input{Markdown: "123456", HTMLOnly: true})
+	if !errors.Is(err, ErrMarkdownTooLarge) {
+		t.Fatalf("Convert() error = %v, want ErrMarkdownTooLarge", err)
+	}
+	if preprocessor.called {
+		t.Error("preprocessor called for oversized Markdown, want validation to stop before pipeline")
+	}
+	if htmlConv.called {
+		t.Error("html converter called for oversized Markdown, want validation to stop before pipeline")
+	}
+	if pdfConv.called {
+		t.Error("PDF converter called for oversized HTMLOnly Markdown, want validation to stop before pipeline")
+	}
+}
+
 // ---------------------------------------------------------------------------
 // TestService_Convert - Successful Conversion Pipeline
 // ---------------------------------------------------------------------------

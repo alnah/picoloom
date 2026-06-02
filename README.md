@@ -883,6 +883,19 @@ For reusable styles across all conversions, see [With Custom Assets](#with-custo
 </details>
 
 <details>
+<summary>With Input Size Limit</summary>
+
+For server or multi-tenant use, set an explicit Markdown size limit before parsing starts:
+
+```go
+conv, err := picoloom.NewConverter(picoloom.WithMaxMarkdownBytes(1 << 20)) // 1 MiB
+```
+
+The default is `0`, meaning no limit, to preserve compatibility with large local CLI/library documents. When the limit is exceeded, `Convert` returns an error matching `picoloom.ErrMarkdownTooLarge` via `errors.Is`.
+
+</details>
+
+<details>
 <summary>With Custom Assets</summary>
 
 Override embedded CSS styles and HTML templates:

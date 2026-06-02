@@ -155,9 +155,9 @@ The codebase follows a "validate at trust boundaries" pattern:
 
 ```
 CLI Path:
-  Flags/Env/YAML ──▶ Config.Validate() ──▶ buildXxxData() ──▶ validateInput()
-                          ▲                  (no validation)        ▲
-                    BOUNDARY 1                               BOUNDARY 2
+  YAML/env/flags ──▶ merge precedence ──▶ Config.Validate() ──▶ buildXxxData() ──▶ validateInput()
+                                                   ▲                  (no validation)        ▲
+                                             BOUNDARY 1                               BOUNDARY 2
 
 Library Path:
   User builds Input ─────────────────────────────────────▶ validateInput()
@@ -167,12 +167,12 @@ Library Path:
 
 | Boundary | Location | Purpose |
 | -------- | -------- | ------- |
-| Config.Validate() | `internal/config/` | Validates CLI/YAML input at load time |
+| Config.Validate() | `internal/config/` + `cmd/picoloom/convert.go` | Validates final CLI config after YAML/env/flag precedence is resolved |
 | validateInput() | `converter.go` | Validates library API input before processing |
 
 **Design principles:**
 
-- **CLI param builders trust config** - `buildXxxData()` functions in `cmd/picoloom/convert_params.go` transform already-validated config into library types without re-validation
+- **CLI param builders trust config** - `buildXxxData()` functions in `cmd/picoloom/convert_params.go` transform config already validated after YAML/env/flag merging into library types without re-validation
 - **Library validates at entry** - `validateInput()` is the trust boundary for direct library users
 - **No redundant validation** - Each constraint is checked once at the appropriate boundary
 - **Validation methods on types** - `PageSettings.Validate()`, `Cover.Validate()`, `Signature.Validate()`, etc.
