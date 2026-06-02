@@ -1,9 +1,9 @@
 // Package main provides the md2pdf CLI.
 //
-// TRUST BOUNDARY: Config is validated at load time by Config.Validate().
-// The buildXxxData() functions in this file transform validated config into
-// library types. They do NOT re-validate because:
-//   - Config.Validate() already checked constraints at load time
+// TRUST BOUNDARY: Config is validated after YAML/env/flag merging by
+// Config.Validate(). The buildXxxData() functions in this file transform
+// validated config into library types. They do NOT re-validate because:
+//   - Config.Validate() already checked constraints after precedence is resolved
 //   - Library's validateInput() catches any issues for direct library users
 //   - Redundant validation creates maintenance burden and can drift
 //

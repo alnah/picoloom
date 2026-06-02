@@ -1,15 +1,21 @@
 package main
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	picoloom "github.com/alnah/picoloom/v2"
+	configpkg "github.com/alnah/picoloom/v2/internal/config"
 )
 
 type publicConfigValidator interface {
 	Validate() error
 }
 
+// Keep this file as the guardrail for config -> CLI builders -> public type
+// validation parity. When adding a user-facing conversion option, add a case
+// here if the option maps to a public type with Validate behavior.
 func TestConfigBuildersProduceValidPublicTypes(t *testing.T) {
 	t.Parallel()
 
@@ -18,6 +24,36 @@ func TestConfigBuildersProduceValidPublicTypes(t *testing.T) {
 		cfg   *Config
 		build func(*Config) publicConfigValidator
 	}{
+		{
+			name: "footer position accepted by config and public type",
+			cfg: &Config{
+				Footer: FooterConfig{Enabled: true, Position: "center", ShowPageNumber: true, Text: "Footer"},
+			},
+			build: func(cfg *Config) publicConfigValidator {
+				return buildFooterData(cfg, false)
+			},
+		},
+		{
+			name: "signature URL image accepted by config and public type",
+			cfg: &Config{
+				Author:    AuthorConfig{Name: "Jane", Title: "Writer", Email: "jane@example.com"},
+				Signature: SignatureConfig{Enabled: true, ImagePath: "https://example.com/signature.png"},
+			},
+			build: func(cfg *Config) publicConfigValidator {
+				return buildSignatureData(cfg, false)
+			},
+		},
+		{
+			name: "cover URL logo accepted by config and public type",
+			cfg: &Config{
+				Author:   AuthorConfig{Name: "Jane"},
+				Document: DocumentConfig{Title: "Report"},
+				Cover:    CoverConfig{Enabled: true, Logo: "https://example.com/logo.png"},
+			},
+			build: func(cfg *Config) publicConfigValidator {
+				return buildCoverData(cfg, "# Ignored", "report.md")
+			},
+		},
 		{
 			name: "page settings at minimum margin",
 			cfg:  &Config{Page: PageConfig{Size: picoloom.PageSizeLetter, Orientation: picoloom.OrientationPortrait, Margin: picoloom.MinMargin}},
@@ -125,6 +161,67 @@ func TestConfigValidationRejectsPublicTypeBounds(t *testing.T) {
 
 			if err := tt.cfg.Validate(); err == nil {
 				t.Fatalf("Config.Validate() error = nil, want error for config %+v", tt.cfg)
+			}
+		})
+	}
+}
+
+func TestMergeAndValidateRuntimeConfig(t *testing.T) {
+	t.Parallel()
+
+	longAuthorName := strings.Repeat("a", configpkg.MaxNameLength+1)
+
+	tests := []struct {
+		name            string
+		cfg             *Config
+		flags           *convertFlags
+		wantErrIs       error
+		wantErrContains string
+	}{
+		{
+			name:      "rejects CLI field length after merge",
+			cfg:       configpkg.DefaultConfig(),
+			flags:     &convertFlags{author: authorFlags{name: longAuthorName}},
+			wantErrIs: configpkg.ErrFieldTooLong,
+		},
+		{
+			name:            "rejects env-filled invalid page size when not overridden",
+			cfg:             &Config{Page: PageConfig{Size: "invalid-env-page"}},
+			flags:           &convertFlags{},
+			wantErrContains: "page.size",
+		},
+		{
+			name:  "allows CLI override to repair env-filled page size",
+			cfg:   &Config{Page: PageConfig{Size: "invalid-env-page"}},
+			flags: &convertFlags{page: pageFlags{size: picoloom.PageSizeA4}},
+		},
+		{
+			name:            "rejects CLI TOC depth after merge",
+			cfg:             configpkg.DefaultConfig(),
+			flags:           &convertFlags{toc: tocFlags{minDepth: 7}},
+			wantErrContains: "toc.minDepth",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := mergeAndValidateRuntimeConfig(tt.flags, tt.cfg)
+			if tt.wantErrIs == nil && tt.wantErrContains == "" {
+				if err != nil {
+					t.Fatalf("mergeAndValidateRuntimeConfig() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatal("mergeAndValidateRuntimeConfig() error = nil, want error")
+			}
+			if tt.wantErrIs != nil && !errors.Is(err, tt.wantErrIs) {
+				t.Fatalf("mergeAndValidateRuntimeConfig() error = %v, want errors.Is(%v)", err, tt.wantErrIs)
+			}
+			if tt.wantErrContains != "" && !strings.Contains(err.Error(), tt.wantErrContains) {
+				t.Fatalf("mergeAndValidateRuntimeConfig() error = %v, want containing %q", err, tt.wantErrContains)
 			}
 		})
 	}

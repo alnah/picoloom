@@ -20,8 +20,11 @@ import (
 func runConvert(ctx context.Context, positionalArgs []string, flags *convertFlags, pool Pool, env *Environment) error {
 	cfg := env.Config
 
-	// Merge CLI flags into config (CLI wins)
-	mergeFlags(flags, cfg)
+	// Merge runtime config sources and validate the final model before
+	// builders transform it into public library types.
+	if err := mergeAndValidateRuntimeConfig(flags, cfg); err != nil {
+		return err
+	}
 
 	// Resolve "auto" date once for entire batch
 	resolvedDate, err := resolveDateWithTime(cfg.Document.Date, env.Now)
@@ -127,6 +130,13 @@ func parseBreakBefore(value string) (h1, h2, h3 bool) {
 		}
 	}
 	return h1, h2, h3
+}
+
+// mergeAndValidateRuntimeConfig applies runtime overrides, then validates the
+// final config model so flags and env values cannot bypass config constraints.
+func mergeAndValidateRuntimeConfig(flags *convertFlags, cfg *config.Config) error {
+	mergeFlags(flags, cfg)
+	return cfg.Validate()
 }
 
 // mergeFlags merges CLI flags into config. CLI values override config values.
