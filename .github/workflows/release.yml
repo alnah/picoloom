@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v2.*.*'
   workflow_dispatch:
     inputs:
       docker_tag:
@@ -41,6 +41,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
+      - name: Validate release tag
+        run: ./scripts/ensure-v2-release-tag.sh "${GITHUB_REF_NAME}"
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
