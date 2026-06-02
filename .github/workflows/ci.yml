@@ -17,13 +17,17 @@ jobs:
   test-unit:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.25.x, 1.26.x]
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: ${{ matrix.go-version }}
           cache: true
 
       - name: Verify dependencies
@@ -33,7 +37,7 @@ jobs:
           git diff --exit-code go.mod go.sum
 
       - name: Run unit tests with coverage
-        run: go test -race -coverprofile=coverage-unit.out -covermode=atomic ./...
+        run: go test -race -coverprofile=coverage-unit-${{ matrix.go-version }}.out -covermode=atomic ./...
 
       - name: Compile benchmark-only tests
         run: go test -tags=bench ./...
@@ -41,8 +45,8 @@ jobs:
       - name: Upload unit coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./coverage-unit.out
-          flags: unit
+          files: ./coverage-unit-${{ matrix.go-version }}.out
+          flags: unit,go-${{ matrix.go-version }}
           fail_ci_if_error: false
 
   test-integration:
@@ -182,13 +186,17 @@ jobs:
     needs: [lint, security, test-unit, test-integration, test-config-init-safety, examples]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.25.x, 1.26.x]
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: ${{ matrix.go-version }}
           cache: true
 
       - name: Build
