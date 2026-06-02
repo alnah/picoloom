@@ -335,12 +335,11 @@ type Option func(*Converter)
 
 // converterConfig holds internal configuration for Converter.
 type converterConfig struct {
-	timeout          time.Duration
-	maxMarkdownBytes int
-	templateSet      *assets.TemplateSet
-	assetPath        string // Path for WithAssetPath, resolved in New()
-	styleInput       string // Raw input for WithStyle (name, path, or CSS content)
-	resolvedStyle    string // CSS content after resolution in New()
+	timeout       time.Duration
+	templateSet   *assets.TemplateSet
+	assetPath     string // Path for WithAssetPath, resolved in New()
+	styleInput    string // Raw input for WithStyle (name, path, or CSS content)
+	resolvedStyle string // CSS content after resolution in New()
 }
 
 // defaultTimeout is used when no timeout is specified.
@@ -354,22 +353,6 @@ func WithTimeout(d time.Duration) Option {
 	}
 	return func(c *Converter) {
 		c.cfg.timeout = d
-	}
-}
-
-// WithMaxMarkdownBytes limits Markdown input size before any parsing or
-// rendering work starts. A value of 0 disables the limit, which is the default
-// to preserve CLI and library compatibility for large local documents.
-//
-// This option is intended for servers and multi-tenant applications that need
-// an explicit CPU/memory guard. Markdown parsing is CPU-bound, and Goldmark
-// does not accept a standard context.Context cancellation signal while parsing.
-func WithMaxMarkdownBytes(n int) Option {
-	if n < 0 {
-		panic("md2pdf: WithMaxMarkdownBytes limit must be non-negative")
-	}
-	return func(c *Converter) {
-		c.cfg.maxMarkdownBytes = n
 	}
 }
 

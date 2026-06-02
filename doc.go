@@ -56,18 +56,18 @@
 //
 // # Server and Multi-Tenant Safety
 //
-// For services, APIs, queues, or multi-tenant applications, configure an
-// explicit Markdown size limit:
+// For services, APIs, queues, or multi-tenant applications, reject oversized
+// Markdown before calling Convert:
 //
-//	conv, err := picoloom.NewConverter(
-//	    picoloom.WithMaxMarkdownBytes(1 << 20), // 1 MiB
-//	)
+//	const maxMarkdownBytes = 1 << 20 // 1 MiB
+//	if len(markdown) > maxMarkdownBytes {
+//	    return fmt.Errorf("markdown exceeds %d bytes", maxMarkdownBytes)
+//	}
 //
-// The default limit is 0 to preserve compatibility with large local documents.
 // Markdown parsing is CPU-bound, and Goldmark does not accept a standard
 // context.Context cancellation signal while parsing. Picoloom checks
-// cancellation around parsing, but size limits are the reliable guard that
-// rejects oversized input before preprocessing and parsing begin.
+// cancellation around parsing, but caller-side size limits are the reliable
+// guard that rejects oversized input before preprocessing and parsing begin.
 //
 // # Parallel Processing
 //

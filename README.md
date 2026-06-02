@@ -883,24 +883,22 @@ For reusable styles across all conversions, see [With Custom Assets](#with-custo
 </details>
 
 <details>
-<summary>With Input Size Limit</summary>
+<summary>Server input size limits</summary>
 
-For server or multi-tenant use, set an explicit Markdown size limit before parsing starts:
-
-```go
-conv, err := picoloom.NewConverter(picoloom.WithMaxMarkdownBytes(1 << 20)) // 1 MiB
-```
-
-The default is `0`, meaning no limit, to preserve compatibility with large local CLI/library documents. When the limit is exceeded, `Convert` returns an error matching `picoloom.ErrMarkdownTooLarge` via `errors.Is`.
-
-For services, APIs, queues, or other multi-tenant environments, treat this option as mandatory. Markdown parsing is CPU-bound and Goldmark does not accept a standard `context.Context` cancellation signal while parsing. Picoloom checks cancellation before and after parsing, but a parse already in progress may continue briefly after the caller cancels. A byte limit is the reliable guard that stops oversized input before preprocessing and parsing begin.
+For services, APIs, queues, or other multi-tenant environments, reject oversized Markdown before calling `Convert`:
 
 ```go
-conv, err := picoloom.NewConverter(
-    picoloom.WithMaxMarkdownBytes(1 << 20), // 1 MiB
-    picoloom.WithTimeout(30*time.Second),
-)
+const maxMarkdownBytes = 1 << 20 // 1 MiB
+if len(markdown) > maxMarkdownBytes {
+    return fmt.Errorf("markdown exceeds %d bytes", maxMarkdownBytes)
+}
+
+result, err := conv.Convert(ctx, picoloom.Input{Markdown: markdown})
 ```
+
+Picoloom intentionally does not expose a library size-limit option. Local CLI and library users may convert large documents, while server callers can enforce limits that match their own request, tenant, and storage policies.
+
+Markdown parsing is CPU-bound, and Goldmark does not accept a standard `context.Context` cancellation signal while parsing. Picoloom checks cancellation before and after parsing, but a parse already in progress may continue briefly after the caller cancels. Caller-side byte limits are the reliable guard that stops oversized input before preprocessing and parsing begin.
 
 </details>
 
