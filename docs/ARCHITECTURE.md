@@ -206,7 +206,8 @@ Config-to-library builder parity tests detect shared constraint drift.
 6. Add CLI flags in `cmd/picoloom/flags.go`
 7. Add param builder in `cmd/picoloom/convert_params.go` (no validation - trusts config)
 8. Add tests: unit + integration
-9. Update README.md documentation
+9. Update `cmd/picoloom/convert_validation_parity_test.go` classification/parity cases for any new `Input` field
+10. Update README.md documentation
 
 **Checklist for new CLI commands:**
 1. Create `cmd/picoloom/{name}.go` with command logic

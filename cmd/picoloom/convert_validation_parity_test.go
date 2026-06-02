@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -14,8 +15,53 @@ type publicConfigValidator interface {
 }
 
 // Keep this file as the guardrail for config -> CLI builders -> public type
-// validation parity. When adding a user-facing conversion option, add a case
-// here if the option maps to a public type with Validate behavior.
+// validation parity. When adding a user-facing conversion option, classify the
+// new Input field here and add cases if it maps to a public type with Validate
+// behavior.
+func TestConfigBuilderParityClassifiesInputFields(t *testing.T) {
+	t.Parallel()
+
+	type inputFieldClassification struct {
+		reason                string
+		requiresBuilderParity bool
+	}
+
+	classifications := map[string]inputFieldClassification{
+		"Markdown":   {reason: "read per file and passed through directly"},
+		"SourceDir":  {reason: "derived per file for relative path rewriting"},
+		"CSS":        {reason: "resolved by resolveCSSContent, no public Validate method"},
+		"HTMLOnly":   {reason: "output mode flag, no config-to-public validator"},
+		"Footer":     {reason: "buildFooterData", requiresBuilderParity: true},
+		"Signature":  {reason: "buildSignatureData", requiresBuilderParity: true},
+		"Page":       {reason: "buildPageSettings", requiresBuilderParity: true},
+		"Watermark":  {reason: "buildWatermarkData", requiresBuilderParity: true},
+		"Cover":      {reason: "buildCoverData", requiresBuilderParity: true},
+		"TOC":        {reason: "buildTOCData", requiresBuilderParity: true},
+		"PageBreaks": {reason: "buildPageBreaksData", requiresBuilderParity: true},
+	}
+
+	inputType := reflect.TypeOf(picoloom.Input{})
+	for i := 0; i < inputType.NumField(); i++ {
+		field := inputType.Field(i).Name
+		classification, ok := classifications[field]
+		if !ok {
+			t.Fatalf("picoloom.Input.%s is not classified; add config validation, CLI merge/build wiring, and parity tests if needed", field)
+		}
+		if classification.reason == "" {
+			t.Fatalf("picoloom.Input.%s classification must explain its wiring", field)
+		}
+		if classification.requiresBuilderParity && !strings.HasPrefix(classification.reason, "build") {
+			t.Fatalf("picoloom.Input.%s requires builder parity but reason %q does not name a builder", field, classification.reason)
+		}
+	}
+
+	for field := range classifications {
+		if _, ok := inputType.FieldByName(field); !ok {
+			t.Fatalf("stale Input field classification %q; update this guardrail", field)
+		}
+	}
+}
+
 func TestConfigBuildersProduceValidPublicTypes(t *testing.T) {
 	t.Parallel()
 
