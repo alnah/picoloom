@@ -35,6 +35,9 @@ jobs:
       - name: Run unit tests with coverage
         run: go test -race -coverprofile=coverage-unit.out -covermode=atomic ./...
 
+      - name: Compile benchmark-only tests
+        run: go test -tags=bench ./...
+
       - name: Upload unit coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
