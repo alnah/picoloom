@@ -36,7 +36,7 @@ const (
 	MaxPageSizeLength       = 10   // "letter", "a4", "legal"
 	MaxOrientationLength    = 10   // "portrait", "landscape"
 	MaxWatermarkTextLength  = 50   // "DRAFT", "CONFIDENTIAL"
-	MaxWatermarkColorLength = 20   // "#888888" or color name
+	MaxWatermarkColorLength = 20   // "#888888" or "#888"
 	MaxDocTitleLength       = 200  // Document title
 	MaxSubtitleLength       = 200  // Document subtitle
 	MaxOrganizationLength   = 100  // Organization name
@@ -330,6 +330,9 @@ func (w *WatermarkConfig) Validate() error {
 	if err := validateFieldLength("watermark.color", w.Color, MaxWatermarkColorLength); err != nil {
 		return err
 	}
+	if err := validateWatermarkColor(w.Color); err != nil {
+		return err
+	}
 	if w.Opacity < picoloom.MinWatermarkOpacity || w.Opacity > picoloom.MaxWatermarkOpacity {
 		return fmt.Errorf("watermark.opacity: must be between %.1f and %.1f, got %.2f", picoloom.MinWatermarkOpacity, picoloom.MaxWatermarkOpacity, w.Opacity)
 	}
@@ -395,13 +398,13 @@ type PageBreaksConfig struct {
 // Validate checks page breaks field values.
 func (pb *PageBreaksConfig) Validate() error {
 	if pb.Orphans != 0 {
-		if pb.Orphans < 1 || pb.Orphans > 5 {
-			return fmt.Errorf("pageBreaks.orphans: must be between 1 and 5, got %d", pb.Orphans)
+		if pb.Orphans < picoloom.MinOrphans || pb.Orphans > picoloom.MaxOrphans {
+			return fmt.Errorf("pageBreaks.orphans: must be between %d and %d, got %d", picoloom.MinOrphans, picoloom.MaxOrphans, pb.Orphans)
 		}
 	}
 	if pb.Widows != 0 {
-		if pb.Widows < 1 || pb.Widows > 5 {
-			return fmt.Errorf("pageBreaks.widows: must be between 1 and 5, got %d", pb.Widows)
+		if pb.Widows < picoloom.MinWidows || pb.Widows > picoloom.MaxWidows {
+			return fmt.Errorf("pageBreaks.widows: must be between %d and %d, got %d", picoloom.MinWidows, picoloom.MaxWidows, pb.Widows)
 		}
 	}
 	return nil
@@ -443,6 +446,23 @@ func (c *Config) Validate() error {
 	}
 	if err := c.PageBreaks.Validate(); err != nil {
 		return err
+	}
+	return nil
+}
+
+// validateWatermarkColor delegates to the public watermark type so config and
+// library paths share the same color acceptance rules.
+func validateWatermarkColor(color string) error {
+	if color == "" {
+		return nil
+	}
+	watermark := &picoloom.Watermark{
+		Color:   color,
+		Opacity: picoloom.DefaultWatermarkOpacity,
+		Angle:   picoloom.DefaultWatermarkAngle,
+	}
+	if err := watermark.Validate(); err != nil {
+		return fmt.Errorf("watermark.color: %w", err)
 	}
 	return nil
 }

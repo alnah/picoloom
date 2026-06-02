@@ -7,7 +7,7 @@
 //   - Library's validateInput() catches any issues for direct library users
 //   - Redundant validation creates maintenance burden and can drift
 //
-// See docs/_validation_refactor_spec.md for design rationale.
+// Validation parity tests cover config-to-library builder drift.
 package main
 
 import (

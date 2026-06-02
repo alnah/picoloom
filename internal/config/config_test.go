@@ -1177,6 +1177,24 @@ func TestConfig_Validate_Watermark(t *testing.T) {
 		}
 	})
 
+	t.Run("watermark.color invalid hex returns error", func(t *testing.T) {
+		t.Parallel()
+		cfg := &Config{Watermark: WatermarkConfig{
+			Enabled: true,
+			Text:    "DRAFT",
+			Color:   "red",
+			Opacity: 0.5,
+			Angle:   -45,
+		}}
+		err := cfg.Validate()
+		if err == nil {
+			t.Fatal("Config.Validate() error = nil, want error")
+		}
+		if !strings.Contains(err.Error(), "watermark.color") {
+			t.Errorf("Config.Validate() error should mention watermark.color, got: %v", err)
+		}
+	})
+
 	t.Run("watermark.opacity below minimum returns error", func(t *testing.T) {
 		t.Parallel()
 		cfg := &Config{Watermark: WatermarkConfig{

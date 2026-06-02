@@ -177,7 +177,7 @@ Library Path:
 - **No redundant validation** - Each constraint is checked once at the appropriate boundary
 - **Validation methods on types** - `PageSettings.Validate()`, `Cover.Validate()`, `Signature.Validate()`, etc.
 
-See `docs/_validation_refactor_spec.md` for detailed design rationale.
+Config-to-library builder parity tests detect shared constraint drift.
 
 ---
 
