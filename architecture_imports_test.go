@@ -14,14 +14,19 @@ import (
 )
 
 type listedPackage struct {
-	ImportPath string
-	Imports    []string
+	ImportPath   string
+	Imports      []string
+	TestImports  []string
+	XTestImports []string
 }
 
 func TestImportBoundaries(t *testing.T) {
 	modulePath := goListModulePath(t)
 	packages := goListPackages(t)
 
+	// These rules protect production import direction only. TestImports and
+	// XTestImports are decoded too, but tests may intentionally cross internal
+	// packages for fixtures or integration coverage.
 	tests := []struct {
 		name     string
 		violates func(pkg listedPackage, imported string) bool
