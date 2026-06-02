@@ -64,6 +64,7 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 </html>`
 
 		converter := newRodConverter(defaultTimeout)
+		defer converter.Close()
 		data, err := converter.ToPDF(ctx, html, nil)
 		if err != nil {
 			t.Fatalf("ToPDF() unexpected error: %v", err)
@@ -86,6 +87,7 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 		htmlWithCSS := injector.InjectCSS(ctx, html, css)
 
 		converter := newRodConverter(defaultTimeout)
+		defer converter.Close()
 		data, err := converter.ToPDF(ctx, htmlWithCSS, nil)
 		if err != nil {
 			t.Fatalf("ToPDF() unexpected error: %v", err)
@@ -104,6 +106,7 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 </html>`
 
 		converter := newRodConverter(defaultTimeout)
+		defer converter.Close()
 		opts := &pdfOptions{
 			Footer: &pipeline.FooterData{
 				ShowPageNumber: true,
