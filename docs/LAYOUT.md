@@ -59,7 +59,11 @@ picoloom/                       # package picoloom (library)
 │   ├── pipeline/               # Conversion pipeline components
 │   │   ├── mdtransform.go      # MD -> MD (preprocessing)
 │   │   ├── md2html.go          # MD -> HTML (Goldmark)
-│   │   ├── htmlinject.go       # HTML -> HTML (CSS, cover, TOC, signature)
+│   │   ├── cssinject.go        # CSS injection and sanitization
+│   │   ├── coverinject.go      # Cover page template injection
+│   │   ├── signatureinject.go  # Signature template injection
+│   │   ├── tocinject.go        # TOC extraction, numbering, injection
+│   │   ├── footer.go           # Footer data shared with PDF rendering
 │   │   └── pathrewrite.go      # Rewrite relative paths for SourceDir
 │   ├── process/                # OS-specific process management
 │   │   ├── kill_unix.go        # KillProcessGroup (Unix)

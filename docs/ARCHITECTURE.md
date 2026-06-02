@@ -186,7 +186,7 @@ Config-to-library builder parity tests detect shared constraint drift.
 | Feature Type        | Location                          | Example                      |
 | ------------------- | --------------------------------- | ---------------------------- |
 | New MD syntax       | `internal/pipeline/mdtransform.go`| `==highlight==` support      |
-| New HTML injection  | `internal/pipeline/htmlinject.go` | New metadata block           |
+| New HTML injection  | `internal/pipeline/{feature}inject.go` | New metadata block           |
 | New Input field     | `types.go` + `converter.go`       | Add to `Input` struct        |
 | New CLI flag        | `cmd/picoloom/flags.go`             | Add flag definition          |
 | New CLI command     | `cmd/picoloom/{name}.go`            | Add `doctor.go`              |
