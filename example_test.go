@@ -2,6 +2,7 @@ package picoloom_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -256,6 +257,25 @@ func Example_withFooter() {
 		fmt.Println("Footer configured")
 	}
 	// Output: Footer configured
+}
+
+// ExampleNewConverter_withMaxMarkdownBytes demonstrates bounding input size for server use.
+func ExampleNewConverter_withMaxMarkdownBytes() {
+	conv, err := picoloom.NewConverter(picoloom.WithMaxMarkdownBytes(5))
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+	defer conv.Close()
+
+	_, err = conv.Convert(context.Background(), picoloom.Input{
+		Markdown: "123456",
+		HTMLOnly: true,
+	})
+	if errors.Is(err, picoloom.ErrMarkdownTooLarge) {
+		fmt.Println("input rejected before parsing")
+	}
+	// Output: input rejected before parsing
 }
 
 // ExampleNewConverter_withStyle demonstrates using a built-in style.

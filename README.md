@@ -893,6 +893,15 @@ conv, err := picoloom.NewConverter(picoloom.WithMaxMarkdownBytes(1 << 20)) // 1 
 
 The default is `0`, meaning no limit, to preserve compatibility with large local CLI/library documents. When the limit is exceeded, `Convert` returns an error matching `picoloom.ErrMarkdownTooLarge` via `errors.Is`.
 
+For services, APIs, queues, or other multi-tenant environments, treat this option as mandatory. Markdown parsing is CPU-bound and Goldmark does not accept a standard `context.Context` cancellation signal while parsing. Picoloom checks cancellation before and after parsing, but a parse already in progress may continue briefly after the caller cancels. A byte limit is the reliable guard that stops oversized input before preprocessing and parsing begin.
+
+```go
+conv, err := picoloom.NewConverter(
+    picoloom.WithMaxMarkdownBytes(1 << 20), // 1 MiB
+    picoloom.WithTimeout(30*time.Second),
+)
+```
+
 </details>
 
 <details>

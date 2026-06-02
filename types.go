@@ -362,8 +362,8 @@ func WithTimeout(d time.Duration) Option {
 // to preserve CLI and library compatibility for large local documents.
 //
 // This option is intended for servers and multi-tenant applications that need
-// an explicit CPU/memory guard because Markdown parsing is CPU-bound and parser
-// cancellation is cooperative.
+// an explicit CPU/memory guard. Markdown parsing is CPU-bound, and Goldmark
+// does not accept a standard context.Context cancellation signal while parsing.
 func WithMaxMarkdownBytes(n int) Option {
 	if n < 0 {
 		panic("md2pdf: WithMaxMarkdownBytes limit must be non-negative")

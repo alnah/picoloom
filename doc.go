@@ -54,6 +54,21 @@
 //	    Signature: &picoloom.Signature{Name: "John Doe"},
 //	})
 //
+// # Server and Multi-Tenant Safety
+//
+// For services, APIs, queues, or multi-tenant applications, configure an
+// explicit Markdown size limit:
+//
+//	conv, err := picoloom.NewConverter(
+//	    picoloom.WithMaxMarkdownBytes(1 << 20), // 1 MiB
+//	)
+//
+// The default limit is 0 to preserve compatibility with large local documents.
+// Markdown parsing is CPU-bound, and Goldmark does not accept a standard
+// context.Context cancellation signal while parsing. Picoloom checks
+// cancellation around parsing, but size limits are the reliable guard that
+// rejects oversized input before preprocessing and parsing begin.
+//
 // # Parallel Processing
 //
 // For batch conversion, use ConverterPool to manage multiple browser instances:
