@@ -65,10 +65,14 @@ func NewGoldmarkConverter() *GoldmarkConverter {
 }
 
 // ToHTML converts Markdown content to a standalone HTML5 document.
-// Supports context cancellation via goroutine + select pattern since
-// Goldmark doesn't natively support context.
+//
+// Cancellation is checked before starting conversion and again while waiting
+// for conversion to finish. Goldmark does not accept context.Context and is not
+// internally interrupted after md.Convert starts; if ctx is canceled mid-run,
+// this method returns ctx.Err() while the in-flight conversion finishes in its
+// worker goroutine.
 func (c *GoldmarkConverter) ToHTML(ctx context.Context, content string) (string, error) {
-	// Fast path: check context before starting
+	// Fast path: check context before starting.
 	if err := ctx.Err(); err != nil {
 		return "", err
 	}

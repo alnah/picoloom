@@ -268,10 +268,26 @@ func TestGoldmarkConverter_ToHTML_ContextCancellation(t *testing.T) {
 		}
 	})
 
+	t.Run("error case: cancelled context with large input", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel() // Cancel before conversion starts for deterministic behavior.
+
+		input := strings.Repeat("# Heading\n\nParagraph with **bold** and `code`.\n\n", 10_000)
+		_, err := converter.ToHTML(ctx, input)
+		if err == nil {
+			t.Fatal("ToHTML(ctx, large input) error = nil, want error")
+		}
+		if err != context.Canceled {
+			t.Errorf("ToHTML(ctx, large input) error = %v, want context.Canceled", err)
+		}
+	})
+
 	t.Run("error case: deadline exceeded", func(t *testing.T) {
 		t.Parallel()
 
-		// Create an already-expired context to avoid flaky timing issues
+		// Create an already-expired context to avoid flaky timing issues.
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
 		defer cancel()
 

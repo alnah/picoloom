@@ -1,5 +1,3 @@
-//go:build bench
-
 package pipeline
 
 import (
@@ -50,12 +48,13 @@ func BenchmarkGoldmarkToHTMLBySize(b *testing.B) {
 	converter := NewGoldmarkConverter()
 	ctx := context.Background()
 
-	sizes := []int{1, 10, 50, 100, 500}
+	sizes := []int{1, 10, 50, 100, 500, 1000}
 
 	for _, size := range sizes {
 		content := generateMixedMarkdown(size)
 		b.Run(fmt.Sprintf("sections_%d", size), func(b *testing.B) {
 			b.ReportAllocs()
+			b.SetBytes(int64(len(content)))
 			b.ResetTimer()
 
 			for i := 0; i < b.N; i++ {

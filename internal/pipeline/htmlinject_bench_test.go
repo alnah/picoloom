@@ -83,7 +83,10 @@ func BenchmarkSanitizeCSS(b *testing.B) {
 
 // BenchmarkSignatureInjection_InjectSignature benchmarks signature block injection.
 func BenchmarkSignatureInjection_InjectSignature(b *testing.B) {
-	injector := NewSignatureInjection()
+	injector, err := NewSignatureInjection(`<section class="signature">{{.Name}}{{.Title}}{{.Email}}{{.Organization}}</section>`)
+	if err != nil {
+		b.Fatal(err)
+	}
 	ctx := context.Background()
 
 	html := generateTestHTML(100)
@@ -125,7 +128,10 @@ func BenchmarkSignatureInjection_InjectSignature(b *testing.B) {
 
 // BenchmarkCoverInjection_InjectCover benchmarks cover page injection.
 func BenchmarkCoverInjection_InjectCover(b *testing.B) {
-	injector := NewCoverInjection()
+	injector, err := NewCoverInjection(`<section class="cover">{{.Title}}{{.Subtitle}}{{.Author}}{{.Organization}}</section>`)
+	if err != nil {
+		b.Fatal(err)
+	}
 	ctx := context.Background()
 
 	html := generateTestHTML(100)
