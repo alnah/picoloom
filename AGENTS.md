@@ -12,14 +12,14 @@
 - Codebase root: this repository.
 - Project documentation: `README.md`, `docs/ARCHITECTURE.md`, `docs/LAYOUT.md`, `CONTRIBUTING.md`.
 - Validation commands: `Makefile`, `.github/workflows/ci.yml`, `.golangci.yml`, `go.mod`.
-- Stack references: `~/workspace/stack/` contains local source-of-truth clones named `owner.repo`.
+- Stack references: `~/workspace/repos/` contains local source-of-truth clones named `owner.repo`.
 - For Go questions, prefer relevant local stack sources before web search:
-  - `~/workspace/stack/golang.go` for language, stdlib, tests, toolchain behavior.
-  - `~/workspace/stack/golang.website` for go.dev docs and release notes.
-  - `~/workspace/stack/yuin.goldmark` for Markdown parser behavior.
-  - `~/workspace/stack/go-rod.rod` for browser lifecycle, context, timeout, Rod APIs.
-  - `~/workspace/stack/goccy.go-yaml` for YAML behavior.
-  - `~/workspace/stack/golangci.golangci-lint` for lint behavior.
+  - `~/workspace/repos/golang.go` for language, stdlib, tests, toolchain behavior.
+  - `~/workspace/repos/golang.website` for go.dev docs and release notes.
+  - `~/workspace/repos/yuin.goldmark` for Markdown parser behavior.
+  - `~/workspace/repos/go-rod.rod` for browser lifecycle, context, timeout, Rod APIs.
+  - `~/workspace/repos/goccy.go-yaml` for YAML behavior.
+  - `~/workspace/repos/golangci.golangci-lint` for lint behavior.
 - Read only task-relevant stack files. Do not bulk-audit stack.
 
 ## Project architecture
