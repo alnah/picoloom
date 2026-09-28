@@ -174,9 +174,10 @@ type admonitionExtension struct{}
 
 // Extend implements goldmark.Extender.
 func (e *admonitionExtension) Extend(m goldmark.Markdown) {
-	m.Parser().AddOptions(parser.WithASTTransformers(
-		util.Prioritized(NewAdmonitionQuoteTransformer(), 100),
-	))
+	m.Parser().AddOptions(
+		parser.WithBlockParsers(util.Prioritized(NewAdmonitionFenceParser(), 100)),
+		parser.WithASTTransformers(util.Prioritized(NewAdmonitionQuoteTransformer(), 100)),
+	)
 	m.Renderer().AddOptions(renderer.WithNodeRenderers(
 		util.Prioritized(NewAdmonitionHTMLRenderer(), 500),
 	))

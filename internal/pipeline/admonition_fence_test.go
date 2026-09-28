@@ -105,6 +105,28 @@ func TestAdmonitionFenceParser_UnknownTypePassthrough(t *testing.T) {
 	}
 }
 
+func TestAdmonitionFenceParser_MalformedPassthrough(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+	}{
+		{"bare colons", ":::"},
+		{"two colons", "::"},
+		{"no space", ":::note\nBody."},
+		{"trailing space only", "::: \nBody."},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := renderTestMarkdown(t, newAdmonitionTestMarkdown(), tt.source)
+			want := renderTestMarkdown(t, newPlainTestMarkdown(), tt.source)
+			if got != want {
+				t.Fatalf("render = %q, want passthrough %q", got, want)
+			}
+		})
+	}
+}
+
 func TestAdmonitionFenceParser_Unclosed(t *testing.T) {
 	source := "::: note\nBody."
 
