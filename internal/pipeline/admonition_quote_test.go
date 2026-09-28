@@ -155,12 +155,10 @@ func TestAdmonitionQuoteTransformer_NestedQuotes(t *testing.T) {
 				"</blockquote>\n",
 		},
 		{
-			name:   "admonition containing quoted admonition",
+			name:   "admonition containing nested admonition",
 			source: "> [!NOTE]\n> > [!TIP]\n> > Nested.",
 			want: expectedAdmonitionHTML("note", "Note",
-				"<blockquote>\n"+
-					expectedAdmonitionHTML("tip", "Tip", "<p>Nested.</p>\n")+
-					"</blockquote>\n"),
+				expectedAdmonitionHTML("tip", "Tip", "<p>Nested.</p>\n")),
 		},
 	}
 

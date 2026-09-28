@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuin/goldmark"
 	gast "github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
@@ -79,8 +80,6 @@ func (k AdmonitionKind) DefaultTitle() string {
 
 // parseAdmonitionKind resolves a canonical or aliased label. Comparison is
 // case-insensitive. The caller trims surrounding whitespace.
-//
-//nolint:unused // called by the quote transformer added in T2.
 func parseAdmonitionKind(label string) (AdmonitionKind, bool) {
 	normalized := strings.ToLower(label)
 	for i, def := range kindDefinitions {
@@ -175,6 +174,9 @@ type admonitionExtension struct{}
 
 // Extend implements goldmark.Extender.
 func (e *admonitionExtension) Extend(m goldmark.Markdown) {
+	m.Parser().AddOptions(parser.WithASTTransformers(
+		util.Prioritized(NewAdmonitionQuoteTransformer(), 100),
+	))
 	m.Renderer().AddOptions(renderer.WithNodeRenderers(
 		util.Prioritized(NewAdmonitionHTMLRenderer(), 500),
 	))
