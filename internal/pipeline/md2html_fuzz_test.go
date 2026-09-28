@@ -16,6 +16,14 @@ func FuzzGoldmarkConverterToHTML(f *testing.F) {
 		"<script>alert('xss')</script>",
 		"[broken link](\n\n![image](../logo.png)",
 		"# 日本語\n\nBonjour le monde\n\n> Citation",
+		"> [!NOTE]\n> Body.",
+		"> [!TIP] Title\n> More.",
+		"> [!CAUTION] <script>alert(1)</script>\n> Body.",
+		"::: tip\nBody.\n:::",
+		":::: note\n::: tip\nNested.\n:::\n::::",
+		"::: bogus\nBody.\n:::",
+		":::note\nBody.",
+		"> > [!NOTE]\n> > Inner.",
 	}
 	for _, seed := range seeds {
 		f.Add(seed)
