@@ -59,6 +59,13 @@
   --cover-logo-radius: 0;
 }
 
+/* Admonitions - accents from the monochrome palette */
+.admonition-note      { --admonition-accent: #000000; }
+.admonition-tip       { --admonition-accent: #333333; }
+.admonition-important { --admonition-accent: #000000; }
+.admonition-warning   { --admonition-accent: #555555; }
+.admonition-caution   { --admonition-accent: #000000; }
+
 /* 2. RESET AND BASE STYLES */
 * {
   -webkit-print-color-adjust: exact;

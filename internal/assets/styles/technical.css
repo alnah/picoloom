@@ -83,6 +83,13 @@
   --cover-logo-radius: 0;
 }
 
+/* Admonitions - accents from the theme semantic palette */
+.admonition-note      { --admonition-accent: var(--color-accent-fg); }
+.admonition-tip       { --admonition-accent: var(--color-success-fg); }
+.admonition-important { --admonition-accent: var(--color-accent-emphasis); }
+.admonition-warning   { --admonition-accent: var(--color-attention-fg); }
+.admonition-caution   { --admonition-accent: var(--color-danger-fg); }
+
 /* 2. RESET AND BASE STYLES */
 * {
   -webkit-print-color-adjust: exact;
