@@ -234,7 +234,8 @@ func (c *Converter) injectHTMLDecorations(ctx context.Context, htmlContent strin
 // buildCombinedCSS centralizes stylesheet layering rules so precedence remains
 // stable (base, user overrides, then generated structural overlays).
 func buildCombinedCSS(baseCSS string, input Input) string {
-	// Order matters: page-break/watermark prefixes first, user CSS last.
+	// Order matters: page breaks, admonition overlay, watermark, then base
+	// theme and user CSS, so user CSS keeps the final word.
 	cssContent := baseCSS
 	if input.CSS != "" {
 		cssContent += "\n" + input.CSS
@@ -242,6 +243,7 @@ func buildCombinedCSS(baseCSS string, input Input) string {
 	if input.Watermark != nil {
 		cssContent = buildWatermarkCSS(input.Watermark) + cssContent
 	}
+	cssContent = buildAdmonitionCSS() + cssContent
 	return buildPageBreaksCSS(input.PageBreaks) + cssContent
 }
 
