@@ -80,16 +80,12 @@ func (b *admonitionFenceParser) CanAcceptIndentedLine() bool {
 // parseFenceOpenLine reports the kind and title when the line opens a fence.
 // A space is required between the colon run and the type.
 func parseFenceOpenLine(line []byte, offset int) (AdmonitionKind, string, bool) {
-	line = line[offset:]
-	colons := 0
-	for colons < len(line) && line[colons] == ':' {
-		colons++
-	}
+	colons := fenceColonRun(line, offset)
 	if colons < admonitionFenceMinLength {
 		return AdmonitionNote, "", false
 	}
 
-	rest := line[colons:]
+	rest := line[offset+colons:]
 	if len(rest) == 0 || (rest[0] != ' ' && rest[0] != '\t') {
 		return AdmonitionNote, "", false
 	}
@@ -114,13 +110,19 @@ func parseFenceOpenLine(line []byte, offset int) (AdmonitionKind, string, bool) 
 // isFenceCloseLine reports whether the line is a closing fence: a colon run
 // of three or more followed only by whitespace.
 func isFenceCloseLine(line []byte, offset int) bool {
+	colons := fenceColonRun(line, offset)
+	if colons < admonitionFenceMinLength {
+		return false
+	}
+	return util.IsBlank(line[offset+colons:])
+}
+
+// fenceColonRun returns the number of colons starting at offset.
+func fenceColonRun(line []byte, offset int) int {
 	line = line[offset:]
 	colons := 0
 	for colons < len(line) && line[colons] == ':' {
 		colons++
 	}
-	if colons < admonitionFenceMinLength {
-		return false
-	}
-	return util.IsBlank(line[colons:])
+	return colons
 }
