@@ -16,6 +16,9 @@ var styles embed.FS
 //go:embed templates/*/*
 var templates embed.FS
 
+//go:embed overlays/*
+var overlays embed.FS
+
 // AvailableStyles returns the names of all embedded styles (without .css extension).
 // The list is sorted alphabetically.
 func AvailableStyles() []string {
@@ -92,6 +95,31 @@ func (e *EmbeddedLoader) LoadTemplateSet(name string) (*TemplateSet, error) {
 		Cover:     string(cover),
 		Signature: string(signature),
 	}, nil
+}
+
+// AdmonitionOverlayCSS returns the embedded structural admonition stylesheet.
+func AdmonitionOverlayCSS() string {
+	return string(mustReadOverlay("overlays/admonition.css"))
+}
+
+// WatermarkOverlayTemplate returns the embedded watermark CSS template.
+func WatermarkOverlayTemplate() string {
+	return string(mustReadOverlay("overlays/watermark.css.tmpl"))
+}
+
+// PageBreaksOverlayTemplate returns the embedded page-break CSS template.
+func PageBreaksOverlayTemplate() string {
+	return string(mustReadOverlay("overlays/pagebreaks.css.tmpl"))
+}
+
+// mustReadOverlay reads an embedded overlay file, which is a programmer error
+// to miss because the files ship with the binary.
+func mustReadOverlay(name string) []byte {
+	content, err := overlays.ReadFile(name)
+	if err != nil {
+		panic(fmt.Sprintf("embedded overlay %s: %v", name, err))
+	}
+	return content
 }
 
 // Compile-time interface check.

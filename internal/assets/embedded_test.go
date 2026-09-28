@@ -180,6 +180,41 @@ func TestAvailableStyles(t *testing.T) {
 	}
 }
 
+func TestOverlayAccessors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{"admonition css", AdmonitionOverlayCSS(), ".admonition-note {"},
+		{"watermark template", WatermarkOverlayTemplate(), "{{.Content}}"},
+		{"pagebreaks template", PageBreaksOverlayTemplate(), "{{.Orphans}}"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if !strings.Contains(tt.content, tt.want) {
+				t.Errorf("overlay missing %q", tt.want)
+			}
+		})
+	}
+}
+
+func TestMustReadOverlay_PanicsOnMissing(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Fatal("mustReadOverlay(missing) did not panic")
+		}
+	}()
+	mustReadOverlay("overlays/missing.css")
+}
+
 func TestEmbeddedLoader_LoadStyle_ErrorIncludesAvailableStyles(t *testing.T) {
 	t.Parallel()
 

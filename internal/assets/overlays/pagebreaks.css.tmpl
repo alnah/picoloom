@@ -1,0 +1,37 @@
+/* Page breaks: always active - prevent heading alone at page bottom */
+h1, h2, h3, h4, h5, h6 {
+  break-after: avoid;
+  page-break-after: avoid;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Page breaks: orphan/widow control */
+p, li, dd, dt, blockquote {
+  orphans: {{.Orphans}};
+  widows: {{.Widows}};
+}
+{{if .BeforeH1}}
+/* Page breaks: before H1 */
+h1 {
+  break-before: page;
+  page-break-before: always;
+}
+/* Exception: no break before first H1 if it's first element in body */
+body > h1:first-child {
+  break-before: auto;
+  page-break-before: auto;
+}
+{{end}}{{if .BeforeH2}}
+/* Page breaks: before H2 */
+h2 {
+  break-before: page;
+  page-break-before: always;
+}
+{{end}}{{if .BeforeH3}}
+/* Page breaks: before H3 */
+h3 {
+  break-before: page;
+  page-break-before: always;
+}
+{{end}}

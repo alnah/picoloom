@@ -5,10 +5,13 @@ package picoloom
 // - buildWatermarkCSS: tests watermark CSS generation with escaping
 // - breakURLPattern: tests URL pattern breaking with dot leader replacement
 // - buildPageBreaksCSS: tests page break CSS generation for headings and orphans/widows
+// - buildAdmonitionCSS: tests structural admonition styles and type palettes
+// - renderCSSTemplate: tests overlay template rendering failure handling
 
 import (
 	"strings"
 	"testing"
+	"text/template"
 )
 
 // ---------------------------------------------------------------------------
@@ -72,6 +75,11 @@ func TestEscapeCSSString(t *testing.T) {
 			name:     "unicode preserved",
 			input:    "BROUILLON",
 			expected: "BROUILLON",
+		},
+		{
+			name:     "percent preserved",
+			input:    "100% done",
+			expected: "100% done",
 		},
 		{
 			name:     "mixed special characters",
@@ -166,6 +174,13 @@ func TestBuildWatermarkCSS(t *testing.T) {
 			watermark: &Watermark{Text: "LINE1\nLINE2", Color: "#888888", Opacity: 0.1, Angle: -45},
 			wantContains: []string{
 				`content: "LINE1\A LINE2"`,
+			},
+		},
+		{
+			name:      "percent in text is preserved",
+			watermark: &Watermark{Text: "50%", Color: "#888888", Opacity: 0.1, Angle: -45},
+			wantContains: []string{
+				`content: "50%"`,
 			},
 		},
 	}
@@ -602,4 +617,21 @@ func assertOrder(t *testing.T, css string, markers ...string) {
 		}
 		prev = idx
 	}
+}
+
+// ---------------------------------------------------------------------------
+// TestRenderCSSTemplate - Overlay Template Failure Handling
+// ---------------------------------------------------------------------------
+
+func TestRenderCSSTemplate_PanicsOnDataMismatch(t *testing.T) {
+	t.Parallel()
+
+	tmpl := template.Must(template.New("mismatch").Parse("{{.Missing}}"))
+
+	defer func() {
+		if recover() == nil {
+			t.Fatal("renderCSSTemplate() did not panic on data mismatch")
+		}
+	}()
+	renderCSSTemplate(tmpl, struct{}{})
 }

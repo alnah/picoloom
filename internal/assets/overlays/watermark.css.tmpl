@@ -1,0 +1,16 @@
+/* Watermark */
+body::before {
+  content: "{{.Content}}";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate({{.Angle}}deg);
+  font-size: {{.FontSize}};
+  font-weight: bold;
+  color: {{.Color}};
+  opacity: {{.Opacity}};
+  z-index: -1;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: {{.FontFamily}};
+}
