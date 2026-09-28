@@ -172,7 +172,9 @@ var AdmonitionExtension = &admonitionExtension{}
 
 type admonitionExtension struct{}
 
-// Extend implements goldmark.Extender.
+// Extend implements goldmark.Extender. Parsing runs before rendering: the
+// block parser opens ::: fences, the AST transformer rewrites marked
+// blockquotes, then the node renderer draws both as admonition boxes.
 func (e *admonitionExtension) Extend(m goldmark.Markdown) {
 	m.Parser().AddOptions(
 		parser.WithBlockParsers(util.Prioritized(NewAdmonitionFenceParser(), 100)),

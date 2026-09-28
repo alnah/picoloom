@@ -39,7 +39,8 @@ type GoldmarkConverter struct {
 	md goldmark.Markdown
 }
 
-// NewGoldmarkConverter creates a GoldmarkConverter with GFM extensions and syntax highlighting.
+// NewGoldmarkConverter creates a GoldmarkConverter with GFM extensions,
+// admonitions, and syntax highlighting.
 func NewGoldmarkConverter() *GoldmarkConverter {
 	md := goldmark.New(
 		goldmark.WithExtensions(
