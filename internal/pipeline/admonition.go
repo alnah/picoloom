@@ -13,6 +13,7 @@ import (
 // AdmonitionKind identifies a supported admonition type.
 type AdmonitionKind int
 
+// Supported admonition kinds.
 const (
 	AdmonitionNote AdmonitionKind = iota
 	AdmonitionTip
@@ -78,6 +79,8 @@ func (k AdmonitionKind) DefaultTitle() string {
 
 // parseAdmonitionKind resolves a canonical or aliased label. Comparison is
 // case-insensitive. The caller trims surrounding whitespace.
+//
+//nolint:unused // called by the quote transformer added in T2.
 func parseAdmonitionKind(label string) (AdmonitionKind, bool) {
 	normalized := strings.ToLower(label)
 	for i, def := range kindDefinitions {
