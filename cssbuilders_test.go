@@ -437,3 +437,169 @@ func TestBuildPageBreaksCSS(t *testing.T) {
 		})
 	}
 }
+
+// ---------------------------------------------------------------------------
+// TestBuildAdmonitionCSS - Admonition CSS Overlay
+// ---------------------------------------------------------------------------
+
+func TestBuildAdmonitionCSS_ContainsStructure(t *testing.T) {
+	t.Parallel()
+
+	got := buildAdmonitionCSS()
+
+	wantContains := []string{
+		"/* Admonitions: blockquote alerts and ::: fences */",
+		".admonition {",
+		"--admonition-accent: var(--color-accent-emphasis, #333);",
+		"--admonition-bg: var(--color-canvas-subtle, #f5f5f5);",
+		"border-left: 4px solid var(--admonition-accent);",
+		"background: var(--admonition-bg);",
+		"break-inside: auto;",
+		"page-break-inside: auto;",
+		".admonition-title {",
+		"font-weight: 600;",
+		"color: var(--admonition-accent);",
+		"break-after: avoid;",
+		"page-break-after: avoid;",
+		".admonition > *:last-child {",
+		".admonition .admonition {",
+		".admonition-note {",
+		".admonition-tip {",
+		".admonition-important {",
+		".admonition-warning {",
+		".admonition-caution {",
+	}
+
+	for _, want := range wantContains {
+		if !strings.Contains(got, want) {
+			t.Errorf("buildAdmonitionCSS() missing %q\nGot:\n%s", want, got)
+		}
+	}
+
+	if strings.Contains(got, "color-mix(") {
+		t.Errorf("buildAdmonitionCSS() must not use color-mix\nGot:\n%s", got)
+	}
+}
+
+func TestBuildAdmonitionCSS_PaletteVariables(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		selector string
+		accent   string
+		border   string
+		width    bool
+	}{
+		{
+			name:     "note",
+			selector: ".admonition-note {",
+			accent:   "--admonition-accent: var(--color-accent-fg, #0969da);",
+			border:   "border-left-style: solid;",
+		},
+		{
+			name:     "tip",
+			selector: ".admonition-tip {",
+			accent:   "--admonition-accent: var(--color-success-fg, #1a7f37);",
+			border:   "border-left-style: dashed;",
+		},
+		{
+			name:     "important",
+			selector: ".admonition-important {",
+			accent:   "--admonition-accent: var(--color-accent-emphasis, #0969da);",
+			border:   "border-left-style: double;",
+			width:    true,
+		},
+		{
+			name:     "warning",
+			selector: ".admonition-warning {",
+			accent:   "--admonition-accent: var(--color-attention-fg, #9a6700);",
+			border:   "border-left-style: dotted;",
+		},
+		{
+			name:     "caution",
+			selector: ".admonition-caution {",
+			accent:   "--admonition-accent: var(--color-danger-fg, #cf222e);",
+			border:   "border-left-style: solid;",
+			width:    true,
+		},
+	}
+
+	got := buildAdmonitionCSS()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			block := cssRuleBlock(t, got, tt.selector)
+			if !strings.Contains(block, tt.accent) {
+				t.Errorf("%s block missing %q\nGot:\n%s", tt.selector, tt.accent, block)
+			}
+			if !strings.Contains(block, tt.border) {
+				t.Errorf("%s block missing %q\nGot:\n%s", tt.selector, tt.border, block)
+			}
+			if hasWidth := strings.Contains(block, "border-left-width: 6px;"); hasWidth != tt.width {
+				t.Errorf("%s border-left-width present = %v, want %v\nGot:\n%s", tt.selector, hasWidth, tt.width, block)
+			}
+		})
+	}
+}
+
+// cssRuleBlock extracts the declaration block that follows selector.
+func cssRuleBlock(t *testing.T, css, selector string) string {
+	t.Helper()
+
+	start := strings.Index(css, selector)
+	if start < 0 {
+		t.Fatalf("selector %q not found in CSS\nGot:\n%s", selector, css)
+	}
+	end := strings.Index(css[start:], "}")
+	if end < 0 {
+		t.Fatalf("selector %q block not closed\nGot:\n%s", selector, css)
+	}
+	return css[start : start+end]
+}
+
+// ---------------------------------------------------------------------------
+// TestBuildCombinedCSS - Stylesheet Layer Order
+// ---------------------------------------------------------------------------
+
+func TestBuildCombinedCSS_Order(t *testing.T) {
+	t.Parallel()
+
+	t.Run("overlay before base", func(t *testing.T) {
+		t.Parallel()
+
+		got := buildCombinedCSS("/* base */", Input{})
+		assertOrder(t, got, "/* Page breaks", ".admonition {", "/* base */")
+	})
+
+	t.Run("full layering", func(t *testing.T) {
+		t.Parallel()
+
+		input := Input{
+			CSS:        "/* user */",
+			Watermark:  &Watermark{Text: "DRAFT", Color: "#888888", Opacity: 0.1, Angle: -45},
+			PageBreaks: &PageBreaks{BeforeH1: true},
+		}
+		got := buildCombinedCSS("/* base */", input)
+		assertOrder(t, got, "/* Page breaks", ".admonition {", "/* Watermark */", "/* base */", "/* user */")
+	})
+}
+
+// assertOrder checks that the markers appear in the given order.
+func assertOrder(t *testing.T, css string, markers ...string) {
+	t.Helper()
+
+	prev := -1
+	for _, marker := range markers {
+		idx := strings.Index(css, marker)
+		if idx < 0 {
+			t.Fatalf("marker %q not found in CSS\nGot:\n%s", marker, css)
+		}
+		if idx <= prev {
+			t.Fatalf("marker %q out of order\nGot:\n%s", marker, css)
+		}
+		prev = idx
+	}
+}
