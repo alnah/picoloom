@@ -6,6 +6,7 @@ package picoloom
 // - Tests NewConversionService with proper pipeline component initialization
 // - Tests Convert with various page settings and page breaks configurations
 // - Tests file output writing and PDF validity
+// - Covers admonitions end to end through PDF conversion
 // - Uses acquireService helper from integration_setup_test.go for pooled services
 
 import (
@@ -13,6 +14,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/alnah/picoloom/v2/internal/pipeline"
@@ -369,5 +371,57 @@ func TestConverter_Convert_PageBreaksWithOtherFeatures(t *testing.T) {
 
 	if len(data.PDF) < 100 {
 		t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TestIntegration_AdmonitionsPDF - Admonitions End to End
+// ---------------------------------------------------------------------------
+
+func TestIntegration_AdmonitionsPDF(t *testing.T) {
+	t.Parallel()
+
+	service := acquireService(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	defer cancel()
+
+	markdown := `# Admonitions
+
+> [!NOTE]
+> Note body.
+
+> [!TIP]
+> Tip body.
+
+> [!IMPORTANT]
+> Important body.
+
+> [!WARNING]
+> Warning body.
+
+> [!CAUTION]
+> Caution body.
+
+::: note
+> [!TIP]
+> Nested body.
+:::
+
+` + strings.Repeat("Filler paragraph to force a page break.\n\n", 40)
+
+	input := Input{Markdown: markdown}
+	data, err := service.Convert(ctx, input)
+	if err != nil {
+		t.Fatalf("Convert() unexpected error: %v", err)
+	}
+
+	if !bytes.HasPrefix(data.PDF, []byte("%PDF-")) {
+		t.Fatalf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
+	}
+
+	pages := bytes.Count(data.PDF, []byte("/Type /Page")) - bytes.Count(data.PDF, []byte("/Type /Pages"))
+	if pages < 2 {
+		t.Fatalf("PDF page count = %d, want >= 2", pages)
 	}
 }
