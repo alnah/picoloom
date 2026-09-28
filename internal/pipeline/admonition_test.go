@@ -1,4 +1,4 @@
-package pipeline
+package pipeline_test
 
 import (
 	"bytes"
@@ -11,19 +11,21 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/renderer/html"
+
+	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
 // renderAdmonitionNode renders a hand-built Admonition node through the
-// extension renderer. Used before the block parsers are wired.
-func renderAdmonitionNode(t *testing.T, kind AdmonitionKind, title, body string) string {
+// public extension renderer. Used before the block parsers are wired.
+func renderAdmonitionNode(t *testing.T, kind pipeline.AdmonitionKind, title, body string) string {
 	t.Helper()
 
 	markdown := goldmark.New(
-		goldmark.WithExtensions(AdmonitionExtension),
+		goldmark.WithExtensions(pipeline.AdmonitionExtension),
 		goldmark.WithRendererOptions(html.WithXHTML(), html.WithHardWraps()),
 	)
 	doc := ast.NewDocument()
-	node := NewAdmonition(kind, title)
+	node := pipeline.NewAdmonition(kind, title)
 	if body != "" {
 		paragraph := ast.NewParagraph()
 		paragraph.AppendChild(paragraph, ast.NewString([]byte(body)))
@@ -38,81 +40,18 @@ func renderAdmonitionNode(t *testing.T, kind AdmonitionKind, title, body string)
 	return buf.String()
 }
 
-func TestParseAdmonitionKind_Canonical(t *testing.T) {
-	tests := []struct {
-		label string
-		want  AdmonitionKind
-	}{
-		{"note", AdmonitionNote},
-		{"NOTE", AdmonitionNote},
-		{"Tip", AdmonitionTip},
-		{"important", AdmonitionImportant},
-		{"WaRnInG", AdmonitionWarning},
-		{"caution", AdmonitionCaution},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.label, func(t *testing.T) {
-			got, ok := parseAdmonitionKind(tt.label)
-			if !ok {
-				t.Fatalf("parseAdmonitionKind(%q) ok = false, want true", tt.label)
-			}
-			if got != tt.want {
-				t.Fatalf("parseAdmonitionKind(%q) = %v, want %v", tt.label, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestParseAdmonitionKind_Aliases(t *testing.T) {
-	tests := []struct {
-		label string
-		want  AdmonitionKind
-	}{
-		{"info", AdmonitionNote},
-		{"INFO", AdmonitionNote},
-		{"success", AdmonitionTip},
-		{"dAngEr", AdmonitionCaution},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.label, func(t *testing.T) {
-			got, ok := parseAdmonitionKind(tt.label)
-			if !ok {
-				t.Fatalf("parseAdmonitionKind(%q) ok = false, want true", tt.label)
-			}
-			if got != tt.want {
-				t.Fatalf("parseAdmonitionKind(%q) = %v, want %v", tt.label, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestParseAdmonitionKind_Unknown(t *testing.T) {
-	labels := []string{
-		"", "bogus", "notes", "note!", "note extra",
-		"not", "noted", "informational", "successful", "dangerous",
-		" info", "note ", "[]", "[!NOTE]", "noté",
-	}
-	for _, label := range labels {
-		if _, ok := parseAdmonitionKind(label); ok {
-			t.Fatalf("parseAdmonitionKind(%q) ok = true, want false", label)
-		}
-	}
-}
-
 func TestAdmonitionKind_ClassName_DefaultTitle(t *testing.T) {
 	tests := []struct {
-		kind       AdmonitionKind
+		kind       pipeline.AdmonitionKind
 		wantString string
 		wantClass  string
 		wantTitle  string
 	}{
-		{AdmonitionNote, "note", "admonition-note", "Note"},
-		{AdmonitionTip, "tip", "admonition-tip", "Tip"},
-		{AdmonitionImportant, "important", "admonition-important", "Important"},
-		{AdmonitionWarning, "warning", "admonition-warning", "Warning"},
-		{AdmonitionCaution, "caution", "admonition-caution", "Caution"},
+		{pipeline.AdmonitionNote, "note", "admonition-note", "Note"},
+		{pipeline.AdmonitionTip, "tip", "admonition-tip", "Tip"},
+		{pipeline.AdmonitionImportant, "important", "admonition-important", "Important"},
+		{pipeline.AdmonitionWarning, "warning", "admonition-warning", "Warning"},
+		{pipeline.AdmonitionCaution, "caution", "admonition-caution", "Caution"},
 	}
 
 	for _, tt := range tests {
@@ -131,7 +70,7 @@ func TestAdmonitionKind_ClassName_DefaultTitle(t *testing.T) {
 }
 
 func TestAdmonitionKind_InvalidFallback(t *testing.T) {
-	for _, kind := range []AdmonitionKind{-1, 5, 99} {
+	for _, kind := range []pipeline.AdmonitionKind{-1, 5, 99} {
 		if got := kind.String(); got != "" {
 			t.Errorf("String() = %q, want empty", got)
 		}
@@ -145,14 +84,14 @@ func TestAdmonitionKind_InvalidFallback(t *testing.T) {
 }
 
 func TestAdmonition_Kind(t *testing.T) {
-	node := NewAdmonition(AdmonitionTip, "Custom")
-	if got := node.Kind(); got != KindAdmonition {
-		t.Fatalf("Kind() = %v, want %v", got, KindAdmonition)
+	node := pipeline.NewAdmonition(pipeline.AdmonitionTip, "Custom")
+	if got := node.Kind(); got != pipeline.KindAdmonition {
+		t.Fatalf("Kind() = %v, want %v", got, pipeline.KindAdmonition)
 	}
 }
 
 func TestAdmonition_Dump(t *testing.T) {
-	node := NewAdmonition(AdmonitionTip, "Custom")
+	node := pipeline.NewAdmonition(pipeline.AdmonitionTip, "Custom")
 
 	readEnd, writeEnd, err := os.Pipe()
 	if err != nil {
@@ -182,16 +121,23 @@ func TestAdmonition_Dump(t *testing.T) {
 	}
 }
 
+func TestNewAdmonitionHTMLRenderer_Options(t *testing.T) {
+	nodeRenderer := pipeline.NewAdmonitionHTMLRenderer(html.WithXHTML())
+	if nodeRenderer == nil {
+		t.Fatal("NewAdmonitionHTMLRenderer() = nil")
+	}
+}
+
 func TestAdmonitionRenderer_DefaultTitles(t *testing.T) {
 	tests := []struct {
-		kind      AdmonitionKind
+		kind      pipeline.AdmonitionKind
 		wantTitle string
 	}{
-		{AdmonitionNote, "Note"},
-		{AdmonitionTip, "Tip"},
-		{AdmonitionImportant, "Important"},
-		{AdmonitionWarning, "Warning"},
-		{AdmonitionCaution, "Caution"},
+		{pipeline.AdmonitionNote, "Note"},
+		{pipeline.AdmonitionTip, "Tip"},
+		{pipeline.AdmonitionImportant, "Important"},
+		{pipeline.AdmonitionWarning, "Warning"},
+		{pipeline.AdmonitionCaution, "Caution"},
 	}
 
 	for _, tt := range tests {
@@ -211,7 +157,7 @@ func TestAdmonitionRenderer_DefaultTitles(t *testing.T) {
 }
 
 func TestAdmonitionRenderer_EscapesTitle(t *testing.T) {
-	got := renderAdmonitionNode(t, AdmonitionNote, `<script>alert("x") & 1</script>`, "")
+	got := renderAdmonitionNode(t, pipeline.AdmonitionNote, `<script>alert("x") & 1</script>`, "")
 	want := "<div class=\"admonition admonition-note\" role=\"note\">\n" +
 		"<p class=\"admonition-title\">&lt;script&gt;alert(&quot;x&quot;) &amp; 1&lt;/script&gt;</p>\n" +
 		"</div>\n"
