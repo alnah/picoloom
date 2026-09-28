@@ -27,21 +27,15 @@ type kindDefinition struct {
 	name         string
 	className    string
 	defaultTitle string
+	aliases      []string
 }
 
 var kindDefinitions = []kindDefinition{
-	{name: "note", className: "admonition-note", defaultTitle: "Note"},
-	{name: "tip", className: "admonition-tip", defaultTitle: "Tip"},
+	{name: "note", className: "admonition-note", defaultTitle: "Note", aliases: []string{"info"}},
+	{name: "tip", className: "admonition-tip", defaultTitle: "Tip", aliases: []string{"success"}},
 	{name: "important", className: "admonition-important", defaultTitle: "Important"},
 	{name: "warning", className: "admonition-warning", defaultTitle: "Warning"},
-	{name: "caution", className: "admonition-caution", defaultTitle: "Caution"},
-}
-
-// kindAliases maps accepted alternate labels to canonical kinds.
-var kindAliases = map[string]AdmonitionKind{
-	"info":    AdmonitionNote,
-	"success": AdmonitionTip,
-	"danger":  AdmonitionCaution,
+	{name: "caution", className: "admonition-caution", defaultTitle: "Caution", aliases: []string{"danger"}},
 }
 
 // kindDefinitionFor returns the definition of a kind, or false when the
@@ -90,9 +84,11 @@ func parseAdmonitionKind(label string) (AdmonitionKind, bool) {
 		if def.name == normalized {
 			return AdmonitionKind(i), true
 		}
-	}
-	if kind, ok := kindAliases[normalized]; ok {
-		return kind, true
+		for _, alias := range def.aliases {
+			if alias == normalized {
+				return AdmonitionKind(i), true
+			}
+		}
 	}
 	return AdmonitionNote, false
 }
