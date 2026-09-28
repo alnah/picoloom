@@ -105,6 +105,40 @@ func TestAdmonitionFenceParser_UnknownTypePassthrough(t *testing.T) {
 	}
 }
 
+func TestAdmonitionFenceParser_ClosingLineWithOpenBlocks(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+		body   string
+	}{
+		{
+			name:   "blockquote",
+			source: "::: note\n> Quoted.\n:::",
+			body:   "<blockquote>\n<p>Quoted.</p>\n</blockquote>\n",
+		},
+		{
+			name:   "list",
+			source: "::: note\n- item\n:::",
+			body:   "<ul>\n<li>item</li>\n</ul>\n",
+		},
+		{
+			name:   "code block",
+			source: "::: note\n```\n:::\n```\n:::",
+			body:   "<pre><code>:::\n</code></pre>\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := renderTestMarkdown(t, newAdmonitionTestMarkdown(), tt.source)
+			want := expectedAdmonitionHTML("note", "Note", tt.body)
+			if got != want {
+				t.Fatalf("render = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 func TestAdmonitionFenceParser_MalformedPassthrough(t *testing.T) {
 	tests := []struct {
 		name   string

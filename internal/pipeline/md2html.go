@@ -43,8 +43,9 @@ type GoldmarkConverter struct {
 func NewGoldmarkConverter() *GoldmarkConverter {
 	md := goldmark.New(
 		goldmark.WithExtensions(
-			extension.GFM,      // Tables, strikethrough, autolinks, task lists
-			extension.Footnote, // [^1] footnotes
+			extension.GFM,       // Tables, strikethrough, autolinks, task lists
+			extension.Footnote,  // [^1] footnotes
+			AdmonitionExtension, // Blockquote alerts and ::: fences
 			highlighting.NewHighlighting(
 				highlighting.WithFormatOptions(
 					chromahtml.WithClasses(true), // CSS classes for smaller HTML and external stylesheet control

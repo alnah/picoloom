@@ -40,17 +40,7 @@ func (b *admonitionFenceParser) Open(parent gast.Node, reader text.Reader, pc pa
 // close, so outer fences keep their content around inner fences. Open
 // paragraphs do not block a closing line.
 func (b *admonitionFenceParser) Continue(node gast.Node, reader text.Reader, pc parser.Context) parser.State {
-	// Paragraphs are skipped so a closing fence terminates an open
-	// paragraph instead of becoming lazy continuation.
-	blocks := pc.OpenedBlocks()
-	innermost := node
-	for i := len(blocks) - 1; i >= 0; i-- {
-		if !gast.IsParagraph(blocks[i].Node) {
-			innermost = blocks[i].Node
-			break
-		}
-	}
-	if innermost != node {
+	if blocksOpenAfter(node, pc) {
 		return parser.Continue | parser.HasChildren
 	}
 
@@ -61,6 +51,36 @@ func (b *admonitionFenceParser) Continue(node gast.Node, reader text.Reader, pc 
 		return parser.Close
 	}
 	return parser.Continue | parser.HasChildren
+}
+
+// blocksOpenAfter reports whether a block opened after node must keep the
+// current line. Paragraphs and container blocks do not block a closing
+// fence; nested fences and leaf blocks such as code do.
+func blocksOpenAfter(node gast.Node, pc parser.Context) bool {
+	blocks := pc.OpenedBlocks()
+	openAfter := false
+	for i := len(blocks) - 1; i >= 0; i-- {
+		open := blocks[i].Node
+		if open == node {
+			break
+		}
+		if gast.IsParagraph(open) || isContainerBlock(open) {
+			continue
+		}
+		openAfter = true
+		break
+	}
+	return openAfter
+}
+
+// isContainerBlock reports whether node is a container whose content can be
+// terminated by a closing fence line.
+func isContainerBlock(node gast.Node) bool {
+	switch node.(type) {
+	case *gast.Blockquote, *gast.List, *gast.ListItem:
+		return true
+	}
+	return false
 }
 
 // Close implements parser.BlockParser.
