@@ -35,25 +35,22 @@ func transformAdmonitionQuotes(node gast.Node, source []byte) {
 		transformAdmonitionQuotes(child, source)
 
 		if quote, ok := child.(*gast.Blockquote); ok {
-			if admonition := convertBlockQuote(quote, source); admonition != nil {
-				parent := quote.Parent()
-				parent.ReplaceChild(parent, quote, admonition)
-			}
+			replaceBlockQuoteWithAdmonition(quote, source)
 		}
 		child = next
 	}
 }
 
-// convertBlockQuote returns an Admonition when the first paragraph starts
-// with a known alert marker, or nil to leave the quote untouched.
-func convertBlockQuote(quote *gast.Blockquote, source []byte) *Admonition {
+// replaceBlockQuoteWithAdmonition converts a marked blockquote in place. The
+// quote is left untouched when it has no first paragraph or no known marker.
+func replaceBlockQuoteWithAdmonition(quote *gast.Blockquote, source []byte) {
 	paragraph, ok := quote.FirstChild().(*gast.Paragraph)
 	if !ok {
-		return nil
+		return
 	}
 	kind, title, ok := parseAlertMarker(paragraph, source)
 	if !ok {
-		return nil
+		return
 	}
 
 	stripAlertMarkerLine(paragraph)
@@ -68,7 +65,9 @@ func convertBlockQuote(quote *gast.Blockquote, source []byte) *Admonition {
 		admonition.AppendChild(admonition, child)
 		child = next
 	}
-	return admonition
+
+	parent := quote.Parent()
+	parent.ReplaceChild(parent, quote, admonition)
 }
 
 // parseAlertMarker extracts the kind and title from the first line of the
