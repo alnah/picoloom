@@ -1,6 +1,6 @@
 module github.com/alnah/picoloom/v2
 
-go 1.25.4
+go 1.26.8
 
 tool github.com/securego/gosec/v2/cmd/gosec
 

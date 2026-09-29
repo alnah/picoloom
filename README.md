@@ -77,7 +77,7 @@ Download pre-built binaries from [GitHub Releases](https://github.com/alnah/pico
 
 ## Requirements
 
-- Go 1.25+
+- Go 1.26+
 - Chrome/Chromium (downloaded automatically on first run)
 - Homebrew users can install the CLI from `alnah/tap/picoloom`
 
