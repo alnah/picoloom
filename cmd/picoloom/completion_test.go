@@ -14,10 +14,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Shell completion script generation
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion(t *testing.T) {
 	t.Parallel()
 
@@ -107,10 +103,6 @@ func TestGenerateCompletion(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Error handling for unknown shells
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion_UnsupportedShell(t *testing.T) {
 	t.Parallel()
 
@@ -147,10 +139,6 @@ func TestGenerateCompletion_UnsupportedShell(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunCompletion - Usage message when no shell specified
-// ---------------------------------------------------------------------------
-
 func TestRunCompletion_NoArgs(t *testing.T) {
 	t.Parallel()
 
@@ -177,10 +165,6 @@ func TestRunCompletion_NoArgs(t *testing.T) {
 		t.Error("usage should mention zsh shell")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunCompletion - Successful completion for supported shells
-// ---------------------------------------------------------------------------
 
 func TestRunCompletion_ValidShell(t *testing.T) {
 	t.Parallel()
@@ -219,10 +203,6 @@ func TestRunCompletion_ValidShell(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunCompletion - Error handling for invalid shell
-// ---------------------------------------------------------------------------
-
 func TestRunCompletion_InvalidShell(t *testing.T) {
 	t.Parallel()
 
@@ -242,10 +222,6 @@ func TestRunCompletion_InvalidShell(t *testing.T) {
 		t.Errorf("error should wrap ErrUnsupportedShell, got: %v", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestGetCommands - Command definitions
-// ---------------------------------------------------------------------------
 
 func TestGetCommands(t *testing.T) {
 	t.Parallel()
@@ -268,10 +244,6 @@ func TestGetCommands(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestGetCommands - Convert command flag definitions
-// ---------------------------------------------------------------------------
 
 func TestGetCommands_ConvertHasFlags(t *testing.T) {
 	t.Parallel()
@@ -336,10 +308,6 @@ func TestGetCommands_ConvertHasFlags(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGetCommands - Enum flag value definitions
-// ---------------------------------------------------------------------------
-
 func TestGetCommands_EnumFlagsHaveValues(t *testing.T) {
 	t.Parallel()
 
@@ -380,10 +348,6 @@ func TestGetCommands_EnumFlagsHaveValues(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGetCommands - File flag glob pattern definitions
-// ---------------------------------------------------------------------------
-
 func TestGetCommands_FileFlagsHaveGlobs(t *testing.T) {
 	t.Parallel()
 
@@ -420,10 +384,6 @@ func TestGetCommands_FileFlagsHaveGlobs(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGetCommands - Directory flag type definitions
-// ---------------------------------------------------------------------------
-
 func TestGetCommands_DirFlagsAreMarked(t *testing.T) {
 	t.Parallel()
 
@@ -454,10 +414,6 @@ func TestGetCommands_DirFlagsAreMarked(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Bash script completeness
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion_BashContainsAllCommands(t *testing.T) {
 	t.Parallel()
 
@@ -475,10 +431,6 @@ func TestGenerateCompletion_BashContainsAllCommands(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Zsh script completeness
-// ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_ZshContainsAllCommands(t *testing.T) {
 	t.Parallel()
@@ -498,10 +450,6 @@ func TestGenerateCompletion_ZshContainsAllCommands(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Fish script completeness
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion_FishContainsAllCommands(t *testing.T) {
 	t.Parallel()
 
@@ -520,10 +468,6 @@ func TestGenerateCompletion_FishContainsAllCommands(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - PowerShell completeness
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion_PowerShellContainsAllCommands(t *testing.T) {
 	t.Parallel()
 
@@ -541,10 +485,6 @@ func TestGenerateCompletion_PowerShellContainsAllCommands(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Zsh enum value completion
-// ---------------------------------------------------------------------------
 
 func TestGenerateCompletion_ZshEnumCompletion(t *testing.T) {
 	t.Parallel()
@@ -566,10 +506,6 @@ func TestGenerateCompletion_ZshEnumCompletion(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestGenerateCompletion - Bash enum value completion
-// ---------------------------------------------------------------------------
-
 func TestGenerateCompletion_BashEnumCompletion(t *testing.T) {
 	t.Parallel()
 
@@ -589,10 +525,6 @@ func TestGenerateCompletion_BashEnumCompletion(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestShellConstants - Shell type constants
-// ---------------------------------------------------------------------------
 
 func TestShellConstants(t *testing.T) {
 	t.Parallel()
@@ -614,10 +546,6 @@ func TestShellConstants(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPrintCompletionUsage - Completion usage help output
-// ---------------------------------------------------------------------------
 
 func TestPrintCompletionUsage(t *testing.T) {
 	t.Parallel()

@@ -11,10 +11,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// BenchmarkBuildWatermarkCSS - Watermark CSS Generation Performance
-// ---------------------------------------------------------------------------
-
 func BenchmarkBuildWatermarkCSS(b *testing.B) {
 	watermarks := []struct {
 		name string
@@ -38,10 +34,6 @@ func BenchmarkBuildWatermarkCSS(b *testing.B) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// BenchmarkBuildPageBreaksCSS - Page Breaks CSS Generation Performance
-// ---------------------------------------------------------------------------
-
 func BenchmarkBuildPageBreaksCSS(b *testing.B) {
 	configs := []struct {
 		name string
@@ -64,10 +56,6 @@ func BenchmarkBuildPageBreaksCSS(b *testing.B) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// BenchmarkEscapeCSSString - CSS String Escaping Performance
-// ---------------------------------------------------------------------------
 
 func BenchmarkEscapeCSSString(b *testing.B) {
 	inputs := []struct {

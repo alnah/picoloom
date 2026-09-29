@@ -14,10 +14,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestResolveInputPath - Input path resolution precedence
-// ---------------------------------------------------------------------------
-
 func TestResolveInputPath(t *testing.T) {
 	t.Parallel()
 
@@ -72,10 +68,6 @@ func TestResolveInputPath(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestResolveOutputDir - Output directory resolution precedence
-// ---------------------------------------------------------------------------
-
 func TestResolveOutputDir(t *testing.T) {
 	t.Parallel()
 
@@ -116,10 +108,6 @@ func TestResolveOutputDir(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestResolveOutputPath - Output path resolution with directory mirroring
-// ---------------------------------------------------------------------------
 
 func TestResolveOutputPath(t *testing.T) {
 	t.Parallel()
@@ -192,10 +180,6 @@ func TestResolveOutputPath(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestValidateMarkdownExtension - Markdown file extension validation
-// ---------------------------------------------------------------------------
-
 func TestValidateMarkdownExtension(t *testing.T) {
 	t.Parallel()
 
@@ -246,10 +230,6 @@ func TestValidateMarkdownExtension(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestDiscoverFiles - File discovery with recursive directory traversal
-// ---------------------------------------------------------------------------
 
 func TestDiscoverFiles(t *testing.T) {
 	t.Parallel()

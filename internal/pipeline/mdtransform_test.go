@@ -443,10 +443,6 @@ func TestCommonMarkPreprocessor_PreprocessMarkdown(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Benchmark Tests
-// ---------------------------------------------------------------------------
-
 func BenchmarkStripFrontmatter(b *testing.B) {
 	tests := []struct {
 		name  string
@@ -480,9 +476,7 @@ func BenchmarkStripFrontmatter(b *testing.B) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // Fuzz Tests
-// ---------------------------------------------------------------------------
 
 func FuzzStripFrontmatter(f *testing.F) {
 	// Seed corpus with various input patterns

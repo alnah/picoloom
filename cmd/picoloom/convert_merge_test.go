@@ -12,10 +12,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestMergeFlags - CLI flags override config values
-// ---------------------------------------------------------------------------
-
 func TestMergeFlags(t *testing.T) {
 	t.Parallel()
 
@@ -406,10 +402,6 @@ func TestMergeFlags(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestMergeFlagsAutoEnable - Auto-enable parent features when child flags set
-// ---------------------------------------------------------------------------
 
 func TestMergeFlagsAutoEnable(t *testing.T) {
 	t.Parallel()

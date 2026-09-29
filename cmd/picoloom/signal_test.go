@@ -12,10 +12,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestNotifyContext - Context creation and cancellation behavior
-// ---------------------------------------------------------------------------
-
 func TestNotifyContext(t *testing.T) {
 	t.Parallel()
 

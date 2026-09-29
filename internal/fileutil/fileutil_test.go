@@ -39,10 +39,6 @@ func runStringBoolPredicateTests(t *testing.T, fnName string, tests []stringBool
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestValidateExtension - Extension validation
-// ---------------------------------------------------------------------------
-
 func TestValidateExtension(t *testing.T) {
 	t.Parallel()
 
@@ -94,10 +90,6 @@ func TestValidateExtension(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestWriteTempFile - Temporary file creation
-// ---------------------------------------------------------------------------
 
 func TestWriteTempFile(t *testing.T) {
 	t.Parallel()
@@ -169,10 +161,6 @@ func TestWriteTempFile(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWriteTempFile_Cleanup - Cleanup function removes file
-// ---------------------------------------------------------------------------
-
 func TestWriteTempFile_Cleanup(t *testing.T) {
 	t.Parallel()
 
@@ -194,10 +182,6 @@ func TestWriteTempFile_Cleanup(t *testing.T) {
 		t.Errorf("temp file still exists after cleanup at %s", path)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestWriteTempFile_InvalidExtension - Invalid extension errors
-// ---------------------------------------------------------------------------
 
 func TestWriteTempFile_InvalidExtension(t *testing.T) {
 	t.Parallel()
@@ -234,10 +218,6 @@ func TestWriteTempFile_InvalidExtension(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWriteTempFile_CreateTempError - CreateTemp failure handling
-// ---------------------------------------------------------------------------
-
 // NOTE: This test modifies TMPDIR and cannot run in parallel.
 func TestWriteTempFile_CreateTempError(t *testing.T) {
 	// Save original TMPDIR and restore after test
@@ -267,10 +247,6 @@ func TestWriteTempFile_CreateTempError(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWriteTempFile_LargeContent - Large file handling
-// ---------------------------------------------------------------------------
-
 func TestWriteTempFile_LargeContent(t *testing.T) {
 	t.Parallel()
 
@@ -292,10 +268,6 @@ func TestWriteTempFile_LargeContent(t *testing.T) {
 		t.Errorf("file size = %d, want %d", len(data), len(largeContent))
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestFileExists - File existence check
-// ---------------------------------------------------------------------------
 
 func TestFileExists(t *testing.T) {
 	t.Parallel()
@@ -352,10 +324,6 @@ func TestFileExists(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIsFilePath - File path detection
-// ---------------------------------------------------------------------------
 
 func TestIsFilePath(t *testing.T) {
 	t.Parallel()
@@ -444,10 +412,6 @@ func TestIsFilePath(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestIsCSS - CSS content detection
-// ---------------------------------------------------------------------------
-
 func TestIsCSS(t *testing.T) {
 	t.Parallel()
 
@@ -491,10 +455,6 @@ func TestIsCSS(t *testing.T) {
 
 	runStringBoolPredicateTests(t, "IsCSS", tests, fileutil.IsCSS)
 }
-
-// ---------------------------------------------------------------------------
-// TestIsURL - URL detection
-// ---------------------------------------------------------------------------
 
 func TestIsURL(t *testing.T) {
 	t.Parallel()

@@ -9,10 +9,6 @@ package process
 
 import "testing"
 
-// ---------------------------------------------------------------------------
-// TestKillProcessGroup - Invalid PID Handling
-// ---------------------------------------------------------------------------
-
 func TestKillProcessGroup(t *testing.T) {
 	t.Parallel()
 

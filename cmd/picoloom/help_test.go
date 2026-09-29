@@ -16,10 +16,6 @@ import (
 	picoloom "github.com/alnah/picoloom/v2"
 )
 
-// ---------------------------------------------------------------------------
-// TestPrintUsage - Main usage output
-// ---------------------------------------------------------------------------
-
 func TestPrintUsage(t *testing.T) {
 	t.Parallel()
 
@@ -42,10 +38,6 @@ func TestPrintUsage(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPrintConvertUsage - Convert command usage output
-// ---------------------------------------------------------------------------
 
 func TestPrintConvertUsage(t *testing.T) {
 	t.Parallel()
@@ -166,10 +158,6 @@ func TestPrintConvertUsage(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestHelpDefaultsMatchConstants - Verify documented defaults match actual values
-// ---------------------------------------------------------------------------
-
 func TestHelpDefaultsMatchConstants(t *testing.T) {
 	t.Parallel()
 
@@ -201,10 +189,6 @@ func TestHelpDefaultsMatchConstants(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunHelp - Help command routing
-// ---------------------------------------------------------------------------
 
 func TestRunHelp(t *testing.T) {
 	t.Parallel()

@@ -27,10 +27,6 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-// ---------------------------------------------------------------------------
-// Test Infrastructure - acceptance helpers
-// ---------------------------------------------------------------------------
-
 func newAcceptanceEnv(t *testing.T) (*Environment, *bytes.Buffer, *bytes.Buffer) {
 	t.Helper()
 
@@ -58,10 +54,6 @@ func runInTempDir(t *testing.T) {
 
 	t.Chdir(t.TempDir())
 }
-
-// ---------------------------------------------------------------------------
-// TestConfigInitAcceptance_* - command acceptance behavior
-// ---------------------------------------------------------------------------
 
 func TestConfigInitAcceptance_CommandDiscovery(t *testing.T) {
 	env, stdout, _ := newAcceptanceEnv(t)
@@ -175,10 +167,6 @@ func TestConfigInitAcceptance_NonTTYGuardrail(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestParseConfigInitFlags_* - config init flag parsing
-// ---------------------------------------------------------------------------
-
 func TestParseConfigInitFlags_Defaults(t *testing.T) {
 	t.Parallel()
 
@@ -258,10 +246,6 @@ func TestParseConfigInitFlags_Help(t *testing.T) {
 		t.Fatalf("parseConfigInitFlags([--help]) error = %v, want ErrHelp", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPrompt* - prompt rendering and parsing behavior
-// ---------------------------------------------------------------------------
 
 func TestPromptString_UsesDefaultAndShowsFormat(t *testing.T) {
 	t.Parallel()
@@ -352,10 +336,6 @@ func TestValidateWizardStyle(t *testing.T) {
 		t.Fatal("validateWizardStyle(\"unknown\") error = nil, want error")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildConfigInitConfig_* - interactive wizard materialization
-// ---------------------------------------------------------------------------
 
 func TestBuildConfigInitConfig_InteractiveFlow(t *testing.T) {
 	t.Parallel()
@@ -454,10 +434,6 @@ func TestBuildConfigInitConfig_InteractiveCancel(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestParseYesNo - yes/no parser aliases and errors
-// ---------------------------------------------------------------------------
-
 func TestParseYesNo(t *testing.T) {
 	t.Parallel()
 
@@ -495,10 +471,6 @@ func TestParseYesNo(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestOutputPathForExample - output example path normalization
-// ---------------------------------------------------------------------------
-
 func TestOutputPathForExample(t *testing.T) {
 	t.Parallel()
 
@@ -523,10 +495,6 @@ func TestOutputPathForExample(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestFormatConfigInitYAML - top-level YAML section spacing
-// ---------------------------------------------------------------------------
-
 func TestFormatConfigInitYAML_InsertsBlankLinesBetweenTopLevelKeys(t *testing.T) {
 	t.Parallel()
 
@@ -550,9 +518,7 @@ func TestFormatConfigInitYAML_LeavesEmptyInputUntouched(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // testConfigInitYAML - valid generated YAML fixture
-// ---------------------------------------------------------------------------
 
 func testConfigInitYAML(t *testing.T) []byte {
 	t.Helper()
@@ -568,10 +534,6 @@ func testConfigInitYAML(t *testing.T) []byte {
 	}
 	return data
 }
-
-// ---------------------------------------------------------------------------
-// TestConfigInit_* - config init safety behavior
-// ---------------------------------------------------------------------------
 
 func TestConfigInit_ForceRollbackOnReplaceFailure(t *testing.T) {
 	t.Chdir(t.TempDir())
@@ -747,10 +709,6 @@ func TestConfigInit_LockRemovedAfterWriteFailure(t *testing.T) {
 		t.Fatalf("lock file should be cleaned after failure, stat error: %v", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestConfigInit_InterruptSafety - interrupted force-overwrite recovery
-// ---------------------------------------------------------------------------
 
 func TestConfigInit_InterruptSafety(t *testing.T) {
 	const (

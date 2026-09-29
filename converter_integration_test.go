@@ -20,10 +20,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// ---------------------------------------------------------------------------
-// TestNewConverter - Service Initialization
-// ---------------------------------------------------------------------------
-
 func TestNewConverter(t *testing.T) {
 	t.Parallel()
 
@@ -56,10 +52,6 @@ func TestNewConverter(t *testing.T) {
 	// pdfConverter is already *rodConverter (concrete type), type assertion not needed
 }
 
-// ---------------------------------------------------------------------------
-// TestConverter_Convert - Basic Conversion
-// ---------------------------------------------------------------------------
-
 func TestConverter_Convert(t *testing.T) {
 	t.Parallel()
 
@@ -84,10 +76,6 @@ func TestConverter_Convert(t *testing.T) {
 		t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestConverter_Convert_FileOutput - File Output
-// ---------------------------------------------------------------------------
 
 func TestConverter_Convert_FileOutput(t *testing.T) {
 	t.Parallel()
@@ -118,10 +106,6 @@ func TestConverter_Convert_FileOutput(t *testing.T) {
 		t.Errorf("PDF file size = 0, want > 0")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestConverter_Convert_PageSettings - Page Settings Variations
-// ---------------------------------------------------------------------------
 
 func TestConverter_Convert_PageSettings(t *testing.T) {
 	t.Parallel()
@@ -199,10 +183,6 @@ func TestConverter_Convert_PageSettings(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestConverter_Convert_PageSettingsWithFooter - Page Settings with Footer
-// ---------------------------------------------------------------------------
-
 func TestConverter_Convert_PageSettingsWithFooter(t *testing.T) {
 	t.Parallel()
 
@@ -228,10 +208,6 @@ func TestConverter_Convert_PageSettingsWithFooter(t *testing.T) {
 		t.Errorf("Convert() PDF missing magic bytes, got prefix %q", data.PDF[:5])
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestConverter_Convert_PageBreaks - Page Breaks Configurations
-// ---------------------------------------------------------------------------
 
 func TestConverter_Convert_PageBreaks(t *testing.T) {
 	t.Parallel()
@@ -334,10 +310,6 @@ More content here.
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestConverter_Convert_PageBreaksWithOtherFeatures - Combined Features
-// ---------------------------------------------------------------------------
-
 func TestConverter_Convert_PageBreaksWithOtherFeatures(t *testing.T) {
 	t.Parallel()
 
@@ -373,10 +345,6 @@ func TestConverter_Convert_PageBreaksWithOtherFeatures(t *testing.T) {
 		t.Errorf("Convert() PDF size = %d bytes, want >= 100", len(data.PDF))
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_AdmonitionsPDF - Admonitions End to End
-// ---------------------------------------------------------------------------
 
 func TestIntegration_AdmonitionsPDF(t *testing.T) {
 	t.Parallel()

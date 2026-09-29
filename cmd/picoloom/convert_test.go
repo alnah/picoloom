@@ -22,10 +22,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// ---------------------------------------------------------------------------
-// TestResolveCSSContent - CSS content resolution
-// ---------------------------------------------------------------------------
-
 func TestResolveCSSContent(t *testing.T) {
 	t.Parallel()
 
@@ -149,10 +145,6 @@ func TestResolveCSSContent(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestConfigWithResolvedDate - Date resolution should not mutate input config
-// ---------------------------------------------------------------------------
-
 func TestConfigWithResolvedDate(t *testing.T) {
 	t.Parallel()
 
@@ -189,10 +181,6 @@ func TestConfigWithResolvedDate(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestPrintResultsOutput - Conversion result counting
-// ---------------------------------------------------------------------------
 
 func TestPrintResultsOutput(t *testing.T) {
 	t.Parallel()
@@ -232,10 +220,6 @@ func TestPrintResultsOutput(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestConvertFile_ErrorPaths - File conversion error handling
-// ---------------------------------------------------------------------------
 
 func TestConvertFile_ErrorPaths(t *testing.T) {
 	t.Parallel()
@@ -385,10 +369,6 @@ func TestConvertFile_ErrorPaths(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestConvertFile_SourceDir - SourceDir auto-setting from input path
-// ---------------------------------------------------------------------------
-
 func TestConvertFile_SourceDir(t *testing.T) {
 	t.Parallel()
 
@@ -452,10 +432,6 @@ func TestConvertFile_SourceDir(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestHtmlOutputPath - HTML output path generation
-// ---------------------------------------------------------------------------
-
 func TestHtmlOutputPath(t *testing.T) {
 	t.Parallel()
 
@@ -507,10 +483,6 @@ func TestHtmlOutputPath(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestLoadTemplateSetFromDir - Template set loading from filesystem
-// ---------------------------------------------------------------------------
 
 func TestLoadTemplateSetFromDir(t *testing.T) {
 	t.Parallel()
@@ -593,10 +565,6 @@ func TestLoadTemplateSetFromDir(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestResolveTemplateSet - Template set resolution by name or path
-// ---------------------------------------------------------------------------
 
 func TestResolveTemplateSet(t *testing.T) {
 	t.Parallel()

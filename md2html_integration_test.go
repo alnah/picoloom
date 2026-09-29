@@ -16,10 +16,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// ---------------------------------------------------------------------------
-// TestGoldmarkConverter_ToHTML_Integration - Goldmark HTML Conversion
-// ---------------------------------------------------------------------------
-
 func TestGoldmarkConverter_ToHTML_Integration(t *testing.T) {
 	t.Parallel()
 
@@ -207,10 +203,6 @@ Ceci est un test avec des caracteres speciaux.`
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestHighlightFullPipeline - Highlight Feature End-to-End
-// ---------------------------------------------------------------------------
 
 func TestHighlightFullPipeline(t *testing.T) {
 	t.Parallel()

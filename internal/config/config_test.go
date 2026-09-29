@@ -1736,10 +1736,6 @@ func TestConfig_Validate_Timeout(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestLoadConfig_Timeout - YAML loading with timeout field
-// ---------------------------------------------------------------------------
-
 func TestLoadConfig_Timeout(t *testing.T) {
 	t.Parallel()
 

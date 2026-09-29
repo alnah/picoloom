@@ -13,10 +13,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestNewTemplateSet - Template Set Construction
-// ---------------------------------------------------------------------------
-
 func TestNewTemplateSet(t *testing.T) {
 	t.Parallel()
 
@@ -71,10 +67,6 @@ func TestNewTemplateSet(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestNewAssetLoader_EmptyPath - Embedded Assets Fallback
-// ---------------------------------------------------------------------------
-
 func TestNewAssetLoader_EmptyPath(t *testing.T) {
 	t.Parallel()
 
@@ -108,10 +100,6 @@ func TestNewAssetLoader_EmptyPath(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestNewAssetLoader_InvalidPath - Invalid Path Error
-// ---------------------------------------------------------------------------
-
 func TestNewAssetLoader_InvalidPath(t *testing.T) {
 	t.Parallel()
 
@@ -123,10 +111,6 @@ func TestNewAssetLoader_InvalidPath(t *testing.T) {
 		t.Errorf("NewAssetLoader(\"/nonexistent/path/to/assets\") error = %v, want ErrInvalidAssetPath", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestNewAssetLoader_ValidPath - Valid Path with Fallback
-// ---------------------------------------------------------------------------
 
 func TestNewAssetLoader_ValidPath(t *testing.T) {
 	t.Parallel()
@@ -147,10 +131,6 @@ func TestNewAssetLoader_ValidPath(t *testing.T) {
 		t.Error("Fallback to embedded style failed")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestNewAssetLoader_CustomStyleOverride - Custom Style Override
-// ---------------------------------------------------------------------------
 
 func TestNewAssetLoader_CustomStyleOverride(t *testing.T) {
 	t.Parallel()
@@ -183,10 +163,6 @@ func TestNewAssetLoader_CustomStyleOverride(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestAssetLoader_LoadStyle_NotFound - Style Not Found Error
-// ---------------------------------------------------------------------------
-
 func TestAssetLoader_LoadStyle_NotFound(t *testing.T) {
 	t.Parallel()
 
@@ -203,10 +179,6 @@ func TestAssetLoader_LoadStyle_NotFound(t *testing.T) {
 		t.Errorf("LoadStyle(\"nonexistent-style\") error = %v, want ErrStyleNotFound", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestAssetLoader_LoadTemplateSet_NotFound - Template Set Not Found Error
-// ---------------------------------------------------------------------------
 
 func TestAssetLoader_LoadTemplateSet_NotFound(t *testing.T) {
 	t.Parallel()
@@ -225,10 +197,6 @@ func TestAssetLoader_LoadTemplateSet_NotFound(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestDefaultConstants - Default Constant Values
-// ---------------------------------------------------------------------------
-
 func TestDefaultConstants(t *testing.T) {
 	t.Parallel()
 
@@ -239,10 +207,6 @@ func TestDefaultConstants(t *testing.T) {
 		t.Errorf("DefaultTemplateSet = %q, want \"default\"", DefaultTemplateSet)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestErrorWrapping_PreservesMessage - Error Message Preservation
-// ---------------------------------------------------------------------------
 
 func TestErrorWrapping_PreservesMessage(t *testing.T) {
 	t.Parallel()
@@ -268,10 +232,6 @@ func TestErrorWrapping_PreservesMessage(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestErrorWrapping_UnwrapsToSentinel - Error Sentinel Unwrapping
-// ---------------------------------------------------------------------------
-
 func TestErrorWrapping_UnwrapsToSentinel(t *testing.T) {
 	t.Parallel()
 
@@ -292,10 +252,6 @@ func TestErrorWrapping_UnwrapsToSentinel(t *testing.T) {
 		t.Errorf("LoadTemplateSet(\"nonexistent\") error should unwrap to ErrTemplateSetNotFound, got %v", tsErr)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestNewAssetLoader_CustomTemplateOverride - Custom Template Override
-// ---------------------------------------------------------------------------
 
 func TestNewAssetLoader_CustomTemplateOverride(t *testing.T) {
 	t.Parallel()
@@ -335,10 +291,6 @@ func TestNewAssetLoader_CustomTemplateOverride(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWrappedAssetError_Error - Wrapped Error Message
-// ---------------------------------------------------------------------------
-
 func TestWrappedAssetError_Error(t *testing.T) {
 	t.Parallel()
 
@@ -352,10 +304,6 @@ func TestWrappedAssetError_Error(t *testing.T) {
 		t.Errorf("wrapError(sentinel, original).Error() = %q, want %q", wrapped.Error(), original.Error())
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestWrappedAssetError_Unwrap - Wrapped Error Unwrapping
-// ---------------------------------------------------------------------------
 
 func TestWrappedAssetError_Unwrap(t *testing.T) {
 	t.Parallel()
@@ -386,10 +334,6 @@ func TestWrappedAssetError_Unwrap(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestConvertAssetError_NilError - Nil Error Conversion
-// ---------------------------------------------------------------------------
-
 func TestConvertAssetError_NilError(t *testing.T) {
 	t.Parallel()
 
@@ -398,10 +342,6 @@ func TestConvertAssetError_NilError(t *testing.T) {
 		t.Errorf("convertAssetError(nil) = %v, want nil", result)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIsError - Error Comparison
-// ---------------------------------------------------------------------------
 
 func TestIsError(t *testing.T) {
 	t.Parallel()

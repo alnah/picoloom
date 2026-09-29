@@ -16,10 +16,6 @@ import (
 	picoloom "github.com/alnah/picoloom/v2"
 )
 
-// ---------------------------------------------------------------------------
-// TestDefaultEnv - Default environment factory
-// ---------------------------------------------------------------------------
-
 func TestDefaultEnv(t *testing.T) {
 	t.Parallel()
 
@@ -53,10 +49,6 @@ func TestDefaultEnv(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestEnvironmentInjection - Dependency injection pattern
-// ---------------------------------------------------------------------------
 
 func TestEnvironmentInjection(t *testing.T) {
 	t.Parallel()

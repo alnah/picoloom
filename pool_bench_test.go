@@ -15,10 +15,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// BenchmarkResolvePoolSize - Pool Size Calculation Performance
-// ---------------------------------------------------------------------------
-
 func BenchmarkResolvePoolSize(b *testing.B) {
 	workers := []int{0, 1, 2, 4, 8}
 
@@ -41,10 +37,6 @@ func workerName(w int) string {
 	}
 	return fmt.Sprintf("%d", w)
 }
-
-// ---------------------------------------------------------------------------
-// BenchmarkServicePoolAcquireRelease - Acquire/Release Cycle Performance
-// ---------------------------------------------------------------------------
 
 func BenchmarkServicePoolAcquireRelease(b *testing.B) {
 	sizes := []int{1, 2, 4, 8}
@@ -78,10 +70,6 @@ func BenchmarkServicePoolAcquireRelease(b *testing.B) {
 func poolSizeName(size int) string {
 	return fmt.Sprintf("size_%d", size)
 }
-
-// ---------------------------------------------------------------------------
-// BenchmarkServicePoolContention - Pool Contention Performance
-// ---------------------------------------------------------------------------
 
 func BenchmarkServicePoolContention(b *testing.B) {
 	poolSize := 4
@@ -132,10 +120,6 @@ func goroutineName(g int) string {
 	return fmt.Sprintf("goroutines_%d", g)
 }
 
-// ---------------------------------------------------------------------------
-// BenchmarkServicePoolParallel - Parallel Pool Access Performance
-// ---------------------------------------------------------------------------
-
 func BenchmarkServicePoolParallel(b *testing.B) {
 	pool := NewServicePool(runtime.GOMAXPROCS(0))
 	// Pre-warm
@@ -161,10 +145,6 @@ func BenchmarkServicePoolParallel(b *testing.B) {
 	b.StopTimer()
 	pool.Close()
 }
-
-// ---------------------------------------------------------------------------
-// BenchmarkNewServicePool - Pool Creation Performance
-// ---------------------------------------------------------------------------
 
 func BenchmarkNewServicePool(b *testing.B) {
 	sizes := []int{1, 4, 8}

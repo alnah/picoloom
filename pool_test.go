@@ -15,9 +15,7 @@ import (
 	"time"
 )
 
-// ---------------------------------------------------------------------------
 // Compile-Time Interface Check
-// ---------------------------------------------------------------------------
 
 var _ interface {
 	Acquire() *Service
@@ -53,10 +51,6 @@ func (m *closeSignalPDFConverter) Close() error {
 	m.once.Do(func() { close(m.closed) })
 	return nil
 }
-
-// ---------------------------------------------------------------------------
-// TestResolvePoolSize - Pool Size Calculation
-// ---------------------------------------------------------------------------
 
 func TestResolvePoolSize(t *testing.T) {
 	t.Parallel()
@@ -97,10 +91,6 @@ func TestResolvePoolSize(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestResolvePoolSize_Bounds - Pool Size Boundary Conditions
-// ---------------------------------------------------------------------------
-
 func TestResolvePoolSize_Bounds(t *testing.T) {
 	t.Parallel()
 
@@ -131,10 +121,6 @@ func TestResolvePoolSize_Bounds(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_AcquireRelease - Basic Acquire/Release Operations
-// ---------------------------------------------------------------------------
 
 func TestServicePool_AcquireRelease(t *testing.T) {
 	t.Parallel()
@@ -172,10 +158,6 @@ func TestServicePool_AcquireRelease(t *testing.T) {
 	pool.Release(svc3)
 }
 
-// ---------------------------------------------------------------------------
-// TestServicePool_Size - Pool Size Property
-// ---------------------------------------------------------------------------
-
 func TestServicePool_Size(t *testing.T) {
 	t.Parallel()
 
@@ -203,10 +185,6 @@ func TestServicePool_Size(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_ConcurrentAccess - Concurrent Access Safety
-// ---------------------------------------------------------------------------
 
 func TestServicePool_ConcurrentAccess(t *testing.T) {
 	t.Parallel()
@@ -244,10 +222,6 @@ func TestServicePool_ConcurrentAccess(t *testing.T) {
 		t.Fatalf("concurrent access test timed out - possible deadlock")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_ClosePreventsFurtherRelease - Close Behavior
-// ---------------------------------------------------------------------------
 
 func TestServicePool_ClosePreventsFurtherRelease(t *testing.T) {
 	t.Parallel()
@@ -414,10 +388,6 @@ func TestServicePool_ConcurrentCloseAndRelease_NoPanic(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestServicePool_DoubleClose - Double Close Idempotency
-// ---------------------------------------------------------------------------
-
 func TestServicePool_DoubleClose(t *testing.T) {
 	t.Parallel()
 
@@ -431,10 +401,6 @@ func TestServicePool_DoubleClose(t *testing.T) {
 	// Second close should not panic
 	pool.Close()
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_AcquireAfterClose - Acquire After Close Behavior
-// ---------------------------------------------------------------------------
 
 func TestServicePool_AcquireAfterClose(t *testing.T) {
 	t.Parallel()
@@ -484,10 +450,6 @@ func TestServicePool_AcquireUnblocksWhenClosed(t *testing.T) {
 	pool.Release(svc)
 }
 
-// ---------------------------------------------------------------------------
-// TestServicePool_ReleaseNilService - Nil Service Release Behavior
-// ---------------------------------------------------------------------------
-
 func TestServicePool_ReleaseNilService(t *testing.T) {
 	t.Parallel()
 
@@ -501,10 +463,6 @@ func TestServicePool_ReleaseNilService(t *testing.T) {
 	// Releasing nil should not panic.
 	pool.Release(nil)
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_HighContention - High Contention Deadlock Prevention
-// ---------------------------------------------------------------------------
 
 // TestServicePool_HighContention verifies the pool remains deadlock-free under
 // heavy concurrent access. A small pool (2 services) with many goroutines (50)
@@ -550,10 +508,6 @@ func TestServicePool_HighContention(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestServicePool_AllServicesAcquired - Full Pool Acquisition
-// ---------------------------------------------------------------------------
-
 func TestServicePool_AllServicesAcquired(t *testing.T) {
 	t.Parallel()
 
@@ -584,10 +538,6 @@ func TestServicePool_AllServicesAcquired(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestServicePool_LazyCreation - Lazy Service Creation
-// ---------------------------------------------------------------------------
-
 func TestServicePool_LazyCreation(t *testing.T) {
 	t.Parallel()
 
@@ -613,10 +563,6 @@ func TestServicePool_LazyCreation(t *testing.T) {
 	pool.Release(svc2)
 }
 
-// ---------------------------------------------------------------------------
-// TestResolvePoolSize_NegativeWorkers - Negative Worker Count Handling
-// ---------------------------------------------------------------------------
-
 func TestResolvePoolSize_NegativeWorkers(t *testing.T) {
 	t.Parallel()
 
@@ -628,10 +574,6 @@ func TestResolvePoolSize_NegativeWorkers(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestResolvePoolSize_LargeExplicitValue - Large Explicit Value Handling
-// ---------------------------------------------------------------------------
-
 func TestResolvePoolSize_LargeExplicitValue(t *testing.T) {
 	t.Parallel()
 
@@ -642,10 +584,6 @@ func TestResolvePoolSize_LargeExplicitValue(t *testing.T) {
 		t.Errorf("ResolvePoolSize(100) = %d, want 100", got)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_WithOptions - Pool With Service Options
-// ---------------------------------------------------------------------------
 
 func TestServicePool_WithOptions(t *testing.T) {
 	t.Parallel()
@@ -666,10 +604,6 @@ func TestServicePool_WithOptions(t *testing.T) {
 
 	pool.Release(svc)
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_InitError - Initialization Error Handling
-// ---------------------------------------------------------------------------
 
 func TestServicePool_InitError(t *testing.T) {
 	t.Parallel()
@@ -703,10 +637,6 @@ func TestServicePool_InitError(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestServicePool_AcquireReturnsNilOnInitError - Acquire with Init Error
-// ---------------------------------------------------------------------------
 
 func TestServicePool_AcquireReturnsNilOnInitError(t *testing.T) {
 	t.Parallel()

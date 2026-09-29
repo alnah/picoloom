@@ -19,10 +19,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// ---------------------------------------------------------------------------
-// TestIntegration_ConfigInit_NoInputCustomOutput - custom output generation
-// ---------------------------------------------------------------------------
-
 func TestIntegration_ConfigInit_NoInputCustomOutput(t *testing.T) {
 	t.Chdir(t.TempDir())
 
@@ -41,10 +37,6 @@ func TestIntegration_ConfigInit_NoInputCustomOutput(t *testing.T) {
 		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", outputPath, err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_ConfigInit_NoForceKeepsExisting - no-force protection
-// ---------------------------------------------------------------------------
 
 func TestIntegration_ConfigInit_NoForceKeepsExisting(t *testing.T) {
 	t.Chdir(t.TempDir())
@@ -69,10 +61,6 @@ func TestIntegration_ConfigInit_NoForceKeepsExisting(t *testing.T) {
 		t.Fatalf("existing file was modified without --force")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_ConfigInit_ForceReplacesExisting - force overwrite path
-// ---------------------------------------------------------------------------
 
 func TestIntegration_ConfigInit_ForceReplacesExisting(t *testing.T) {
 	t.Chdir(t.TempDir())
@@ -100,10 +88,6 @@ func TestIntegration_ConfigInit_ForceReplacesExisting(t *testing.T) {
 		t.Fatalf("config.LoadConfig(%q) unexpected error: %v", "./picoloom.yaml", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_ConfigInit_RecoversInterruptedForceBackup - restore backup
-// ---------------------------------------------------------------------------
 
 func TestIntegration_ConfigInit_RecoversInterruptedForceBackup(t *testing.T) {
 	t.Chdir(t.TempDir())

@@ -17,18 +17,14 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// ---------------------------------------------------------------------------
 // Compile-Time Interface Checks
-// ---------------------------------------------------------------------------
 
 var (
 	_ pdfConverter = (*rodConverter)(nil)
 	_ pdfRenderer  = (*rodRenderer)(nil)
 )
 
-// ---------------------------------------------------------------------------
 // Mock Implementations
-// ---------------------------------------------------------------------------
 
 type mockRenderer struct {
 	Result     []byte
@@ -56,10 +52,6 @@ func (c *testableRodConverter) ToPDF(ctx context.Context, htmlContent string, op
 
 	return c.mock.RenderFromFile(ctx, tmpPath, opts)
 }
-
-// ---------------------------------------------------------------------------
-// TestRodConverter_ToPDF - PDF Conversion with Mock Renderer
-// ---------------------------------------------------------------------------
 
 func TestRodConverter_ToPDF(t *testing.T) {
 	t.Parallel()
@@ -138,10 +130,6 @@ func TestRodConverter_ToPDF(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRodConverter_ToPDF_ContextCancellation - Context Handling
-// ---------------------------------------------------------------------------
-
 func TestRodConverter_ToPDF_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
@@ -161,10 +149,6 @@ func TestRodConverter_ToPDF_ContextCancellation(t *testing.T) {
 		t.Fatalf("ToPDF(ctx, \"<html></html>\", nil) unexpected error: %v", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestNewRodConverter - Converter Creation
-// ---------------------------------------------------------------------------
 
 func TestNewRodConverter(t *testing.T) {
 	t.Parallel()
@@ -267,10 +251,6 @@ func TestRodRenderer_EnsureBrowser_ContextCanceled(t *testing.T) {
 		t.Errorf("ensureBrowser(canceledCtx) error = %v, want context.Canceled", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildFooterTemplate - Footer Template Generation
-// ---------------------------------------------------------------------------
 
 func TestBuildFooterTemplate(t *testing.T) {
 	t.Parallel()
@@ -377,10 +357,6 @@ func TestBuildFooterTemplate(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestResolvePageDimensions - Page Dimension Calculation
-// ---------------------------------------------------------------------------
 
 func TestResolvePageDimensions(t *testing.T) {
 	t.Parallel()
@@ -562,10 +538,6 @@ func TestResolvePageDimensions(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRodRenderer_Close_Idempotent - Close Idempotency
-// ---------------------------------------------------------------------------
-
 func TestRodRenderer_Close_Idempotent(t *testing.T) {
 	t.Parallel()
 
@@ -587,10 +559,6 @@ func TestRodRenderer_Close_Idempotent(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRodConverter_Close_NilRenderer - Close with Nil Renderer
-// ---------------------------------------------------------------------------
-
 func TestRodConverter_Close_NilRenderer(t *testing.T) {
 	t.Parallel()
 
@@ -601,10 +569,6 @@ func TestRodConverter_Close_NilRenderer(t *testing.T) {
 		t.Errorf("converter.Close() with nil renderer = %v, want nil", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildPDFOptions - PDF Options Construction
-// ---------------------------------------------------------------------------
 
 func TestBuildPDFOptions(t *testing.T) {
 	t.Parallel()
@@ -683,10 +647,6 @@ func TestBuildPDFOptions(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestPageDimensions_AllSizesPresent - Page Dimensions Map Completeness
-// ---------------------------------------------------------------------------
-
 func TestPageDimensions_AllSizesPresent(t *testing.T) {
 	t.Parallel()
 
@@ -698,10 +658,6 @@ func TestPageDimensions_AllSizesPresent(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPageDimensions_ValidValues - Page Dimensions Value Validity
-// ---------------------------------------------------------------------------
 
 func TestPageDimensions_ValidValues(t *testing.T) {
 	t.Parallel()

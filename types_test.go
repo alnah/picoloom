@@ -17,10 +17,6 @@ import (
 	"time"
 )
 
-// ---------------------------------------------------------------------------
-// TestPageSettings_Validate - PageSettings Validation
-// ---------------------------------------------------------------------------
-
 func TestPageSettings_Validate(t *testing.T) {
 	t.Parallel()
 
@@ -203,10 +199,6 @@ func TestPageSettings_Validate(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestDefaultPageSettings - Default PageSettings Values
-// ---------------------------------------------------------------------------
-
 func TestDefaultPageSettings(t *testing.T) {
 	t.Parallel()
 
@@ -227,10 +219,6 @@ func TestDefaultPageSettings(t *testing.T) {
 		t.Errorf("DefaultPageSettings() not valid: %v", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIsValidPageSize - Page Size Validation
-// ---------------------------------------------------------------------------
 
 func TestIsValidPageSize(t *testing.T) {
 	t.Parallel()
@@ -262,10 +250,6 @@ func TestIsValidPageSize(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestIsValidOrientation - Orientation Validation
-// ---------------------------------------------------------------------------
-
 func TestIsValidOrientation(t *testing.T) {
 	t.Parallel()
 
@@ -294,10 +278,6 @@ func TestIsValidOrientation(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestFooter_Validate - Footer Position Validation
-// ---------------------------------------------------------------------------
 
 func TestFooter_Validate(t *testing.T) {
 	t.Parallel()
@@ -377,10 +357,6 @@ func TestFooter_Validate(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWithTimeout_panic - WithTimeout Panic Behavior
-// ---------------------------------------------------------------------------
-
 func TestWithTimeout_panic(t *testing.T) {
 	t.Parallel()
 
@@ -405,10 +381,6 @@ func TestWithTimeout_panic(t *testing.T) {
 		WithTimeout(-1 * time.Second)
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestIsValidHexColor - Hex Color Validation
-// ---------------------------------------------------------------------------
 
 func TestIsValidHexColor(t *testing.T) {
 	t.Parallel()
@@ -462,10 +434,6 @@ func TestIsValidHexColor(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestCover_Validate - Cover Logo Path Validation
-// ---------------------------------------------------------------------------
 
 func TestCover_Validate(t *testing.T) {
 	t.Parallel()
@@ -561,10 +529,6 @@ func TestCover_Validate(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestWatermark_Validate - Watermark Color Validation
-// ---------------------------------------------------------------------------
-
 func TestWatermark_Validate(t *testing.T) {
 	t.Parallel()
 
@@ -652,10 +616,6 @@ func TestWatermark_Validate(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPageBreaks_Validate - PageBreaks Orphans/Widows Validation
-// ---------------------------------------------------------------------------
 
 func TestPageBreaks_Validate(t *testing.T) {
 	t.Parallel()
@@ -775,10 +735,6 @@ func TestPageBreaks_Validate(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestTOC_Validate - TOC Depth Validation
-// ---------------------------------------------------------------------------
-
 func TestTOC_Validate(t *testing.T) {
 	t.Parallel()
 
@@ -896,10 +852,6 @@ func TestTOC_Validate(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestSignature_Validate - Signature ImagePath Validation
-// ---------------------------------------------------------------------------
 
 func TestSignature_Validate(t *testing.T) {
 	t.Parallel()

@@ -19,9 +19,7 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// ---------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
 
 func assertValidPDF(t *testing.T, data []byte) {
 	t.Helper()
@@ -45,10 +43,6 @@ func assertValidPDFFile(t *testing.T, path string) {
 
 	assertValidPDF(t, data)
 }
-
-// ---------------------------------------------------------------------------
-// TestRodConverter_ToPDF_Integration - Rod Converter PDF Generation
-// ---------------------------------------------------------------------------
 
 func TestRodConverter_ToPDF_Integration(t *testing.T) {
 	t.Parallel()
@@ -122,10 +116,6 @@ func TestRodConverter_ToPDF_Integration(t *testing.T) {
 		assertValidPDF(t, data)
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestService_Convert_Integration - Full Conversion Pipeline
-// ---------------------------------------------------------------------------
 
 func TestService_Convert_Integration(t *testing.T) {
 	t.Parallel()
@@ -236,10 +226,6 @@ func TestService_Convert_Integration(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestRodRenderer_EnsureBrowser_CI - Browser Launch in CI Environment
-// ---------------------------------------------------------------------------
-
 func TestRodRenderer_EnsureBrowser_CI(t *testing.T) {
 	t.Setenv("CI", "true")
 
@@ -255,10 +241,6 @@ func TestRodRenderer_EnsureBrowser_CI(t *testing.T) {
 		t.Error("browser should not be nil after ensureBrowser()")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRodRenderer_RenderFromFile_ContextCancelled - Context Cancellation
-// ---------------------------------------------------------------------------
 
 func TestRodRenderer_RenderFromFile_ContextCancelled(t *testing.T) {
 	t.Parallel()
@@ -278,10 +260,6 @@ func TestRodRenderer_RenderFromFile_ContextCancelled(t *testing.T) {
 		t.Errorf("RenderFromFile() error = %v, want context.Canceled", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRodRenderer_RenderFromFile_ContextDeadlineExceeded - Deadline Exceeded
-// ---------------------------------------------------------------------------
 
 func TestRodRenderer_RenderFromFile_ContextDeadlineExceeded(t *testing.T) {
 	t.Parallel()

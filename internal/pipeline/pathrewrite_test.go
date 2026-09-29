@@ -15,10 +15,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestRewriteRelativePaths - Main Function Tests
-// ---------------------------------------------------------------------------
-
 func TestRewriteRelativePaths(t *testing.T) {
 	t.Parallel()
 
@@ -169,10 +165,6 @@ func TestRewriteRelativePaths(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRewriteRelativePaths_PathTraversal - Security Tests
-// ---------------------------------------------------------------------------
-
 func TestRewriteRelativePaths_PathTraversal(t *testing.T) {
 	t.Parallel()
 
@@ -223,10 +215,6 @@ func TestRewriteRelativePaths_PathTraversal(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRewriteRelativePaths_DocumentTypes - Full Document vs Fragment
-// ---------------------------------------------------------------------------
 
 func TestRewriteRelativePaths_FullDocument(t *testing.T) {
 	t.Parallel()
@@ -314,10 +302,6 @@ func TestRewriteRelativePaths_Fragment(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRewriteRelativePaths_AttributePreservation - Attribute Handling
-// ---------------------------------------------------------------------------
-
 func TestRewriteRelativePaths_PreservesAttributes(t *testing.T) {
 	t.Parallel()
 
@@ -341,10 +325,6 @@ func TestRewriteRelativePaths_PreservesAttributes(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRewriteRelativePaths_URLEncoding - Special Characters
-// ---------------------------------------------------------------------------
 
 func TestRewriteRelativePaths_URLEncoding(t *testing.T) {
 	t.Parallel()
@@ -387,10 +367,6 @@ func TestRewriteRelativePaths_URLEncoding(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestIsRelativePath - Helper Function Tests
-// ---------------------------------------------------------------------------
-
 func TestIsRelativePath(t *testing.T) {
 	t.Parallel()
 
@@ -426,10 +402,6 @@ func TestIsRelativePath(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestIsPathUnderDir - Security Helper Tests
-// ---------------------------------------------------------------------------
 
 func TestIsPathUnderDir(t *testing.T) {
 	t.Parallel()
@@ -498,10 +470,6 @@ func TestIsPathUnderDir(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPathToFileURL - URL Generation Tests
-// ---------------------------------------------------------------------------
 
 func TestPathToFileURL(t *testing.T) {
 	t.Parallel()

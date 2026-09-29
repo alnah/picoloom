@@ -21,20 +21,12 @@ import (
 	picoloom "github.com/alnah/picoloom/v2"
 )
 
-// ---------------------------------------------------------------------------
-// Test Infrastructure - Mock converter
-// ---------------------------------------------------------------------------
-
 // wrongTypeConverter is a Converter that is NOT *picoloom.Service.
 type wrongTypeConverter struct{}
 
 func (w *wrongTypeConverter) Convert(_ context.Context, _ picoloom.Input) (*picoloom.ConvertResult, error) {
 	return &picoloom.ConvertResult{PDF: []byte("%PDF-1.4 mock")}, nil
 }
-
-// ---------------------------------------------------------------------------
-// TestPoolAdapter_Release_WrongType - Pool adapter defensive release
-// ---------------------------------------------------------------------------
 
 func TestPoolAdapter_Release_WrongType(t *testing.T) {
 	t.Parallel()
@@ -51,10 +43,6 @@ func TestPoolAdapter_Release_WrongType(t *testing.T) {
 	// Defensive behavior: wrong type is ignored, process keeps running.
 }
 
-// ---------------------------------------------------------------------------
-// TestPoolAdapter_Size - Pool size reporting
-// ---------------------------------------------------------------------------
-
 func TestPoolAdapter_Size(t *testing.T) {
 	t.Parallel()
 
@@ -67,10 +55,6 @@ func TestPoolAdapter_Size(t *testing.T) {
 		t.Errorf("poolAdapter.Size() = %d, want 3", adapter.Size())
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestPoolAdapter_AcquireRelease - Pool acquire and release
-// ---------------------------------------------------------------------------
 
 func TestPoolAdapter_AcquireRelease(t *testing.T) {
 	t.Parallel()
@@ -90,10 +74,6 @@ func TestPoolAdapter_AcquireRelease(t *testing.T) {
 	adapter.Release(svc)
 }
 
-// ---------------------------------------------------------------------------
-// TestVersion - Version variable
-// ---------------------------------------------------------------------------
-
 func TestVersion(t *testing.T) {
 	t.Parallel()
 
@@ -106,10 +86,6 @@ func TestVersion(t *testing.T) {
 	expected := fmt.Sprintf("%s %s\n", canonicalCLIName, Version)
 	_ = expected // Used in actual main() but we can't easily test that
 }
-
-// ---------------------------------------------------------------------------
-// TestIsCommand - Command name detection
-// ---------------------------------------------------------------------------
 
 func TestIsCommand(t *testing.T) {
 	t.Parallel()
@@ -142,10 +118,6 @@ func TestIsCommand(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestResolveTimeoutWithEnv - Timeout duration resolution with env var support
-// ---------------------------------------------------------------------------
 
 func TestResolveTimeoutWithEnv(t *testing.T) {
 	t.Parallel()
@@ -315,10 +287,6 @@ func TestResolveTimeoutWithEnv(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestLooksLikeMarkdown - Markdown file extension detection
-// ---------------------------------------------------------------------------
-
 func TestLooksLikeMarkdown(t *testing.T) {
 	t.Parallel()
 
@@ -350,10 +318,6 @@ func TestLooksLikeMarkdown(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunMain - Main entry point exit codes
-// ---------------------------------------------------------------------------
 
 func TestRunMain(t *testing.T) {
 	t.Parallel()
@@ -440,10 +404,6 @@ func TestRunMain(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunMain_DoctorCommand - Doctor command integration
-// ---------------------------------------------------------------------------
-
 func TestRunMain_DoctorCommand(t *testing.T) {
 	t.Parallel()
 
@@ -524,10 +484,6 @@ func TestRunMain_HelpDoctor(t *testing.T) {
 		t.Errorf("runMain([md2pdf help doctor]) stdout = %q, want substring %q", stdout.String(), "Usage: md2pdf doctor")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunMain_ExitCodes - Integration tests for semantic exit codes
-// ---------------------------------------------------------------------------
 
 func TestRunMain_ExitCodes(t *testing.T) {
 	t.Parallel()

@@ -18,10 +18,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// ---------------------------------------------------------------------------
-// TestLoadEnvConfig - Environment variable loading
-// ---------------------------------------------------------------------------
-
 func TestLoadEnvConfig(t *testing.T) {
 	t.Run("tier 1 essential variables", func(t *testing.T) {
 		t.Setenv("PICOLOOM_CONFIG", "/path/to/config.yaml")
@@ -183,10 +179,6 @@ func TestLoadEnvConfig(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestWarnUnknownEnvVars - Unknown variable detection
-// ---------------------------------------------------------------------------
-
 func TestWarnUnknownEnvVars(t *testing.T) {
 	t.Run("warns on unknown PICOLOOM and MD2PDF variables", func(t *testing.T) {
 		t.Setenv("PICOLOOM_TYPO", "value")
@@ -246,10 +238,6 @@ func TestWarnUnknownEnvVars(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestApplyEnvConfig - Config application with priority
-// ---------------------------------------------------------------------------
 
 func TestApplyEnvConfig(t *testing.T) {
 	t.Run("happy path: applies env to empty config", func(t *testing.T) {
@@ -436,10 +424,6 @@ func TestApplyEnvConfig(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestKnownEnvVars - Known variable list completeness
-// ---------------------------------------------------------------------------
 
 func TestKnownEnvVars(t *testing.T) {
 	expected := []string{

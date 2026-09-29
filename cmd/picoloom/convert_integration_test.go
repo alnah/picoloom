@@ -21,10 +21,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// ---------------------------------------------------------------------------
-// Test Infrastructure - Pool and helpers
-// ---------------------------------------------------------------------------
-
 // concurrentTestFiles is the number of files to create for concurrent conversion tests.
 const concurrentTestFiles = 10
 
@@ -118,10 +114,6 @@ func assertValidPDFFile(t *testing.T, path string) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_SingleFile - Single file conversion
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_SingleFile(t *testing.T) {
 	t.Parallel()
 
@@ -139,10 +131,6 @@ func TestRunConvert_SingleFile(t *testing.T) {
 
 	assertValidPDFFile(t, expectedOutput)
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_SingleFileWithOutputFile - Custom output filename
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_SingleFileWithOutputFile(t *testing.T) {
 	t.Parallel()
@@ -162,10 +150,6 @@ func TestRunConvert_SingleFileWithOutputFile(t *testing.T) {
 	assertValidPDFFile(t, outputPath)
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_SingleFileWithOutputDir - Custom output directory
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_SingleFileWithOutputDir(t *testing.T) {
 	t.Parallel()
 
@@ -184,10 +168,6 @@ func TestRunConvert_SingleFileWithOutputDir(t *testing.T) {
 
 	assertValidPDFFile(t, expectedOutput)
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_Directory - Directory recursive conversion
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_Directory(t *testing.T) {
 	t.Parallel()
@@ -214,10 +194,6 @@ func TestRunConvert_Directory(t *testing.T) {
 		assertValidPDFFile(t, pdf)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_DirectoryMirror - Output directory structure mirroring
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_DirectoryMirror(t *testing.T) {
 	t.Parallel()
@@ -247,10 +223,6 @@ func TestRunConvert_DirectoryMirror(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_MixedSuccessFailure - Partial failure handling
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_MixedSuccessFailure(t *testing.T) {
 	t.Parallel()
 
@@ -278,10 +250,6 @@ func TestRunConvert_MixedSuccessFailure(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_EmptyDirectory - No markdown files in directory
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_EmptyDirectory(t *testing.T) {
 	t.Parallel()
 
@@ -297,10 +265,6 @@ func TestRunConvert_EmptyDirectory(t *testing.T) {
 		t.Fatal("runIntegration() error = nil, want error")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_ConfigDefaultDir - Config input.defaultDir fallback
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_ConfigDefaultDir(t *testing.T) {
 	t.Parallel()
@@ -329,10 +293,6 @@ func TestRunConvert_ConfigDefaultDir(t *testing.T) {
 	assertValidPDFFile(t, expectedPDF)
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_CSSPassedToConverter - Custom CSS styling
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_CSSPassedToConverter(t *testing.T) {
 	t.Parallel()
 
@@ -354,10 +314,6 @@ func TestRunConvert_CSSPassedToConverter(t *testing.T) {
 	assertValidPDFFile(t, expectedOutput)
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_NoInput - No input path error
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_NoInput(t *testing.T) {
 	t.Parallel()
 
@@ -368,10 +324,6 @@ func TestRunConvert_NoInput(t *testing.T) {
 		t.Errorf("runIntegration() = %v, want ErrNoInput", err)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_ConcurrentExecution - Parallel file conversion
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_ConcurrentExecution(t *testing.T) {
 	t.Parallel()
@@ -394,10 +346,6 @@ func TestRunConvert_ConcurrentExecution(t *testing.T) {
 		assertValidPDFFile(t, pdf)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_PageBreaksFlags - Page break CLI flags
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_PageBreaksFlags(t *testing.T) {
 	t.Parallel()
@@ -424,10 +372,6 @@ func TestRunConvert_PageBreaksFlags(t *testing.T) {
 	// Verify PDF was created (page breaks are applied internally)
 	assertValidPDFFile(t, expectedOutput)
 }
-
-// ---------------------------------------------------------------------------
-// TestRunConvert_NoPageBreaksFlag - Disable page breaks via flag
-// ---------------------------------------------------------------------------
 
 func TestRunConvert_NoPageBreaksFlag(t *testing.T) {
 	t.Parallel()
@@ -465,10 +409,6 @@ func TestRunConvert_NoPageBreaksFlag(t *testing.T) {
 	assertValidPDFFile(t, expectedOutput)
 }
 
-// ---------------------------------------------------------------------------
-// TestRunConvert_PageBreaksFromConfig - Page breaks from config file
-// ---------------------------------------------------------------------------
-
 func TestRunConvert_PageBreaksFromConfig(t *testing.T) {
 	t.Parallel()
 
@@ -501,10 +441,6 @@ func TestRunConvert_PageBreaksFromConfig(t *testing.T) {
 	// Verify PDF was created (config settings are applied internally)
 	assertValidPDFFile(t, expectedOutput)
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_AuthorInfoDRY - Author info shared across cover and signature
-// ---------------------------------------------------------------------------
 
 func TestIntegration_AuthorInfoDRY(t *testing.T) {
 	t.Parallel()
@@ -584,10 +520,6 @@ signature:
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestIntegration_DocumentInfoDRY - Document info shared across cover and footer
-// ---------------------------------------------------------------------------
-
 func TestIntegration_DocumentInfoDRY(t *testing.T) {
 	t.Parallel()
 
@@ -665,10 +597,6 @@ footer:
 		assertValidPDFFile(t, expectedOutput)
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestIntegration_NewCLIFlags - New CLI flag functionality
-// ---------------------------------------------------------------------------
 
 func TestIntegration_NewCLIFlags(t *testing.T) {
 	t.Parallel()

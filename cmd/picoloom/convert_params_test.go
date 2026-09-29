@@ -26,10 +26,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/fileutil"
 )
 
-// ---------------------------------------------------------------------------
-// TestBuildSignatureData - Signature block data construction
-// ---------------------------------------------------------------------------
-
 func TestBuildSignatureData(t *testing.T) {
 	t.Parallel()
 
@@ -183,10 +179,6 @@ func TestBuildSignatureData(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestIsURL - URL detection helper
-// ---------------------------------------------------------------------------
-
 func TestIsURL(t *testing.T) {
 	t.Parallel()
 
@@ -214,10 +206,6 @@ func TestIsURL(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildFooterData - Footer data construction
-// ---------------------------------------------------------------------------
 
 func TestBuildFooterData(t *testing.T) {
 	t.Parallel()
@@ -359,10 +347,6 @@ func TestBuildFooterData(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestBuildPageSettings - Page size, orientation, and margin settings
-// ---------------------------------------------------------------------------
-
 func TestBuildPageSettings(t *testing.T) {
 	t.Parallel()
 
@@ -498,10 +482,6 @@ func TestBuildPageSettings(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestValidateWorkers - Worker count validation
-// ---------------------------------------------------------------------------
-
 func TestValidateWorkers(t *testing.T) {
 	t.Parallel()
 
@@ -571,10 +551,6 @@ func TestValidateWorkers(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildWatermarkData - Watermark text, color, opacity, and angle
-// ---------------------------------------------------------------------------
 
 func TestBuildWatermarkData(t *testing.T) {
 	t.Parallel()
@@ -779,10 +755,6 @@ func TestBuildWatermarkData(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestExtractFirstHeading - H1 heading extraction from markdown
-// ---------------------------------------------------------------------------
-
 func TestExtractFirstHeading(t *testing.T) {
 	t.Parallel()
 
@@ -849,10 +821,6 @@ func TestExtractFirstHeading(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestResolveDateWithTime - Date resolution with auto format support
-// ---------------------------------------------------------------------------
 
 func TestResolveDateWithTime(t *testing.T) {
 	t.Parallel()
@@ -936,10 +904,6 @@ func TestResolveDateWithTime(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildCoverData - Cover page data construction
-// ---------------------------------------------------------------------------
 
 func TestBuildCoverData(t *testing.T) {
 	t.Parallel()
@@ -1276,10 +1240,6 @@ func TestBuildCoverData(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TestBuildTOCData - Table of contents data construction
-// ---------------------------------------------------------------------------
-
 func TestBuildTOCData(t *testing.T) {
 	t.Parallel()
 
@@ -1410,10 +1370,6 @@ func TestBuildTOCData(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestParseBreakBefore - Page break heading level parsing
-// ---------------------------------------------------------------------------
-
 func TestParseBreakBefore(t *testing.T) {
 	t.Parallel()
 
@@ -1528,10 +1484,6 @@ func TestParseBreakBefore(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildPageBreaksData - Page breaks data construction
-// ---------------------------------------------------------------------------
 
 func TestBuildPageBreaksData(t *testing.T) {
 	t.Parallel()

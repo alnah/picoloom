@@ -20,10 +20,6 @@ type testConfig struct {
 	Enabled bool   `yaml:"enabled"`
 }
 
-// ---------------------------------------------------------------------------
-// TestUnmarshal - Parses YAML into Go structs
-// ---------------------------------------------------------------------------
-
 func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 
@@ -115,10 +111,6 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestUnmarshalStrict - Parses YAML and rejects unknown fields
-// ---------------------------------------------------------------------------
-
 func TestUnmarshalStrict(t *testing.T) {
 	t.Parallel()
 
@@ -196,10 +188,6 @@ func TestUnmarshalStrict(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestMarshal - Serializes Go structs to YAML
-// ---------------------------------------------------------------------------
-
 func TestMarshal(t *testing.T) {
 	t.Parallel()
 
@@ -267,10 +255,6 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRoundTrip - Verifies Marshal/Unmarshal symmetry
-// ---------------------------------------------------------------------------
-
 func TestRoundTrip(t *testing.T) {
 	t.Parallel()
 
@@ -300,10 +284,6 @@ func TestRoundTrip(t *testing.T) {
 		t.Errorf("Enabled = %v, want %v", decoded.Enabled, original.Enabled)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestErrorWrapping - Verifies error types are detectable via errors.Is
-// ---------------------------------------------------------------------------
 
 func TestErrorWrapping(t *testing.T) {
 	t.Parallel()
@@ -338,10 +318,6 @@ func TestErrorWrapping(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestInputSizeLimit - Verifies MaxInputSize enforcement
-// ---------------------------------------------------------------------------
 
 // Note: This test modifies the global MaxInputSize variable, so it cannot
 // run in parallel with other tests to avoid data races.

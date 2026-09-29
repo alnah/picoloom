@@ -15,10 +15,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/dateutil"
 )
 
-// ---------------------------------------------------------------------------
-// TestParseDateFormat - Token conversion and bracket escape syntax
-// ---------------------------------------------------------------------------
-
 func TestParseDateFormat(t *testing.T) {
 	t.Parallel()
 
@@ -198,10 +194,6 @@ func TestParseDateFormat(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestResolveDate - Auto date resolution with formats and presets
-// ---------------------------------------------------------------------------
 
 func TestResolveDate(t *testing.T) {
 	t.Parallel()

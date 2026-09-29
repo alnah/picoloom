@@ -17,10 +17,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// ---------------------------------------------------------------------------
-// TestExitCodeFor - Error to exit code mapping
-// ---------------------------------------------------------------------------
-
 func TestExitCodeFor(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -84,10 +80,6 @@ func TestExitCodeFor(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestExitCodeConstants - Unix convention compliance
-// ---------------------------------------------------------------------------
 
 func TestExitCodeConstants(t *testing.T) {
 	t.Parallel()

@@ -14,10 +14,6 @@ import (
 	"text/template"
 )
 
-// ---------------------------------------------------------------------------
-// TestEscapeCSSString - CSS String Escaping
-// ---------------------------------------------------------------------------
-
 func TestEscapeCSSString(t *testing.T) {
 	t.Parallel()
 
@@ -99,10 +95,6 @@ func TestEscapeCSSString(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildWatermarkCSS - Watermark CSS Generation
-// ---------------------------------------------------------------------------
 
 func TestBuildWatermarkCSS(t *testing.T) {
 	t.Parallel()
@@ -217,10 +209,6 @@ func TestBuildWatermarkCSS(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestBreakURLPattern - URL Pattern Breaking
-// ---------------------------------------------------------------------------
-
 func TestBreakURLPattern(t *testing.T) {
 	t.Parallel()
 
@@ -279,10 +267,6 @@ func TestBreakURLPattern(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestBuildPageBreaksCSS - Page Breaks CSS Generation
-// ---------------------------------------------------------------------------
 
 func TestBuildPageBreaksCSS(t *testing.T) {
 	t.Parallel()
@@ -453,10 +437,6 @@ func TestBuildPageBreaksCSS(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestBuildAdmonitionCSS - Admonition CSS Overlay
-// ---------------------------------------------------------------------------
-
 func TestBuildAdmonitionCSS_ContainsStructure(t *testing.T) {
 	t.Parallel()
 
@@ -575,10 +555,6 @@ func cssRuleBlock(t *testing.T, css, selector string) string {
 	return css[start : start+end]
 }
 
-// ---------------------------------------------------------------------------
-// TestBuildCombinedCSS - Stylesheet Layer Order
-// ---------------------------------------------------------------------------
-
 func TestBuildCombinedCSS_Order(t *testing.T) {
 	t.Parallel()
 
@@ -618,10 +594,6 @@ func assertOrder(t *testing.T, css string, markers ...string) {
 		prev = idx
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRenderCSSTemplate - Overlay Template Failure Handling
-// ---------------------------------------------------------------------------
 
 func TestRenderCSSTemplate_PanicsOnDataMismatch(t *testing.T) {
 	t.Parallel()

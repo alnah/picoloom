@@ -18,10 +18,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_JSONOutput - Verifies JSON output format and structure
-// ---------------------------------------------------------------------------
-
 func TestRunDoctorCmd_JSONOutput(t *testing.T) {
 	t.Parallel()
 
@@ -70,10 +66,6 @@ func TestRunDoctorCmd_JSONOutput(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_HumanOutput - Verifies human-readable output format
-// ---------------------------------------------------------------------------
-
 func TestRunDoctorCmd_HumanOutput(t *testing.T) {
 	t.Parallel()
 
@@ -104,10 +96,6 @@ func TestRunDoctorCmd_HumanOutput(t *testing.T) {
 		t.Errorf("runDoctorCmd([]string{}) output missing platform %q", platformStr)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_ContainerDetection - Verifies container environment detection
-// ---------------------------------------------------------------------------
 
 func TestRunDoctorCmd_ContainerDetection(t *testing.T) {
 	// NO t.Parallel() - modifies environment variables
@@ -206,10 +194,6 @@ func TestRunDoctorCmd_ContainerPriority(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_CIDetection - Verifies CI environment detection
-// ---------------------------------------------------------------------------
-
 func TestRunDoctorCmd_CIDetection(t *testing.T) {
 	// NO t.Parallel() - modifies environment variables
 
@@ -252,10 +236,6 @@ func TestRunDoctorCmd_CIDetection(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_SandboxWarning - Verifies sandbox warning in container/CI
-// ---------------------------------------------------------------------------
 
 func TestRunDoctorCmd_SandboxWarning(t *testing.T) {
 	// NO t.Parallel() - modifies environment variables
@@ -331,10 +311,6 @@ func TestRunDoctorCmd_NoSandboxWarningWhenDisabled(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_ExitCodes - Verifies correct exit codes
-// ---------------------------------------------------------------------------
-
 func TestRunDoctorCmd_ExitCodeSuccess(t *testing.T) {
 	t.Parallel()
 
@@ -355,10 +331,6 @@ func TestRunDoctorCmd_ExitCodeSuccess(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_TempDirCheck - Verifies temp directory check
-// ---------------------------------------------------------------------------
-
 func TestRunDoctorCmd_TempDirWritable(t *testing.T) {
 	t.Parallel()
 
@@ -377,10 +349,6 @@ func TestRunDoctorCmd_TempDirWritable(t *testing.T) {
 		t.Error("runDoctorCmd([]string{\"--json\"}) result.System.TempWritable = false, want true in normal conditions")
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_EnvironmentVariables - Verifies env var reporting
-// ---------------------------------------------------------------------------
 
 func TestRunDoctorCmd_ReportsRODBrowserBin(t *testing.T) {
 	// NO t.Parallel() - modifies environment variables
@@ -497,10 +465,6 @@ func TestRunDoctor_AllowManagedBrowserDoesNotHideExplicitPathErrors(t *testing.T
 		t.Fatalf("runDoctor(explicit missing browser) errors[0] = %q, want path %q", result.Errors[0], testPath)
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestRunDoctorCmd_HumanOutput_Formatting - Verifies human output formatting
-// ---------------------------------------------------------------------------
 
 func TestRunDoctorCmd_HumanOutput_ShowsContainerInfo(t *testing.T) {
 	// NO t.Parallel() - modifies environment variables
@@ -620,9 +584,7 @@ func TestPrintDoctorUsageFor_AllowManagedBrowserFlag(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
 
 // cleanContainerEnv removes all container detection environment variables.
 func cleanContainerEnv() {

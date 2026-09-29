@@ -10,10 +10,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
-// TestParseFlags - CLI flag parsing
-// ---------------------------------------------------------------------------
-
 func TestParseFlags(t *testing.T) {
 	t.Parallel()
 
@@ -237,10 +233,6 @@ func TestParseFlags(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TestParseFlags_NoTOC - TOC disable flag
-// ---------------------------------------------------------------------------
-
 func TestParseFlags_NoTOC(t *testing.T) {
 	t.Parallel()
 
@@ -285,10 +277,6 @@ func TestParseFlags_NoTOC(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestParseFlags_PageBreaks - Page break flags
-// ---------------------------------------------------------------------------
 
 func TestParseFlags_PageBreaks(t *testing.T) {
 	t.Parallel()
@@ -389,10 +377,6 @@ func TestParseFlags_PageBreaks(t *testing.T) {
 		}
 	})
 }
-
-// ---------------------------------------------------------------------------
-// TestParseConvertFlags_NewFlags - Extended flag set
-// ---------------------------------------------------------------------------
 
 func TestParseConvertFlags_NewFlags(t *testing.T) {
 	t.Parallel()
@@ -692,10 +676,6 @@ func TestParseConvertFlags_NewFlags(t *testing.T) {
 		})
 	}
 }
-
-// ---------------------------------------------------------------------------
-// TestParseConvertFlags_PositionalArgs - Positional argument handling
-// ---------------------------------------------------------------------------
 
 func TestParseConvertFlags_PositionalArgs(t *testing.T) {
 	t.Parallel()
