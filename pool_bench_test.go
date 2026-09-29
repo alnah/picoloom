@@ -2,12 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Benchmarks for ServicePool performance
-// - Tests pool size calculation, acquire/release cycle, and contention scenarios
-// - Uses pre-warming to avoid measuring service creation overhead
-// - Tests parallel access patterns with various goroutine counts
-
 import (
 	"fmt"
 	"runtime"

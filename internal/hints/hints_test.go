@@ -1,11 +1,5 @@
 package hints
 
-// Notes:
-// - ForBrowserConnect tests cannot use t.Parallel() because they:
-//   1. Use t.Setenv() which modifies process environment
-//   2. Modify the package-level IsInContainer variable
-// These are acceptable gaps: we test observable behavior through environment manipulation.
-
 import (
 	"strings"
 	"testing"

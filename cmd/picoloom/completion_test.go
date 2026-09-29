@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - GenerateCompletion: we test that shell scripts are generated with expected
-//   content markers. We do not test that the scripts actually work in the
-//   target shell (that would require integration tests with actual shells).
-// - getCommands: we test the command definitions are complete and correct.
-// These are acceptable gaps: we test observable behavior, not runtime shell behavior.
-
 import (
 	"bytes"
 	"errors"

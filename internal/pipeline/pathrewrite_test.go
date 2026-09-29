@@ -1,13 +1,5 @@
 package pipeline
 
-// Notes:
-// - Tests RewriteRelativePaths through its public API only
-// - Coverage gaps on error branches in parseHTML/renderHTML are acceptable:
-//   the html package rarely fails on valid input and these paths are defensive
-// - isRelativePath http:// branch tested via integration; we don't test all URL schemes exhaustively
-// - Path traversal security tests verify the observable behavior (path not rewritten)
-//   rather than internal isPathUnderDir implementation
-
 import (
 	"path/filepath"
 	"runtime"

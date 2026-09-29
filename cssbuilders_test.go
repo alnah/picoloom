@@ -1,13 +1,5 @@
 package picoloom
 
-// Notes:
-// - escapeCSSString: tests CSS string escaping for quotes, backslashes, newlines
-// - buildWatermarkCSS: tests watermark CSS generation with escaping
-// - breakURLPattern: tests URL pattern breaking with dot leader replacement
-// - buildPageBreaksCSS: tests page break CSS generation for headings and orphans/widows
-// - buildAdmonitionCSS: tests structural admonition styles and type palettes
-// - renderCSSTemplate: tests overlay template rendering failure handling
-
 import (
 	"strings"
 	"testing"

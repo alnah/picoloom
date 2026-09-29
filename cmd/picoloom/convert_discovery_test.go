@@ -1,13 +1,5 @@
 package main
 
-// Notes:
-// - resolveInputPath: we test precedence (args > config > error).
-// - resolveOutputDir: we test precedence (flag > config > empty).
-// - resolveOutputPath: we test path resolution including directory mirroring.
-// - discoverFiles: we test file discovery with temp directories. We don't test
-//   symlink edge cases as they are rare and platform-specific.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"os"
 	"path/filepath"

@@ -1,14 +1,5 @@
 package picoloom
 
-// Notes:
-// - PageSettings: tests validation for size, orientation, and margin boundaries
-// - Footer: tests position validation (left, center, right)
-// - Cover: tests logo path validation (URL vs file path)
-// - Watermark: tests hex color validation
-// - PageBreaks: tests orphans/widows range validation
-// - TOC: tests depth range validation
-// - Signature: tests image path validation (URL vs file path)
-
 import (
 	"errors"
 	"os"

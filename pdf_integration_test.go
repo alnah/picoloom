@@ -2,12 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Tests PDF generation using go-rod browser automation
-// - Rod automatically downloads Chromium on first run if not found
-// - Tests Service.Convert full pipeline with various input configurations
-// - Verifies PDF magic bytes and minimum size for validity
-
 import (
 	"bytes"
 	"context"

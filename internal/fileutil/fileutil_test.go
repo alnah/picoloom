@@ -1,12 +1,5 @@
 package fileutil_test
 
-// Notes:
-// - TestWriteTempFile_CreateTempError: this test modifies the global TMPDIR
-//   environment variable and cannot run in parallel with other tests.
-// - Coverage at 82.1%: the WriteString and Close error branches in WriteTempFile
-//   are not tested because triggering disk write failures is platform-specific.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"errors"
 	"os"

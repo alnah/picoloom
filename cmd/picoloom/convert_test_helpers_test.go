@@ -1,10 +1,5 @@
 package main
 
-// Notes:
-// - This file contains test helpers and type aliases used across convert tests.
-// - These are not functions under test themselves, but supporting infrastructure.
-// No coverage gaps: this is test infrastructure, not production code.
-
 import (
 	"context"
 	"fmt"

@@ -1,14 +1,5 @@
 package main
 
-// Notes:
-// - Acceptance slice: command discovery, no-input generation, overwrite policy,
-//   and non-TTY guardrail through `runMain`.
-// - Unit slice: flag parsing, prompt behavior, yes/no parser, and output path
-//   normalization.
-// - Safety slice: rollback behavior, race protection, replace semantics, and
-//   interrupted-backup recovery/cleanup, including process interruption.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"bufio"
 	"bytes"

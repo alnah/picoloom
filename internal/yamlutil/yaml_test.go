@@ -1,11 +1,5 @@
 package yamlutil_test
 
-// Notes:
-// - Marshal error branch (line 46-48 in yaml.go): not tested because yaml.Marshal
-//   only fails with unmarshalable types (channels, functions) which are compile-time
-//   detectable and not realistic in production usage.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"errors"
 	"strings"

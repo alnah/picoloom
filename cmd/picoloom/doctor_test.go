@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - Tests use black-box approach: testing through runDoctorCmd() observable outputs
-// - Container detection tests modify environment variables, cannot use t.Parallel()
-// - Chrome detection depends on system state, tested via observable JSON output
-// - Internal functions (isContainer, checkChrome, checkSystem) are not tested directly
-//   as they are implementation details; behavior is verified through command output
-
 import (
 	"bytes"
 	"context"

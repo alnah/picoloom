@@ -1,10 +1,5 @@
 package picoloom
 
-// Notes:
-// - Tests NewAssetLoader with various path configurations (empty, valid, invalid)
-// - Verifies style and template set loading with custom overrides and fallbacks
-// - Error wrapping behavior is tested for proper sentinel error matching
-
 import (
 	"errors"
 	"os"

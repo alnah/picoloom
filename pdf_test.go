@@ -1,11 +1,5 @@
 package picoloom
 
-// Notes:
-// - Tests rodConverter and rodRenderer with mock implementations
-// - Tests buildFooterTemplate with various footer configurations
-// - Tests resolvePageDimensions for all page sizes and orientations
-// - Tests buildPDFOptions for margin calculations with footer
-
 import (
 	"context"
 	"errors"

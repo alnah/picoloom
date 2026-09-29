@@ -1,12 +1,5 @@
 package dateutil_test
 
-// Notes:
-// - ResolveDate: the error branch at line 114-116 (ParseDateFormat on DefaultDateFormat)
-//   is not covered because DefaultDateFormat is a valid constant. This branch can only
-//   fail if someone modifies the constant to an invalid value, which would be caught
-//   at development time.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"errors"
 	"testing"

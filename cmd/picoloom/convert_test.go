@@ -1,15 +1,5 @@
 package main
 
-// Notes:
-// - resolveCSSContent: we test CSS loading from flag, config style name, and default.
-// - printResultsOutput: we test success/failure counting (actual output formatting
-//   is an implementation detail).
-// - convertFile: we test error paths (read failure, write failure, mkdir failure).
-//   Success paths are covered by integration tests.
-// - loadTemplateSetFromDir: we test directory loading with complete/incomplete templates.
-// - resolveTemplateSet: we test name vs path resolution.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"context"
 	"errors"

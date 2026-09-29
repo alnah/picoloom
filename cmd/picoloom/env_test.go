@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - DefaultEnv: we test that it returns expected real implementations
-//   (os.Stdout, os.Stderr, real time). We cannot test actual I/O behavior
-//   without affecting the test process itself.
-// - Environment injection: we test the DI pattern works correctly with mocks.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"bytes"
 	"os"

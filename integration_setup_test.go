@@ -2,12 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Integration test setup: shared ServicePool for all integration tests
-// - testPool is initialized in TestMain and closed after all tests complete
-// - acquireService helper provides automatic cleanup via t.Cleanup()
-// - Pool size is capped at 4 for CI environments to avoid resource exhaustion
-
 import (
 	"os"
 	"testing"

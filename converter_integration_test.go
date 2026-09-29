@@ -2,13 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Tests NewConversionService with proper pipeline component initialization
-// - Tests Convert with various page settings and page breaks configurations
-// - Tests file output writing and PDF validity
-// - Covers admonitions end to end through PDF conversion
-// - Uses acquireService helper from integration_setup_test.go for pooled services
-
 import (
 	"bytes"
 	"context"

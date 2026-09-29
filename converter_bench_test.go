@@ -2,12 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Benchmarks for Service.Convert pipeline performance
-// - Uses mock PDF converter (benchPDFConverter) to isolate pipeline from browser overhead
-// - Tests scaling with document size and concurrent access patterns
-// - Also benchmarks data conversion helpers (toSignatureData, toCoverData, etc.)
-
 import (
 	"context"
 	"strings"

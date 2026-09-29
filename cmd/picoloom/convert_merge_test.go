@@ -1,13 +1,5 @@
 package main
 
-// Notes:
-// - mergeFlags: we test all flag override scenarios exhaustively. Each flag
-//   category (author, document, footer, cover, signature, toc) is tested
-//   for both override and preserve behavior.
-// - Auto-enable logic: we test that setting certain flags auto-enables
-//   their parent feature (e.g., footer.text enables footer).
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"testing"
 )

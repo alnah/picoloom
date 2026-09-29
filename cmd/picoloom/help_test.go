@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - printUsage/printConvertUsage: we test that required content strings are
-//   present in the output. We don't test exact formatting as that's an
-//   implementation detail.
-// - runHelp: we test routing to the correct help topic.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"bytes"
 	"fmt"

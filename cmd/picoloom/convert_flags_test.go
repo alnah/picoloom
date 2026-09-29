@@ -1,11 +1,5 @@
 package main
 
-// Notes:
-// - parseFlags/parseConvertFlags: we test all flag combinations including
-//   short/long forms, boolean flags, value flags, and positional arguments.
-// - We don't test flag.Parse() internals (Go standard library responsibility).
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"testing"
 )

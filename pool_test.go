@@ -1,11 +1,5 @@
 package picoloom
 
-// Notes:
-// - Tests ServicePool for concurrent service management
-// - Tests ResolvePoolSize for auto-calculation and explicit values
-// - Concurrency tests verify deadlock-free behavior under contention
-// - Pool is safe for concurrent use: multiple goroutines can Acquire/Release
-
 import (
 	"context"
 	"errors"
@@ -184,6 +178,8 @@ func TestServicePool_Size(t *testing.T) {
 	}
 }
 
+// Concurrent Acquire/Release must not deadlock, and the pool must be safe
+// for concurrent use.
 func TestServicePool_ConcurrentAccess(t *testing.T) {
 	t.Parallel()
 

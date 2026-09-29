@@ -1,15 +1,5 @@
 package main
 
-// Notes:
-// - loadEnvConfig: we test all 16 environment variables across 3 tiers.
-//   Invalid/negative values for timeout and workers are tested to verify
-//   graceful handling (ignored, not errors).
-// - warnUnknownEnvVars: we test typo detection and that known vars don't warn.
-// - applyEnvConfig: we test priority behavior (env doesn't override config)
-//   and auto-enable behavior for watermark and cover.
-// - Tests use t.Setenv() which prevents t.Parallel() at parent level.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"bytes"
 	"testing"
@@ -18,6 +8,7 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
+// Tests use t.Setenv, so parent tests cannot call t.Parallel.
 func TestLoadEnvConfig(t *testing.T) {
 	t.Run("tier 1 essential variables", func(t *testing.T) {
 		t.Setenv("PICOLOOM_CONFIG", "/path/to/config.yaml")

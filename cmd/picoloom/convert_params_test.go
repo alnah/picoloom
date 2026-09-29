@@ -1,17 +1,5 @@
 package main
 
-// Notes:
-// - buildSignatureData: we test all branches including enabled/disabled, URL vs
-//   local image paths, and extended metadata fields.
-// - buildFooterData: we test enabled/disabled states and all footer options.
-// - buildPageSettings: we test page size/orientation/margin combinations.
-// - buildWatermarkData: we test watermark text, color, opacity, and angle validation.
-// - buildCoverData: we test title extraction from config, markdown H1, and filename.
-// - buildTOCData: we test enabled/disabled, minDepth/maxDepth configuration,
-//   and cross-validation (minDepth <= maxDepth). Boundary values 1-6 tested.
-// - buildPageBreaksData: we test heading break before and orphan/widow settings.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"errors"
 	"fmt"

@@ -1,14 +1,5 @@
 package main
 
-// Notes:
-// - poolAdapter: we test Acquire/Release/Size and wrong-type defensive release.
-// - isCommand: we test command name matching.
-// - looksLikeMarkdown: we test file extension detection.
-// - runMain: we test exit codes for various scenarios. We don't test actual
-//   file conversion here (covered by integration tests).
-// - resolveTimeoutWithEnv: we test duration parsing, validation, and priority.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"bytes"
 	"context"

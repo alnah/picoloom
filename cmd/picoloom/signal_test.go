@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - notifyContext: we only test the observable behavior (context creation,
-//   cancellation via stop(), and parent context propagation). We do not test
-//   actual OS signal delivery since it's non-deterministic and requires
-//   platform-specific setup.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"context"
 	"testing"

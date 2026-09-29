@@ -2,11 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Benchmarks CSS building functions with various input configurations
-// - Tests performance of watermark, page breaks, and string escaping
-// - Uses ReportAllocs to track memory allocations
-
 import (
 	"testing"
 )

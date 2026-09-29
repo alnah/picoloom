@@ -1,12 +1,5 @@
 package picoloom
 
-// Notes:
-// - Tests Service.Convert with mocked pipeline components to isolate unit logic
-// - Mock implementations (mockPreprocessor, mockHTMLConverter, etc.) allow testing
-//   error handling and data flow without real browser or file system access
-// - Internal test options (withPreprocessor, etc.) enable dependency injection
-// - Validation tests cover all Input fields and their error conditions
-
 import (
 	"context"
 	"errors"
@@ -18,6 +11,8 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
+// mockPreprocessor and the other mocks isolate the pipeline from the real
+// browser and filesystem, so tests exercise error handling and data flow.
 type mockPreprocessor struct {
 	called bool
 	input  string
@@ -192,6 +187,7 @@ func (m *mockAssetLoader) LoadTemplateSet(name string) (*TemplateSet, error) {
 	}, nil
 }
 
+// withPreprocessor and the other test options inject these dependencies.
 func withPreprocessor(p pipeline.MarkdownPreprocessor) Option {
 	return func(s *Service) {
 		s.preprocessor = p

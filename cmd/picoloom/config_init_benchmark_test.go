@@ -1,15 +1,5 @@
 package main
 
-// Notes:
-// - BenchmarkCopyTempToExclusiveFile_*: we benchmark the non-force fallback
-//   publish path to track copy-time and allocation behavior for small and
-//   larger config payloads.
-// - BenchmarkValidateWizardStyle_*: we benchmark style validation helper cost
-//   for valid and invalid values in prompt loops.
-// - BenchmarkWizardStyleOptions: we benchmark options-string rendering used in
-//   style prompts.
-// These are acceptable gaps: benchmarks isolate copy path, not full command flow.
-
 import (
 	"bytes"
 	"fmt"

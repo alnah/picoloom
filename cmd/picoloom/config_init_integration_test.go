@@ -2,15 +2,6 @@
 
 package main
 
-// Notes:
-// - runMain config init no-input mode: we test end-to-end file creation for
-//   default behavior with a custom output path.
-// - overwrite policy: we test existing-file preservation without --force and
-//   replacement with --force.
-// - interrupted-overwrite recovery: we test backup restoration before writes.
-// - validation boundary: we verify generated output reloads with config.LoadConfig.
-// These are acceptable gaps: we test CLI/file invariants, not prompt internals.
-
 import (
 	"os"
 	"path/filepath"

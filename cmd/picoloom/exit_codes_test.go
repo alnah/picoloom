@@ -1,12 +1,5 @@
 package main
 
-// Notes:
-// - exitCodeFor: we test all sentinel errors from md2pdf and config packages,
-//   plus wrapped errors to verify errors.Is() chain works correctly.
-// - Exit code constants: we verify Unix conventions (0=success, 1=general, 2=usage)
-//   and custom codes are below 126.
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"errors"
 	"fmt"

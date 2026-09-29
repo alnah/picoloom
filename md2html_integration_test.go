@@ -2,12 +2,6 @@
 
 package picoloom
 
-// Notes:
-// - Tests GoldmarkConverter HTML generation with various markdown features
-// - Verifies syntax highlighting with Chroma classes
-// - Tests highlight ==text== feature through full preprocessing pipeline
-// - Verifies raw HTML sanitization for security (no WithUnsafe)
-
 import (
 	"context"
 	"strings"

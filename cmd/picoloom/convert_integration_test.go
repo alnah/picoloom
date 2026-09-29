@@ -2,13 +2,6 @@
 
 package main
 
-// Notes:
-// - These are integration tests that use the real PDF converter.
-// - They test end-to-end conversion scenarios including batch conversion,
-//   config loading, CSS styling, page breaks, and concurrent execution.
-// - Build tag 'integration' required: go test -tags=integration ./cmd/picoloom/...
-// These are acceptable gaps: we test observable behavior, not implementation details.
-
 import (
 	"context"
 	"errors"
