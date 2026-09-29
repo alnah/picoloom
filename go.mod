@@ -9,7 +9,7 @@ require (
 	github.com/go-rod/rod v0.116.2
 	github.com/goccy/go-yaml v1.19.1
 	github.com/spf13/pflag v1.0.10
-	github.com/yuin/goldmark v1.7.13
+	github.com/yuin/goldmark v1.7.17
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/net v0.55.0
