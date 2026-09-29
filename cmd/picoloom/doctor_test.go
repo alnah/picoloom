@@ -584,8 +584,6 @@ func TestPrintDoctorUsageFor_AllowManagedBrowserFlag(t *testing.T) {
 	}
 }
 
-// Helpers
-
 // cleanContainerEnv removes all container detection environment variables.
 func cleanContainerEnv() {
 	os.Unsetenv("PICOLOOM_CONTAINER")

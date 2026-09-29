@@ -19,8 +19,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// Helpers
-
 func assertValidPDF(t *testing.T, data []byte) {
 	t.Helper()
 

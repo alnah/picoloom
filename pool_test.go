@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-// Compile-Time Interface Check
-
 var _ interface {
 	Acquire() *Service
 	Release(*Service)

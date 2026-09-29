@@ -14,8 +14,6 @@ import (
 	"testing"
 )
 
-// Mock Implementations
-
 // benchPDFConverter is a mock for benchmarking without actual browser.
 type benchPDFConverter struct{}
 
@@ -450,8 +448,6 @@ func BenchmarkToTOCData(b *testing.B) {
 		}
 	})
 }
-
-// Helpers
 
 func generateBenchmarkMarkdown(sections int) string {
 	var sb strings.Builder

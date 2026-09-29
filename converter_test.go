@@ -18,8 +18,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// Mock Implementations
-
 type mockPreprocessor struct {
 	called bool
 	input  string

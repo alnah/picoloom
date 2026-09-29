@@ -13,8 +13,6 @@ import (
 	"github.com/alnah/picoloom/v2/internal/config"
 )
 
-// Type Aliases - For cleaner test code
-
 // Type aliases for cleaner test code.
 type (
 	Config           = config.Config
@@ -31,8 +29,6 @@ type (
 	PageBreaksConfig = config.PageBreaksConfig
 	Link             = config.Link
 )
-
-// Compatibility Wrappers - For backward compatibility with tests
 
 // cliFlags is an alias for convertFlags (backward compatibility for tests).
 type cliFlags = convertFlags
@@ -55,8 +51,6 @@ func printResults(results []ConversionResult, quiet, verbose bool) int {
 	env := DefaultEnv()
 	return printResultsWithWriter(results, quiet, verbose, env)
 }
-
-// Mock Implementations - For unit testing
 
 // staticMockConverter is a simple mock that returns a fixed result.
 type staticMockConverter struct {

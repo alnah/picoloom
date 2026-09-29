@@ -476,8 +476,6 @@ func BenchmarkStripFrontmatter(b *testing.B) {
 	}
 }
 
-// Fuzz Tests
-
 func FuzzStripFrontmatter(f *testing.F) {
 	// Seed corpus with various input patterns
 	f.Add("---\ntitle: Test\n---\nContent")

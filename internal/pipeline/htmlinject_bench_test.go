@@ -272,8 +272,6 @@ func BenchmarkStripHTMLTags(b *testing.B) {
 	}
 }
 
-// Helper functions
-
 func generateTestHTML(paragraphs int) string {
 	var sb strings.Builder
 	sb.WriteString(`<!DOCTYPE html>

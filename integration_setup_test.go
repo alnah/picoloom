@@ -39,8 +39,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// Helpers
-
 // acquireService gets a service from the shared pool with automatic cleanup.
 // Uses t.Cleanup() to ensure Release is called even if test panics.
 func acquireService(t *testing.T) *Service {

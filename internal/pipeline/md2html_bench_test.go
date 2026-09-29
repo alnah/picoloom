@@ -113,8 +113,6 @@ func BenchmarkGoldmarkSyntaxHighlighting(b *testing.B) {
 	}
 }
 
-// Helper functions for generating benchmark input
-
 func generateHeadingsMarkdown(count int) string {
 	var sb strings.Builder
 	for i := 0; i < count; i++ {

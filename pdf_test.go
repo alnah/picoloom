@@ -17,14 +17,10 @@ import (
 	"github.com/alnah/picoloom/v2/internal/pipeline"
 )
 
-// Compile-Time Interface Checks
-
 var (
 	_ pdfConverter = (*rodConverter)(nil)
 	_ pdfRenderer  = (*rodRenderer)(nil)
 )
-
-// Mock Implementations
 
 type mockRenderer struct {
 	Result     []byte
