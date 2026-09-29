@@ -93,5 +93,12 @@ examples: build ## Regenerate example PDFs in examples/
 	./$(BINARY) convert examples/simple-report.md --style invoice -o examples/simple-invoice.pdf
 	./$(BINARY) convert examples/simple-report.md --style legal -o examples/simple-legal.pdf
 	./$(BINARY) convert examples/simple-report.md --style manuscript -o examples/simple-manuscript.pdf
-	./$(BINARY) convert -c examples/full-featured.yaml examples/full-featured.md -o examples/full-featured.pdf
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-academic.pdf --style academic
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-corporate.pdf --style corporate
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-creative.pdf --style creative
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-default.pdf --style default
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-invoice.pdf --style invoice
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-legal.pdf --style legal
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-manuscript.pdf --style manuscript
+	./$(BINARY) convert examples/full-featured.md -c examples/full-featured.yaml -o examples/full-technical.pdf --style technical
 	@echo "Done. Review with 'git diff examples/' and commit if needed."
