@@ -45,12 +45,15 @@ jobs:
       - name: Validate release tag
         run: ./scripts/ensure-v2-release-tag.sh "${GITHUB_REF_NAME}"
 
+      - name: Extract release notes
+        run: ./scripts/release-notes.sh "${GITHUB_REF_NAME}" > release-notes.md
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          args: release --clean --release-notes=release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

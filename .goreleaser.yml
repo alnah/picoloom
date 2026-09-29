@@ -54,6 +54,8 @@ changelog:
       - "^test:"
       - "^chore:"
       - "^ci:"
+      - "^style:"
+      - "^build:"
   groups:
     - title: Features
       regexp: '^feat(\(.+\))?:'
@@ -64,8 +66,6 @@ changelog:
     - title: Refactoring
       regexp: '^refactor(\(.+\))?:'
       order: 2
-    - title: Others
-      order: 999
 
 release:
   github:

@@ -1,7 +1,7 @@
 BINARY := picoloom
 LEGACY_BINARY := md2pdf
 
-.PHONY: help build build-legacy test test-integration test-cover test-cover-all bench bench-cpu bench-mem run clean fmt vet lint sec check check-all tools examples
+.PHONY: help build build-legacy test test-integration test-cover test-cover-all bench bench-cpu bench-mem run clean fmt vet lint sec check check-all tools examples release-notes
 
 .DEFAULT_GOAL := help
 
@@ -83,6 +83,9 @@ sec: ## Run gosec security scanner
 check: fmt vet lint sec test ## Run all checks (unit tests only)
 
 check-all: fmt vet lint sec test-integration ## Run all checks including integration tests
+
+release-notes: ## Preview release notes extracted from CHANGELOG.md (TAG=vX.Y.Z)
+	@./scripts/release-notes.sh $(TAG)
 
 examples: build ## Regenerate example PDFs in examples/
 	./$(BINARY) convert examples/simple-report.md -o examples/simple-default.pdf
