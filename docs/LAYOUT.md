@@ -10,7 +10,7 @@ picoloom/                       # package picoloom (library)
 ├── assets.go                   # AssetLoader, TemplateSet, NewAssetLoader(), NewTemplateSet()
 ├── errors.go                   # Sentinel errors
 ├── pdf.go                      # HTML -> PDF (Rod/Chrome)
-├── cssbuilders.go              # Watermark/PageBreaks CSS (depend on public types)
+├── cssbuilders.go              # Watermark/PageBreaks/Admonition CSS overlays
 ├── example_test.go             # Runnable examples for godoc (Example*, ExampleConverterPool, etc.)
 │
 ├── cmd/picoloom/               # CLI (picoloom convert|config|doctor|version|help|completion)
@@ -49,14 +49,21 @@ picoloom/                       # package picoloom (library)
 │   │   │   ├── legal.css
 │   │   │   ├── invoice.css
 │   │   │   └── manuscript.css
-│   │   └── templates/default/  # Default HTML templates
-│   │       ├── cover.html
-│   │       └── signature.html
+│   │   ├── templates/default/  # Default HTML templates
+│   │   │   ├── cover.html
+│   │   │   └── signature.html
+│   │   └── overlays/           # Embedded structural CSS overlays
+│   │       ├── admonition.css
+│   │       ├── pagebreaks.css.tmpl
+│   │       └── watermark.css.tmpl
 │   ├── config/                 # YAML config, validation
 │   ├── dateutil/               # Date format parsing, ResolveDate()
 │   ├── fileutil/               # File utilities (FileExists, IsFilePath, IsURL)
 │   ├── hints/                  # Actionable error message hints
 │   ├── pipeline/               # Conversion pipeline components
+│   │   ├── admonition.go       # Admonition node, renderer, extension
+│   │   ├── admonition_fence.go # ::: fence block parser
+│   │   ├── admonition_quote.go # > [!TYPE] blockquote transformer
 │   │   ├── mdtransform.go      # MD -> MD (preprocessing)
 │   │   ├── md2html.go          # MD -> HTML (Goldmark)
 │   │   ├── cssinject.go        # CSS injection and sanitization

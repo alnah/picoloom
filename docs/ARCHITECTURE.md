@@ -36,7 +36,7 @@ Markdown ──▶ mdtransform ──▶ md2html ──▶ htmlinject ──▶ 
            Normalize        Goldmark      Page breaks  Chrome
            Highlights       GFM/TOC IDs   Watermark    Headless
            Blank lines      Footnotes     Cover page   Footer
-                                          TOC inject
+                            Admonitions   TOC inject
                                           CSS inject
                                           Signature
 ```
@@ -44,7 +44,7 @@ Markdown ──▶ mdtransform ──▶ md2html ──▶ htmlinject ──▶ 
 | Stage           | Transformation | Location                        | Tool            |
 | --------------- | -------------- | ------------------------------- | --------------- |
 | **mdtransform** | MD -> MD       | `internal/pipeline/`            | Regex           |
-| **md2html**     | MD -> HTML     | `internal/pipeline/`            | Goldmark (GFM)  |
+| **md2html**     | MD -> HTML     | `internal/pipeline/`            | Goldmark (GFM) + admonitions |
 | **htmlinject**  | HTML -> HTML   | `internal/pipeline/`            | String/template |
 | **pdf**         | HTML -> PDF    | root (`pdf.go`)                 | Rod (Chrome)    |
 
@@ -54,12 +54,13 @@ Markdown ──▶ mdtransform ──▶ md2html ──▶ htmlinject ──▶ 
 
 ```
 1. Page breaks CSS      ──▶  <head> (lowest priority)
-2. Watermark CSS        ──▶  <head>
-3. User CSS             ──▶  <head> (highest priority)
-4. Cover page           ──▶  after <body>
-5. TOC                  ──▶  after cover (or <body>)
-6. Signature            ──▶  before </body>
-7. Footer               ──▶  Chrome native footer
+2. Admonition CSS       ──▶  <head>
+3. Watermark CSS        ──▶  <head>
+4. Theme + user CSS     ──▶  <head> (highest priority)
+5. Cover page           ──▶  after <body>
+6. TOC                  ──▶  after cover (or <body>)
+7. Signature            ──▶  before </body>
+8. Footer               ──▶  Chrome native footer
 ```
 
 ---
@@ -189,6 +190,7 @@ Config-to-library builder parity tests detect shared constraint drift.
 | Feature Type        | Location                          | Example                      |
 | ------------------- | --------------------------------- | ---------------------------- |
 | New MD syntax       | `internal/pipeline/mdtransform.go`| `==highlight==` support      |
+| New Goldmark extension | `internal/pipeline/{feature}.go` | Admonitions (`admonition*.go`) |
 | New HTML injection  | `internal/pipeline/{feature}inject.go` | New metadata block           |
 | New Input field     | `types.go` + `converter.go`       | Add to `Input` struct        |
 | New CLI flag        | `cmd/picoloom/flags.go`             | Add flag definition          |

@@ -143,6 +143,47 @@ Use `Input.HTMLOnly: true` to skip PDF generation and only produce HTML.
 - **Signatures** - Name, title, email, photo, links
 - **Footers** - Page numbers, dates, status text
 - **Watermarks** - Diagonal background text (BRAND, etc.)
+- **Admonitions** - Obsidian-style alerts (`> [!NOTE]`) and Pandoc-style fences (`::: note`)
+
+### Admonitions
+
+Callouts are always enabled and need no configuration. Two syntaxes are supported.
+
+Obsidian-style alerts mark the first line of a blockquote:
+
+```markdown
+> [!NOTE]
+> Body text.
+
+> [!TIP] Custom title
+> Body text.
+```
+
+Pandoc-style fences use three or more colons, close with a line of colons, and can nest:
+
+```markdown
+::: warning Deployment window
+Body text.
+:::
+```
+
+| Type | Aliases | Default title |
+|------|---------|---------------|
+| `note` | `info` | Note |
+| `tip` | `success` | Tip |
+| `important` | - | Important |
+| `warning` | - | Warning |
+| `caution` | `danger` | Caution |
+
+Custom accents override a single variable per type in your CSS:
+
+```css
+.admonition-note {
+  --admonition-accent: #8250df;
+}
+```
+
+Types are case-insensitive. Titles are plain text, taken from the first line, and HTML-escaped. An unknown alert type stays a regular blockquote; an unknown fence type stays a paragraph.
 
 ## CLI Reference
 
@@ -1115,7 +1156,6 @@ These are intentional to keep the tool simple:
 | **Raw HTML tags** | Security (prevents code execution during conversion) | Cover config for logos, native markdown `![]()` for images, custom CSS for styling |
 | LaTeX/MathJax | Adds complexity, requires external tools | Pre-render as PNG/SVG |
 | Wikilinks `[[...]]` | Not relevant for PDF output | Use `[text](url)` |
-| Admonitions `:::` | Not implemented | Use blockquotes |
 
 ### Chrome PDF Engine
 

@@ -16,7 +16,7 @@ Sample Markdown files and their generated PDFs.
 | technical | `simple-technical.pdf` | `full-technical.pdf` |
 
 **Simple:** Basic document with tables, code blocks, task lists.
-**Full-featured:** Cover page, TOC, signature block, SECRET watermark, footer with page numbers and doc ID.
+**Full-featured:** Cover page, TOC, signature block, SECRET watermark, footer with page numbers and doc ID, admonitions (all five types, nested).
 
 ## Source Files
 
@@ -31,12 +31,12 @@ Sample Markdown files and their generated PDFs.
 ```bash
 # Simple reports
 for style in academic corporate creative default invoice legal manuscript technical; do
-  md2pdf convert examples/simple-report.md -o "examples/simple-${style}.pdf" --style "$style"
+  picoloom convert examples/simple-report.md -o "examples/simple-${style}.pdf" --style "$style"
 done
 
 # Full-featured reports
 for style in academic corporate creative default invoice legal manuscript technical; do
-  md2pdf convert examples/full-featured.md -o "examples/full-${style}.pdf" \
+  picoloom convert examples/full-featured.md -o "examples/full-${style}.pdf" \
     -c examples/full-featured.yaml --style "$style"
 done
 ```
