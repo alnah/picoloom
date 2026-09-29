@@ -143,9 +143,12 @@ Use `Input.HTMLOnly: true` to skip PDF generation and only produce HTML.
 - **Signatures** - Name, title, email, photo, links
 - **Footers** - Page numbers, dates, status text
 - **Watermarks** - Diagonal background text (BRAND, etc.)
-- **Admonitions** - Obsidian-style alerts (`> [!NOTE]`) and Pandoc-style fences (`::: note`)
+- **Admonitions** - Obsidian alerts and Pandoc fences, with types, nesting, and custom accents ([syntax](#admonitions))
 
-### Admonitions
+<details>
+<summary>Admonitions</summary>
+
+<a id="admonitions"></a>
 
 Callouts are always enabled and need no configuration. Two syntaxes are supported.
 
@@ -184,6 +187,8 @@ Custom accents override a single variable per type in your CSS:
 ```
 
 Types are case-insensitive. Titles are plain text, taken from the first line, and HTML-escaped. An unknown alert type stays a regular blockquote; an unknown fence type stays a paragraph.
+
+</details>
 
 ## CLI Reference
 
