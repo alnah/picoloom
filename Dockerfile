@@ -1,7 +1,7 @@
 # =============================================================================
 # Build stage: compile Go binary
 # =============================================================================
-FROM golang:1.25-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 
 WORKDIR /src
 
